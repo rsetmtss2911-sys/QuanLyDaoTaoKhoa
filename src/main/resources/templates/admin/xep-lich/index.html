@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::scripts})}">
+<head>
+  <title>Xếp lịch giảng dạy & Phòng học · QLĐT Khoa</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div th:replace="~{fragments/flash :: flash}"></div>
+
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+      <nav aria-label="Đường dẫn">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Trang chủ</a></li>
+          <li class="breadcrumb-item"><a th:href="@{/admin/lop-hoc-phan}">Lớp học phần</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Xếp lịch giảng dạy</li>
+        </ol>
+      </nav>
+      <h1 class="qd-h1 mb-0">Xếp lịch giảng dạy & Thời khóa biểu</h1>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addScheduleModal">
+        <i class="bi bi-calendar-plus me-1"></i> Xếp lịch học phần
+      </button>
+      <a class="btn btn-outline-secondary" th:href="@{/admin/lop-hoc-phan}">
+        <i class="bi bi-journal-text me-1"></i> Quản lý lớp HP
+      </a>
+    </div>
+  </div>
+
+  <!-- BỘ LỌC ĐIỀU HƯỚNG TỔNG THỂ -->
+  <div class="card border shadow-sm mb-4">
+    <div class="card-body p-3">
+      <form method="get" th:action="@{/admin/xep-lich}" class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label for="filterHk" class="form-label small fw-semibold text-dark">Học kỳ năm học</label>
+          <select id="filterHk" name="maHK" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option th:each="hk : ${hocKys}" th:value="${hk.maHK}"
+                    th:text="${hk.tenHocKy + ' (' + hk.namHoc + ')'}"
+                    th:selected="${hk.maHK == currentHk}">HK1 (2025-2026)</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label small fw-semibold text-dark">Chế độ xem lịch</label>
+          <div class="btn-group btn-group-sm w-100" role="group">
+            <input type="radio" class="btn-check" name="viewMode" id="modeRoom" value="THEO_PHONG"
+                   th:checked="${viewMode == 'THEO_PHONG'}" onchange="this.form.submit()">
+            <label class="btn btn-outline-primary" for="modeRoom">Theo Phòng học</label>
+
+            <input type="radio" class="btn-check" name="viewMode" id="modeGv" value="THEO_GIANG_VIEN"
+                   th:checked="${viewMode == 'THEO_GIANG_VIEN'}" onchange="this.form.submit()">
+            <label class="btn btn-outline-primary" for="modeGv">Theo Giảng viên</label>
+          </div>
+        </div>
+
+        <div class="col-md-4" th:if="${viewMode == 'THEO_PHONG'}">
+          <label for="filterRoom" class="form-label small fw-semibold text-dark">Chọn phòng học</label>
+          <div class="input-group input-group-sm">
+            <select id="filterRoom" name="phongHoc" class="form-select" onchange="this.form.submit()">
+              <option th:each="r : ${rooms}" th:value="${r}" th:text="|Phòng ${r}|"
+                      th:selected="${r == phongHoc}">Phòng 301-G2</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="col-md-4" th:if="${viewMode == 'THEO_GIANG_VIEN'}">
+          <label for="filterGv" class="form-label small fw-semibold text-dark">Chọn giảng viên</label>
+          <select id="filterGv" name="maGV" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option th:each="gv : ${giangViens}" th:value="${gv.maNS}"
+                    th:text="|${gv.nhanSu.hoTen} (${gv.maNS} - ${gv.boMon.tenBoMon})|"
+                    th:selected="${gv.maNS == maGV}">ThS. Nguyễn Văn A</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-sm btn-outline-secondary w-100">
+            <i class="bi bi-funnel me-1"></i> Lọc lịch
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- KHUNG MA TRẬN THỜI KHÓA BIỂU -->
+  <div class="qd-panel">
+    <div class="qd-panel-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <div>
+        <h2 class="qd-panel-title mb-0">
+          <span th:if="${viewMode == 'THEO_PHONG'}" th:text="|Thời khóa biểu: Phòng ${phongHoc}|">Thời khóa biểu Phòng 301-G2</span>
+          <span th:if="${viewMode == 'THEO_GIANG_VIEN'}">
+            Thời khóa biểu Giảng viên:
+            <span class="text-primary" th:each="gv : ${giangViens}" th:if="${gv.maNS == maGV}" th:text="${gv.nhanSu.hoTen}">ThS. Nguyễn Văn A</span>
+          </span>
+        </h2>
+        <p class="text-muted small mb-0" th:text="|Tổng cộng: ${slots.size()} tiết đã xếp lịch trong tuần|">
+          Tổng cộng: 0 tiết đã xếp lịch trong tuần
+        </p>
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-light text-dark border">
+          <span class="d-inline-block rounded-circle bg-success me-1" style="width: 8px; height: 8px;"></span>
+          Click ô trống = Xếp lịch
+        </span>
+      </div>
+    </div>
+
+    <div class="qd-panel-body p-3">
+      <div th:replace="~{fragments/timetable-grid :: adminGrid(${slots})}"></div>
+    </div>
+  </div>
+
+  <!-- MODAL XẾP LỊCH GIẢNG DẠY -->
+  <div class="modal fade" id="addScheduleModal" tabindex="-1" aria-labelledby="addScheduleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form method="post" th:action="@{/admin/xep-lich/save}" th:object="${scheduleForm}">
+          <input type="hidden" name="currentHk" th:value="${currentHk}"/>
+          <input type="hidden" name="viewMode" th:value="${viewMode}"/>
+          <input type="hidden" name="currentPhong" th:value="${phongHoc}"/>
+          <input type="hidden" name="currentGv" th:value="${maGV}"/>
+
+          <div class="modal-header">
+            <h5 class="modal-title fw-bold text-dark" id="addScheduleModalLabel">
+              <i class="bi bi-calendar2-plus me-1 text-primary"></i> Xếp lịch giảng dạy học phần
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="modalMaLHP" class="form-label small fw-semibold text-dark">Lớp học phần <span class="text-danger">*</span></label>
+              <select id="modalMaLHP" name="maLHP" class="form-select" required>
+                <option value="" disabled selected>-- Chọn lớp học phần cần xếp lịch --</option>
+                <optgroup label="Lớp học phần chưa có lịch" th:if="${unscheduledSections != null and !unscheduledSections.isEmpty()}">
+                  <option th:each="l : ${unscheduledSections}" th:value="${l.maLHP}"
+                          th:text="|${l.maLHP} - ${l.monHoc.tenMon} (${l.monHoc.soTinChi} TC)|">
+                    LHP01 - Nhập môn lập trình (3 TC)
+                  </option>
+                </optgroup>
+                <optgroup label="Tất cả các lớp học phần trong kỳ" th:if="${activeSections != null and !activeSections.isEmpty()}">
+                  <option th:each="l : ${activeSections}" th:value="${l.maLHP}"
+                          th:text="|${l.maLHP} - ${l.monHoc.tenMon} (${l.monHoc.soTinChi} TC)|">
+                    LHP02 - Cơ sở dữ liệu (3 TC)
+                  </option>
+                </optgroup>
+              </select>
+              <div class="form-text small">Chỉ hiển thị các lớp học phần đang hoạt động trong học kỳ đã chọn.</div>
+            </div>
+
+            <div class="mb-3">
+              <label for="modalPhongHoc" class="form-label small fw-semibold text-dark">Phòng học <span class="text-danger">*</span></label>
+              <input type="text" id="modalPhongHoc" th:field="*{phongHoc}" class="form-control font-monospace"
+                     required placeholder="Ví dụ: 301-G2, PM.101..." th:value="${viewMode == 'THEO_PHONG' ? phongHoc : ''}"/>
+            </div>
+
+            <div class="mb-3">
+              <label for="modalThu" class="form-label small fw-semibold text-dark">Thứ trong tuần <span class="text-danger">*</span></label>
+              <select id="modalThu" th:field="*{thuTrongTuan}" class="form-select" required>
+                <option value="2">Thứ Hai</option>
+                <option value="3">Thứ Ba</option>
+                <option value="4">Thứ Tư</option>
+                <option value="5">Thứ Năm</option>
+                <option value="6">Thứ Sáu</option>
+                <option value="7">Thứ Bảy</option>
+                <option value="8">Chủ Nhật</option>
+              </select>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label for="modalTietBatDau" class="form-label small fw-semibold text-dark">Tiết bắt đầu (1 - 15) <span class="text-danger">*</span></label>
+                <input type="number" id="modalTietBatDau" th:field="*{tietBatDau}" class="form-control" min="1" max="15" required value="1"/>
+              </div>
+              <div class="col-6">
+                <label for="modalTietKetThuc" class="form-label small fw-semibold text-dark">Tiết kết thúc (1 - 15) <span class="text-danger">*</span></label>
+                <input type="number" id="modalTietKetThuc" th:field="*{tietKetThuc}" class="form-control" min="1" max="15" required value="3"/>
+              </div>
+            </div>
+            <div class="alert alert-light border small text-muted mb-0">
+              <i class="bi bi-info-circle me-1 text-primary"></i>
+              Hệ thống sẽ tự động kiểm tra trùng lặp phòng học và trùng giờ dạy của giảng viên phụ trách trước khi lưu.
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg me-1"></i> Lưu lịch giảng dạy
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+
+<th:block th:fragment="scripts">
+  <script>
+    function openAddScheduleModal(cellOrThu, tiet) {
+      let thuVal = typeof cellOrThu === 'object' ? cellOrThu.getAttribute('data-thu') : cellOrThu;
+      let tietVal = typeof cellOrThu === 'object' ? cellOrThu.getAttribute('data-tiet') : tiet;
+      if (thuVal) {
+        const thuSelect = document.getElementById('modalThu');
+        if (thuSelect) thuSelect.value = thuVal;
+      }
+      if (tietVal) {
+        const startInput = document.getElementById('modalTietBatDau');
+        const endInput = document.getElementById('modalTietKetThuc');
+        if (startInput) startInput.value = tietVal;
+        if (endInput) {
+          let end = parseInt(tietVal, 10) + 2;
+          if (end > 15) end = 15;
+          endInput.value = end;
+        }
+      }
+      const modalEl = document.getElementById('addScheduleModal');
+      if (modalEl && window.bootstrap) {
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.timetable-cell-interactive').forEach(cell => {
+        cell.addEventListener('click', function(e) {
+          if (e.target.closest('.timetable-slot') || e.target.closest('form') || e.target.closest('button')) {
+            return;
+          }
+          openAddScheduleModal(this);
+        });
+      });
+    });
+  </script>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title>Lớp học phần giảng dạy · QLĐT Khoa</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div th:replace="~{fragments/flash :: flash}"></div>
+
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+      <nav aria-label="Đường dẫn">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a th:href="@{/giang-vien/dashboard}">Trang chủ</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Lớp giảng dạy</li>
+        </ol>
+      </nav>
+      <h1 class="qd-h1 mb-0">Các Lớp học phần được phân công giảng dạy</h1>
+    </div>
+
+    <!-- Chọn học kỳ -->
+    <form method="get" th:action="@{/giang-vien/lop-hoc-phan}" class="d-flex align-items-center gap-2">
+      <label for="maHK" class="fw-semibold text-dark small text-nowrap">Học kỳ:</label>
+      <select id="maHK" name="maHK" class="form-select w-auto" onchange="this.form.submit()">
+        <option value="">-- Tất cả học kỳ --</option>
+        <option th:each="hk : ${hocKys}" th:value="${hk.maHK}" th:text="${hk.tenHocKy + ' (' + hk.namHoc + ')'}"
+                th:selected="${hk.maHK == currentHk}">Học kỳ 1</option>
+      </select>
+    </form>
+  </div>
+
+  <div class="qd-panel">
+    <div class="qd-panel-header d-flex justify-content-between align-items-center">
+      <h2 class="qd-panel-title">Danh sách lớp học phần phụ trách</h2>
+      <a class="btn btn-sm btn-outline-primary" th:href="@{/giang-vien/thoi-khoa-bieu}">
+        <i class="bi bi-calendar3 me-1"></i> Xem Thời khóa biểu tuần
+      </a>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table qd-table mb-0">
+        <thead>
+          <tr>
+            <th scope="col" style="width: 140px;">Mã LHP</th>
+            <th scope="col">Tên môn học</th>
+            <th scope="col" class="text-center" style="width: 90px;">Số TC</th>
+            <th scope="col">Học kỳ</th>
+            <th scope="col" class="text-center" style="width: 130px;">Sĩ số / Tối đa</th>
+            <th scope="col" class="text-center" style="width: 140px;">Trạng thái lớp</th>
+            <th scope="col" class="text-end" style="width: 160px;">Nhập điểm</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${sections.isEmpty()}">
+            <td colspan="7" class="text-center text-muted py-4">
+              <i class="bi bi-inbox me-2"></i>Chưa được phân công lớp học phần nào trong học kỳ này
+            </td>
+          </tr>
+          <tr th:each="row : ${sections}">
+            <td>
+              <span class="font-monospace fw-bold text-primary" th:text="${row.maLHP}">INT2204_1</span>
+            </td>
+            <td class="fw-semibold text-dark" th:text="${row.tenMon}">Lập trình hướng đối tượng</td>
+            <td class="text-center fw-bold" th:text="${row.soTinChi}">3</td>
+            <td>
+              <span class="badge bg-light text-dark border font-monospace" th:text="${row.maHK}">2023_1</span>
+            </td>
+            <td class="text-center">
+              <span class="fw-bold text-dark" th:text="${row.siSoHienTai + ' / ' + row.siSoToiDa}">48 / 50</span>
+              <div class="progress mt-1" style="height: 4px;">
+                <div class="progress-bar bg-primary" role="progressbar"
+                     th:style="'width: ' + (${row.siSoToiDa > 0 ? (row.siSoHienTai * 100 / row.siSoToiDa) : 0}) + '%;'">
+                </div>
+              </div>
+            </td>
+            <td class="text-center">
+              <span th:replace="~{fragments/status-badge :: sectionStatus(${row.trangThaiLop})}"></span>
+            </td>
+            <td class="text-end text-nowrap">
+              <a class="btn btn-sm btn-primary" th:href="@{/giang-vien/lop-hoc-phan/{id}/diem(id=${row.maLHP})}">
+                <i class="bi bi-pencil-square me-1"></i> Bảng điểm
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+</body>
+</html>

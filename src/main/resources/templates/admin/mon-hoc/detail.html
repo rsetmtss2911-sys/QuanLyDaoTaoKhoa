@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title th:text="${'Chi tiết môn ' + mon.tenMon + ' · QLĐT Khoa'}">Chi tiết Môn học</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div th:replace="~{fragments/flash :: flash}"></div>
+
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+      <nav aria-label="Đường dẫn">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+          <li class="breadcrumb-item"><a th:href="@{/admin/mon-hoc}">Môn học</a></li>
+          <li class="breadcrumb-item active" aria-current="page" th:text="${mon.maMon}">INT2204</li>
+        </ol>
+      </nav>
+      <div class="d-flex align-items-center gap-3">
+        <h1 class="qd-h1 mb-0" th:text="${mon.tenMon}">Lập trình hướng đối tượng</h1>
+        <span class="badge bg-light text-dark border font-monospace fs-6" th:text="${mon.maMon}">INT2204</span>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-secondary" th:href="@{/admin/mon-hoc}">
+        <i class="bi bi-arrow-left me-1"></i> Danh sách môn
+      </a>
+      <span sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
+        <a class="btn btn-primary" th:href="@{/admin/mon-hoc/{id}/edit(id=${mon.maMon})}">
+          <i class="bi bi-pencil me-1"></i> Chỉnh sửa
+        </a>
+      </span>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <!-- Thông tin cơ bản -->
+    <div class="col-lg-7">
+      <div class="qd-panel h-100">
+        <div class="qd-panel-header">
+          <h2 class="qd-panel-title">Thông tin cấu trúc học phần</h2>
+        </div>
+        <div class="qd-panel-body">
+          <dl class="row mb-0">
+            <dt class="col-sm-4 text-muted">Bộ môn quản lý</dt>
+            <dd class="col-sm-8 fw-semibold text-dark">
+              <span th:text="${mon.boMon != null ? mon.boMon.tenBoMon : '—'}">Bộ môn CNPM</span>
+              <span class="text-muted small" th:if="${mon.boMon != null and mon.boMon.khoa != null}"
+                    th:text="${' (Khoa ' + mon.boMon.khoa.tenKhoa + ')'}">(Khoa CNTT)</span>
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Tổng số tín chỉ</dt>
+            <dd class="col-sm-8 fw-bold text-primary fs-5" th:text="${mon.soTinChi + ' tín chỉ'}">3 tín chỉ</dd>
+
+            <dt class="col-sm-4 text-muted">Phân bổ tín chỉ</dt>
+            <dd class="col-sm-8">
+              <span class="badge bg-light text-dark border me-2" th:text="${'Lý thuyết: ' + mon.tinChiLT + ' TC'}">Lý thuyết: 2 TC</span>
+              <span class="badge bg-light text-dark border" th:text="${'Thực hành: ' + mon.tinChiTH + ' TC'}">Thực hành: 1 TC</span>
+            </dd>
+
+            <dt class="col-sm-4 text-muted mt-3">Trọng số điểm</dt>
+            <dd class="col-sm-8 mt-3">
+              <div class="progress" style="height: 24px;">
+                <div class="progress-bar bg-info" role="progressbar"
+                     th:style="'width: ' + (${mon.trongSoQT != null ? mon.trongSoQT : 0} * 100) + '%;'"
+                     th:text="'QT ' + ${mon.trongSoQT != null ? #numbers.formatPercent(mon.trongSoQT, 0, 0) : '0%'}">QT 20%</div>
+                <div class="progress-bar bg-warning" role="progressbar"
+                     th:style="'width: ' + (${mon.trongSoGK != null ? mon.trongSoGK : 0} * 100) + '%;'"
+                     th:text="'GK ' + ${mon.trongSoGK != null ? #numbers.formatPercent(mon.trongSoGK, 0, 0) : '0%'}">GK 30%</div>
+                <div class="progress-bar bg-success" role="progressbar"
+                     th:style="'width: ' + (${mon.trongSoCK != null ? mon.trongSoCK : 0} * 100) + '%;'"
+                     th:text="'CK ' + ${mon.trongSoCK != null ? #numbers.formatPercent(mon.trongSoCK, 0, 0) : '0%'}">CK 50%</div>
+              </div>
+              <div class="d-flex justify-content-between text-muted small mt-1">
+                <span>Điểm quá trình</span>
+                <span>Điểm giữa kỳ</span>
+                <span>Điểm cuối kỳ</span>
+              </div>
+            </dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <!-- Điều kiện môn tiên quyết -->
+    <div class="col-lg-5">
+      <div class="qd-panel h-100">
+        <div class="qd-panel-header">
+          <h2 class="qd-panel-title mb-0">Môn học tiên quyết</h2>
+        </div>
+        <div class="qd-panel-body">
+          <div th:if="${prereqs.isEmpty()}" class="text-center py-3 text-muted">
+            <i class="bi bi-info-circle fs-3 d-block mb-1"></i>
+            <span>Môn học này không có điều kiện tiên quyết.</span>
+          </div>
+
+          <ul th:unless="${prereqs.isEmpty()}" class="list-group list-group-flush mb-4">
+            <li th:each="pr : ${prereqs}" class="list-group-item d-flex justify-content-between align-items-center px-0">
+              <div>
+                <span class="badge bg-primary bg-opacity-10 text-primary font-monospace me-2" th:text="${pr.monTienQuyet.maMon}">INT1001</span>
+                <span class="fw-semibold text-dark" th:text="${pr.monTienQuyet.tenMon}">Tin học cơ sở</span>
+                <span class="text-muted small" th:text="${' (' + pr.monTienQuyet.soTinChi + ' TC)'}"> (3 TC)</span>
+              </div>
+              <div sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
+                <form method="post" th:action="@{/admin/mon-hoc/{id}/prerequisites/{tqId}/delete(id=${mon.maMon}, tqId=${pr.monTienQuyet.maMon})}"
+                      th:data-confirm="|Xóa môn tiên quyết '${pr.monTienQuyet.tenMon}'?|">
+                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa môn tiên quyết">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </li>
+          </ul>
+
+          <!-- Form thêm môn tiên quyết -->
+          <div sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')" class="pt-3 border-top">
+            <form method="post" th:action="@{/admin/mon-hoc/{id}/prerequisites(id=${mon.maMon})}">
+              <label for="maMonTienQuyet" class="form-label fw-semibold small text-muted">Thêm môn tiên quyết mới</label>
+              <div class="input-group">
+                <select id="maMonTienQuyet" name="maMonTienQuyet" class="form-select" required>
+                  <option value="">-- Chọn môn tiên quyết --</option>
+                  <option th:each="m : ${allMonHocs}"
+                          th:if="${m.maMon != mon.maMon}"
+                          th:value="${m.maMon}"
+                          th:text="${m.tenMon + ' (' + m.maMon + ')'}">Tin học cơ sở</option>
+                </select>
+                <button class="btn btn-outline-primary" type="submit">
+                  <i class="bi bi-plus-lg me-1"></i> Thêm
+                </button>
+              </div>
+              <div class="form-text small">Hệ thống tự động phát hiện và chặn chu trình phụ thuộc vòng tròn.</div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

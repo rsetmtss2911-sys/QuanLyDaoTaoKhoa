@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title>Ban hành Quyết định học vụ · QLĐT Khoa</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+      <nav aria-label="Đường dẫn" class="mb-2">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+          <li class="breadcrumb-item"><a th:href="@{/admin/quyet-dinh}">Quyết định học vụ</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Ban hành mới</li>
+        </ol>
+      </nav>
+
+      <div class="qd-panel">
+        <div class="qd-panel-header">
+          <h1 class="qd-panel-title mb-0">Ban hành Quyết định học vụ</h1>
+        </div>
+
+        <div class="qd-panel-body">
+          <form method="post" th:action="@{/admin/quyet-dinh}" th:object="${form}" novalidate>
+
+            <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger mb-3" role="alert">
+              <i class="bi bi-exclamation-triangle-fill me-2"></i>
+              <span th:each="err : ${#fields.globalErrors()}" th:text="${err}">Lỗi nghiệp vụ</span>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="maQuyetDinh" class="form-label qd-required">Số / Mã quyết định</label>
+                <input type="text" id="maQuyetDinh" th:field="*{maQuyetDinh}"
+                       class="form-control font-monospace"
+                       th:classappend="${#fields.hasErrors('maQuyetDinh')} ? 'is-invalid'"
+                       placeholder="Ví dụ: 1234/QĐ-ĐHQGHN" required>
+                <div class="invalid-feedback" th:errors="*{maQuyetDinh}">Số quyết định không hợp lệ</div>
+              </div>
+
+              <div class="col-md-6">
+                <label for="maSV" class="form-label qd-required">Mã sinh viên áp dụng</label>
+                <input type="text" id="maSV" th:field="*{maSV}"
+                       class="form-control font-monospace"
+                       th:classappend="${#fields.hasErrors('maSV')} ? 'is-invalid'"
+                       placeholder="Ví dụ: 23020001" required>
+                <div class="invalid-feedback" th:errors="*{maSV}">Mã sinh viên không hợp lệ</div>
+              </div>
+
+              <div class="col-md-6">
+                <label for="loaiQuyetDinh" class="form-label qd-required">Loại quyết định học vụ</label>
+                <select id="loaiQuyetDinh" th:field="*{loaiQuyetDinh}" class="form-select" required>
+                  <option th:each="l : ${loaiQuyetDinhs}"
+                          th:value="${l.name()}"
+                          th:text="${l.label}">Bảo lưu</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label for="ngayHieuLuc" class="form-label qd-required">Ngày bắt đầu hiệu lực</label>
+                <input type="date" id="ngayHieuLuc" th:field="*{ngayHieuLuc}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('ngayHieuLuc')} ? 'is-invalid'" required>
+                <div class="invalid-feedback" th:errors="*{ngayHieuLuc}">Vui lòng chọn ngày hiệu lực</div>
+              </div>
+
+              <div class="col-12">
+                <label for="lyDo" class="form-label">Lý do ban hành / Nội dung chi tiết</label>
+                <textarea id="lyDo" th:field="*{lyDo}" rows="3"
+                          class="form-control"
+                          th:classappend="${#fields.hasErrors('lyDo')} ? 'is-invalid'"
+                          placeholder="Ghi rõ lý do hoặc căn cứ của quyết định..."></textarea>
+                <div class="invalid-feedback" th:errors="*{lyDo}">Lý do không hợp lệ</div>
+              </div>
+            </div>
+
+            <div class="alert alert-warning d-flex align-items-center mt-4 mb-0" role="alert">
+              <i class="bi bi-shield-exclamation fs-4 me-3 text-warning"></i>
+              <div class="small">
+                <strong>Lưu ý quan trọng:</strong> Quyết định học vụ sau khi ban hành sẽ có tính bất biến theo quy định của nhà trường và không thể xóa bỏ.
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+              <a th:href="@{/admin/quyet-dinh}" class="btn btn-outline-secondary">Hủy bỏ</a>
+              <button type="submit" class="btn btn-primary px-4">
+                <i class="bi bi-check-lg me-1"></i> Ban hành quyết định
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

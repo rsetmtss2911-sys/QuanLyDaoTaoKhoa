@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title>Quyết định học vụ · QLĐT Khoa</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div th:replace="~{fragments/flash :: flash}"></div>
+
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+      <nav aria-label="Đường dẫn">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Quyết định học vụ</li>
+        </ol>
+      </nav>
+      <h1 class="qd-h1 mb-0">Sổ Quyết định & Thay đổi Trạng thái Học vụ</h1>
+    </div>
+    <div sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
+      <a class="btn btn-primary shadow-sm" th:href="@{/admin/quyet-dinh/new}">
+        <i class="bi bi-file-earmark-plus me-1"></i> Ban hành quyết định mới
+      </a>
+    </div>
+  </div>
+
+  <div class="qd-panel">
+    <form method="get" th:action="@{/admin/quyet-dinh}" class="p-3 border-bottom d-flex flex-wrap gap-2 align-items-center" role="search">
+      <div class="input-group qd-search">
+        <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+        <input id="q" name="q" type="search" class="form-control border-start-0 ps-0"
+               th:value="${q}" placeholder="Tìm theo số quyết định, MSSV, tên SV...">
+      </div>
+
+      <button class="btn btn-outline-secondary" type="submit">Lọc</button>
+      <a th:if="${(q != null and !q.isEmpty()) or (maSV != null and !maSV.isEmpty())}"
+         class="btn btn-link text-decoration-none" th:href="@{/admin/quyet-dinh}">
+        Xóa bộ lọc
+      </a>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table qd-table mb-0">
+        <thead>
+          <tr>
+            <th scope="col" style="width: 150px;">Số quyết định</th>
+            <th scope="col" style="width: 130px;">Mã SV</th>
+            <th scope="col">Họ và tên</th>
+            <th scope="col">Lớp HC</th>
+            <th scope="col" class="text-center" style="width: 140px;">Loại quyết định</th>
+            <th scope="col" style="width: 130px;">Ngày hiệu lực</th>
+            <th scope="col">Lý do ban hành</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${page.empty}">
+            <td colspan="7" class="text-center text-muted py-4">
+              <i class="bi bi-inbox me-2"></i>Chưa có quyết định học vụ nào phù hợp
+            </td>
+          </tr>
+          <tr th:each="row : ${page.content}">
+            <td>
+              <span class="font-monospace fw-bold text-dark" th:text="${row.maQuyetDinh}">QĐ-2024-001</span>
+            </td>
+            <td>
+              <a class="font-monospace fw-bold text-primary text-decoration-none"
+                 th:href="@{/admin/sinh-vien/{id}(id=${row.maSV})}"
+                 th:text="${row.maSV}">23020001</a>
+            </td>
+            <td class="fw-semibold text-dark" th:text="${row.hoTenSV}">Trần Thị Mai</td>
+            <td>
+              <span class="badge bg-light text-dark border" th:text="${row.maLopHC}">CNTT2023A</span>
+            </td>
+            <td class="text-center">
+              <span th:replace="~{fragments/status-badge :: decisionType(${row.loaiQuyetDinh})}"></span>
+            </td>
+            <td th:text="${#temporals.format(row.ngayHieuLuc, 'dd/MM/yyyy')}">15/09/2024</td>
+            <td class="text-muted small" th:text="${row.lyDo != null ? row.lyDo : '—'}">Lý do sức khỏe gia đình</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div th:replace="~{fragments/pagination :: pager(${page}, '/admin/quyet-dinh', ${q})}"></div>
+</main>
+</body>
+</html>

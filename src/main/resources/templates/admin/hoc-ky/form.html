@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title th:text="${isEdit} ? 'Sửa học kỳ · QLĐT Khoa' : 'Thêm học kỳ mới · QLĐT Khoa'">Thêm học kỳ</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div class="mb-4">
+    <nav aria-label="Đường dẫn">
+      <ol class="breadcrumb mb-1">
+        <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a th:href="@{/admin/hoc-ky}">Học kỳ</a></li>
+        <li class="breadcrumb-item active" aria-current="page" th:text="${isEdit} ? 'Chỉnh sửa' : 'Thêm mới'">Thêm mới</li>
+      </ol>
+    </nav>
+    <h1 class="qd-h1 mb-0" th:text="${isEdit} ? 'Chỉnh sửa thông tin học kỳ' : 'Thêm mới học kỳ đào tạo'">Thêm học kỳ</h1>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-7 col-md-9">
+      <div class="qd-panel p-4">
+        <form th:action="${isEdit} ? @{/admin/hoc-ky/{id}(id=${form.maHK})} : @{/admin/hoc-ky}"
+              th:object="${form}" method="post" novalidate>
+
+          <div class="alert alert-danger" role="alert" th:if="${#fields.hasErrors('*')}">
+            <strong>Thông tin nhập liệu chưa hợp lệ. Vui lòng kiểm tra lại:</strong>
+            <ul class="mb-0 mt-1 small">
+              <li th:each="e : ${#fields.allErrors()}" th:text="${e}">Lỗi</li>
+            </ul>
+          </div>
+
+          <div class="mb-3">
+            <label for="maHK" class="form-label">Mã học kỳ <span class="text-danger">*</span></label>
+            <input id="maHK" type="text" class="form-control" th:field="*{maHK}"
+                   th:errorclass="is-invalid" th:readonly="${isEdit}" maxlength="20"
+                   placeholder="VD: HK1_2025, HK2_2025..." required>
+            <div class="form-text" th:if="${!isEdit}">Định dạng gợi ý: HK1_YYYY hoặc HK2_YYYY. Cố định sau khi tạo.</div>
+            <div class="invalid-feedback" th:errors="*{maHK}">Lỗi mã học kỳ</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="tenHK" class="form-label">Tên hiển thị học kỳ <span class="text-danger">*</span></label>
+            <input id="tenHK" type="text" class="form-control" th:field="*{tenHK}"
+                   th:errorclass="is-invalid" maxlength="50" placeholder="VD: Học kỳ 1 năm học 2025-2026" required>
+            <div class="invalid-feedback" th:errors="*{tenHK}">Lỗi tên học kỳ</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="namHoc" class="form-label">Năm bắt đầu học kỳ <span class="text-danger">*</span></label>
+            <input id="namHoc" type="number" class="form-control qd-input-narrow" th:field="*{namHoc}"
+                   th:errorclass="is-invalid" min="2000" max="2100" placeholder="VD: 2025" required>
+            <div class="invalid-feedback" th:errors="*{namHoc}">Lỗi năm học</div>
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-sm-6">
+              <label for="ngayBatDau" class="form-label">Ngày bắt đầu học kỳ</label>
+              <input id="ngayBatDau" type="date" class="form-control" th:field="*{ngayBatDau}" th:errorclass="is-invalid">
+              <div class="invalid-feedback" th:errors="*{ngayBatDau}">Lỗi ngày bắt đầu</div>
+            </div>
+            <div class="col-sm-6">
+              <label for="ngayKetThuc" class="form-label">Ngày kết thúc học kỳ</label>
+              <input id="ngayKetThuc" type="date" class="form-control" th:field="*{ngayKetThuc}" th:errorclass="is-invalid">
+              <div class="invalid-feedback" th:errors="*{ngayKetThuc}">Lỗi ngày kết thúc</div>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 pt-2 border-top">
+            <button type="submit" class="btn btn-primary" data-submit-once>
+              <i class="bi bi-check-lg me-1"></i> Lưu thông tin
+            </button>
+            <a class="btn btn-outline-secondary" th:href="@{/admin/hoc-ky}">Hủy bỏ</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

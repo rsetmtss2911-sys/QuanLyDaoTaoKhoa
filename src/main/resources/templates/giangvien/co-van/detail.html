@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title th:text="${'Danh sách lớp ' + lop.maLopHC + ' · Cố vấn học tập'}">Danh sách sinh viên lớp cố vấn</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div th:replace="~{fragments/flash :: flash}"></div>
+
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+      <nav aria-label="Đường dẫn">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a th:href="@{/giang-vien/dashboard}">Trang chủ</a></li>
+          <li class="breadcrumb-item"><a th:href="@{/giang-vien/co-van/lop-hanh-chinh}">Cố vấn học tập</a></li>
+          <li class="breadcrumb-item active" aria-current="page" th:text="${lop.maLopHC}">CNTT2023A</li>
+        </ol>
+      </nav>
+      <h1 class="qd-h1 mb-0" th:text="${'Lớp ' + lop.tenLopHC}">Công nghệ thông tin 2023 A</h1>
+    </div>
+    <div>
+      <a class="btn btn-outline-secondary" th:href="@{/giang-vien/co-van/lop-hanh-chinh}">
+        <i class="bi bi-arrow-left me-1"></i> Danh sách lớp cố vấn
+      </a>
+    </div>
+  </div>
+
+  <div class="qd-panel">
+    <div class="qd-panel-header d-flex justify-content-between align-items-center">
+      <h2 class="qd-panel-title mb-0">Danh sách sinh viên trong lớp</h2>
+      <span class="badge bg-primary bg-opacity-10 text-primary fw-bold" th:text="${students.size() + ' sinh viên'}">45 SV</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table qd-table mb-0">
+        <thead>
+          <tr>
+            <th scope="col" style="width: 140px;">Mã SV</th>
+            <th scope="col">Họ và tên</th>
+            <th scope="col">Giới tính</th>
+            <th scope="col">Ngày sinh</th>
+            <th scope="col">Email liên hệ</th>
+            <th scope="col" class="text-center" style="width: 130px;">Trạng thái học vụ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${students.isEmpty()}">
+            <td colspan="6" class="text-center text-muted py-4">
+              <i class="bi bi-inbox me-2"></i>Lớp sinh hoạt này hiện chưa có sinh viên ghi danh
+            </td>
+          </tr>
+          <tr th:each="sv : ${students}">
+            <td>
+              <span class="font-monospace fw-bold text-primary" th:text="${sv.maSV}">23020001</span>
+            </td>
+            <td class="fw-semibold text-dark" th:text="${sv.hoTen}">Trần Thị Mai</td>
+            <td>
+              <span th:if="${sv.gioiTinh != null}" th:text="${sv.gioiTinh.label}">Nữ</span>
+              <span th:unless="${sv.gioiTinh != null}" class="text-muted">—</span>
+            </td>
+            <td>
+              <span th:if="${sv.ngaySinh != null}" th:text="${#temporals.format(sv.ngaySinh, 'dd/MM/yyyy')}">15/08/2005</span>
+              <span th:unless="${sv.ngaySinh != null}" class="text-muted">—</span>
+            </td>
+            <td>
+              <a th:href="${'mailto:' + sv.email}" class="text-decoration-none text-muted small" th:text="${sv.email}">mai.tt@vnu.edu.vn</a>
+            </td>
+            <td class="text-center">
+              <span th:replace="~{fragments/status-badge :: studentStatus(${sv.trangThaiHienTai})}"></span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+</body>
+</html>

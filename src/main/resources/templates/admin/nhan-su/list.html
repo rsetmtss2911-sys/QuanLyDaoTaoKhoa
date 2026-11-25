@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title>Quản lý Nhân sự & Giảng viên · QLĐT Khoa</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div th:replace="~{fragments/flash :: flash}"></div>
+
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+      <nav aria-label="Đường dẫn">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Nhân sự & Giảng viên</li>
+        </ol>
+      </nav>
+      <h1 class="qd-h1 mb-0">Danh sách Cán bộ & Giảng viên</h1>
+    </div>
+    <div sec:authorize="hasRole('ADMIN')">
+      <a class="btn btn-primary shadow-sm" th:href="@{/admin/nhan-su/new}">
+        <i class="bi bi-person-plus me-1"></i> Thêm nhân sự mới
+      </a>
+    </div>
+  </div>
+
+  <div class="qd-panel">
+    <form method="get" th:action="@{/admin/nhan-su}" class="p-3 border-bottom d-flex flex-wrap gap-2 align-items-center" role="search">
+      <div class="input-group qd-search">
+        <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+        <input id="q" name="q" type="search" class="form-control border-start-0 ps-0"
+               th:value="${q}" placeholder="Tìm theo mã, tên, email...">
+      </div>
+
+      <select name="role" class="form-select w-auto" onchange="this.form.submit()">
+        <option value="">-- Tất cả vai trò --</option>
+        <option th:each="r : ${vaiTros}" th:value="${r.maVaiTro}" th:text="${r.tenVaiTro}"
+                th:selected="${r.maVaiTro == role}">Quản trị viên</option>
+      </select>
+
+      <button class="btn btn-outline-secondary" type="submit">Lọc</button>
+      <a th:if="${(q != null and !q.isEmpty()) or (role != null and !role.isEmpty())}"
+         class="btn btn-link text-decoration-none" th:href="@{/admin/nhan-su}">
+        Xóa bộ lọc
+      </a>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table qd-table">
+        <thead>
+          <tr>
+            <th scope="col" style="width: 130px;">Mã NS</th>
+            <th scope="col">Họ và tên</th>
+            <th scope="col">Email / Tài khoản</th>
+            <th scope="col">Vai trò</th>
+            <th scope="col">Học hàm / Học vị</th>
+            <th scope="col">Bộ môn</th>
+            <th scope="col" class="text-center" style="width: 100px;">Trạng thái</th>
+            <th scope="col" class="text-end" style="width: 140px;">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${page.empty}">
+            <td colspan="8" class="text-center text-muted py-4">
+              <i class="bi bi-inbox me-2"></i>Chưa có nhân sự nào phù hợp
+            </td>
+          </tr>
+          <tr th:each="row : ${page.content}">
+            <td>
+              <span class="badge bg-light text-dark border font-monospace" th:text="${row.maNS}">NS001</span>
+            </td>
+            <td class="fw-semibold text-dark" th:text="${row.hoTen}">TS. Nguyễn Văn A</td>
+            <td>
+              <span class="text-muted small" th:text="${row.email}">gv.a@vnu.edu.vn</span>
+            </td>
+            <td>
+              <span class="badge"
+                    th:classappend="${row.maVaiTro == 'ADMIN' ? 'bg-danger bg-opacity-10 text-danger' : (row.maVaiTro == 'PHONG_DAO_TAO' ? 'bg-primary bg-opacity-10 text-primary' : 'bg-success bg-opacity-10 text-success')}"
+                    th:text="${row.tenVaiTro}">Giảng viên</span>
+            </td>
+            <td>
+              <span th:if="${row.isGiangVien}">
+                <span th:if="${row.hocHam != null and !row.hocHam.isEmpty()}" th:text="${row.hocHam + ', '}">PGS, </span>
+                <span th:text="${row.hocVi}">Tiến sĩ</span>
+              </span>
+              <span th:unless="${row.isGiangVien}" class="text-muted">—</span>
+            </td>
+            <td>
+              <span th:if="${row.isGiangVien and row.tenBoMon != null}" class="badge bg-secondary bg-opacity-10 text-secondary" th:text="${row.tenBoMon}">CNPM</span>
+              <span th:unless="${row.isGiangVien and row.tenBoMon != null}" class="text-muted">—</span>
+            </td>
+            <td class="text-center">
+              <span th:if="${row.trangThaiKichHoat}" class="badge bg-success bg-opacity-10 text-success">Hoạt động</span>
+              <span th:unless="${row.trangThaiKichHoat}" class="badge bg-secondary bg-opacity-10 text-secondary">Đã khóa</span>
+            </td>
+            <td class="text-end text-nowrap">
+              <span sec:authorize="hasRole('ADMIN')">
+                <a class="btn btn-sm btn-outline-primary me-1" th:href="@{/admin/nhan-su/{id}/edit(id=${row.maNS})}" title="Chỉnh sửa">
+                  <i class="bi bi-pencil"></i> Sửa
+                </a>
+                <form class="d-inline" method="post" th:action="@{/admin/nhan-su/{id}/delete(id=${row.maNS})}"
+                      th:data-confirm="|Xóa cán bộ/giảng viên '${row.hoTen}'? Thao tác không thể hoàn tác.|">
+                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa nhân sự">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </span>
+              <span sec:authorize="!hasRole('ADMIN')" class="text-muted small">
+                Chỉ xem
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div th:replace="~{fragments/pagination :: pager(${page}, '/admin/nhan-su', ${q})}"></div>
+</main>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title>Quản lý Tài khoản Hệ thống · QLĐT Khoa</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div th:replace="~{fragments/flash :: flash}"></div>
+
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+      <nav aria-label="Đường dẫn">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Tài khoản</li>
+        </ol>
+      </nav>
+      <h1 class="qd-h1 mb-0">Quản trị Tài khoản Người dùng</h1>
+    </div>
+  </div>
+
+  <div class="qd-panel">
+    <form method="get" th:action="@{/admin/tai-khoan}" class="p-3 border-bottom d-flex flex-wrap gap-2 align-items-center" role="search">
+      <div class="input-group qd-search">
+        <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+        <input id="q" name="q" type="search" class="form-control border-start-0 ps-0"
+               th:value="${q}" placeholder="Tìm theo email tài khoản...">
+      </div>
+
+      <select name="maVaiTro" class="form-select w-auto" onchange="this.form.submit()">
+        <option value="">-- Tất cả vai trò --</option>
+        <option th:each="r : ${vaiTros}" th:value="${r.maVaiTro}" th:text="${r.tenVaiTro}"
+                th:selected="${r.maVaiTro == maVaiTro}">Sinh viên</option>
+      </select>
+
+      <button class="btn btn-outline-secondary" type="submit">Lọc</button>
+      <a th:if="${(q != null and !q.isEmpty()) or (maVaiTro != null and !maVaiTro.isEmpty())}"
+         class="btn btn-link text-decoration-none" th:href="@{/admin/tai-khoan}">
+        Xóa bộ lọc
+      </a>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table qd-table">
+        <thead>
+          <tr>
+            <th scope="col">Email (Tên đăng nhập)</th>
+            <th scope="col">Vai trò</th>
+            <th scope="col" class="text-center" style="width: 140px;">Trạng thái</th>
+            <th scope="col" class="text-end" style="width: 220px;">Hành động quản trị</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${page.empty}">
+            <td colspan="4" class="text-center text-muted py-4">
+              <i class="bi bi-inbox me-2"></i>Không tìm thấy tài khoản nào phù hợp
+            </td>
+          </tr>
+          <tr th:each="row : ${page.content}">
+            <td class="fw-semibold text-dark">
+              <i class="bi bi-envelope text-muted me-1"></i>
+              <span th:text="${row.email}">admin@qldtkhoa.edu.vn</span>
+            </td>
+            <td>
+              <span class="badge"
+                    th:classappend="${row.maVaiTro == 'ADMIN' ? 'bg-danger bg-opacity-10 text-danger' : (row.maVaiTro == 'PHONG_DAO_TAO' ? 'bg-primary bg-opacity-10 text-primary' : (row.maVaiTro == 'GIANG_VIEN' ? 'bg-success bg-opacity-10 text-success' : 'bg-info bg-opacity-10 text-info'))}"
+                    th:text="${row.tenVaiTro}">Sinh viên</span>
+            </td>
+            <td class="text-center">
+              <span th:if="${row.trangThaiKichHoat}" class="badge bg-success bg-opacity-10 text-success">
+                <i class="bi bi-check-circle me-1"></i> Đang hoạt động
+              </span>
+              <span th:unless="${row.trangThaiKichHoat}" class="badge bg-secondary bg-opacity-10 text-secondary">
+                <i class="bi bi-lock me-1"></i> Đã bị khóa
+              </span>
+            </td>
+            <td class="text-end text-nowrap">
+              <!-- Nút Khóa / Mở khóa -->
+              <form class="d-inline" method="post" th:action="@{/admin/tai-khoan/{email}/toggle-lock(email=${row.email})}"
+                    th:data-confirm="${row.trangThaiKichHoat ? 'Khóa tài khoản ' + row.email + '? Người dùng sẽ không thể đăng nhập.' : 'Mở khóa cho tài khoản ' + row.email + '?'}">
+                <button class="btn btn-sm"
+                        th:classappend="${row.trangThaiKichHoat ? 'btn-outline-warning' : 'btn-outline-success'}"
+                        type="submit"
+                        th:title="${row.trangThaiKichHoat ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}">
+                  <i class="bi" th:classappend="${row.trangThaiKichHoat ? 'bi-lock' : 'bi-unlock'}"></i>
+                  <span th:text="${row.trangThaiKichHoat ? 'Khóa' : 'Mở khóa'}">Khóa</span>
+                </button>
+              </form>
+
+              <!-- Nút Đặt lại mật khẩu -->
+              <form class="d-inline ms-1" method="post" th:action="@{/admin/tai-khoan/{email}/reset-password(email=${row.email})}"
+                    th:data-confirm="'Đặt lại mật khẩu cho ' + ${row.email} + ' về mặc định: 123456?'">
+                <button class="btn btn-sm btn-outline-secondary" type="submit" title="Đặt lại mật khẩu về 123456">
+                  <i class="bi bi-key me-1"></i> Reset MK
+                </button>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div th:replace="~{fragments/pagination :: pager(${page}, '/admin/tai-khoan', ${q})}"></div>
+</main>
+</body>
+</html>

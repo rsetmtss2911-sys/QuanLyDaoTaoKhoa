@@ -1,0 +1,31 @@
+<nav th:fragment="pager(page, baseUrl, q)" aria-label="Phân trang" xmlns:th="http://www.thymeleaf.org"
+     th:if="${page != null and page.totalPages > 1}" class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-4 px-1">
+  <small class="text-muted"
+         th:text="|Hiển thị ${page.numberOfElements} / ${page.totalElements} bản ghi (Trang ${page.number + 1}/${page.totalPages})|">
+    Hiển thị 20 / 100 bản ghi
+  </small>
+
+  <ul class="pagination pagination-sm mb-0">
+    <!-- Nút Trang trước -->
+    <li class="page-item" th:classappend="${page.first} ? 'disabled'">
+      <a class="page-link" th:href="@{${baseUrl}(q=${q}, page=${page.number - 1}, size=${page.size})}" aria-label="Trang trước">
+        <i class="bi bi-chevron-left" aria-hidden="true"></i>
+      </a>
+    </li>
+
+    <!-- Các số trang -->
+    <li th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}"
+        th:if="${i >= page.number - 2 and i <= page.number + 2}"
+        class="page-item" th:classappend="${i == page.number} ? 'active'">
+      <a class="page-link" th:href="@{${baseUrl}(q=${q}, page=${i}, size=${page.size})}"
+         th:text="${i + 1}" th:attr="aria-current=${i == page.number} ? 'page' : null">1</a>
+    </li>
+
+    <!-- Nút Trang sau -->
+    <li class="page-item" th:classappend="${page.last} ? 'disabled'">
+      <a class="page-link" th:href="@{${baseUrl}(q=${q}, page=${page.number + 1}, size=${page.size})}" aria-label="Trang sau">
+        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+      </a>
+    </li>
+  </ul>
+</nav>

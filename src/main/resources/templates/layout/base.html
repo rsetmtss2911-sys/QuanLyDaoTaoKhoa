@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:fragment="layout(title, content, scripts)">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="_csrf" th:content="${_csrf?.token}">
+  <meta name="_csrf_header" th:content="${_csrf?.headerName}">
+  <title th:replace="${title}">Hệ thống Quản lý Đào tạo Khoa</title>
+  <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+
+  <!-- Google Font: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5.3 & Icons via WebJars -->
+  <link rel="stylesheet" th:href="@{/webjars/bootstrap/dist/css/bootstrap.min.css}">
+  <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/font/bootstrap-icons.min.css}">
+
+  <!-- Design Tokens & Custom CSS -->
+  <link rel="stylesheet" th:href="@{/css/design-tokens.css}">
+  <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+  <a class="visually-hidden-focusable" href="#main">Bỏ qua điều hướng</a>
+  
+  <div class="qd-shell">
+    <!-- Sidebar trái theo Role -->
+    <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+    <!-- Khối nội dung chính -->
+    <div class="qd-content">
+      <!-- Topbar thanh điều hướng trên -->
+      <header th:replace="~{fragments/topbar :: topbar}"></header>
+
+      <!-- Nội dung trang -->
+      <main id="main" class="qd-main" tabindex="-1" th:replace="${content}">
+        Nội dung mặc định
+      </main>
+    </div>
+  </div>
+
+  <script th:src="@{/webjars/bootstrap/dist/js/bootstrap.bundle.min.js}"></script>
+  <script th:src="@{/js/app.js}"></script>
+  <th:block th:replace="${scripts}"></th:block>
+</body>
+</html>

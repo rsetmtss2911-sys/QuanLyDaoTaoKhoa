@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title>Tổng quan Học tập · QLĐT Khoa</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div th:replace="~{fragments/flash :: flash}"></div>
+
+  <!-- Header Sinh viên & Thông tin cá nhân -->
+  <div class="card border-0 shadow-sm rounded-3 p-4 bg-white mb-4 position-relative overflow-hidden">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold fs-3"
+             style="width: 64px; height: 64px;">
+          <i class="bi bi-person-fill"></i>
+        </div>
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <h1 class="qd-h1 mb-0 fs-3" th:text="${dashboard.hoTen}">Trần Thị Mai</h1>
+            <span th:replace="~{fragments/status-badge :: studentStatus(${dashboard.trangThaiHienTai})}"></span>
+          </div>
+          <div class="d-flex flex-wrap align-items-center gap-3 text-muted small">
+            <span>MSSV: <strong class="font-monospace text-dark" th:text="${dashboard.maSV}">23020001</strong></span>
+            <span>Lớp HC: <strong class="text-dark" th:text="${dashboard.maLopHC}">CNTT2023A</strong></span>
+            <span>Ngành: <strong class="text-dark" th:text="${dashboard.tenNganh}">Công nghệ thông tin</strong></span>
+            <span th:if="${dashboard.tenKhoaHoc != null}">Khóa: <strong class="text-dark" th:text="${dashboard.tenKhoaHoc}">K2023</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Học kỳ Selector & Cố vấn info -->
+      <div class="d-flex flex-column align-items-end gap-2">
+        <div class="d-flex align-items-center gap-2 bg-light p-2 rounded-3 border">
+          <label for="selectHocKy" class="form-label small fw-semibold text-muted mb-0 text-nowrap">
+            <i class="bi bi-calendar-event me-1 text-primary"></i> Học kỳ:
+          </label>
+          <select id="selectHocKy" class="form-select form-select-sm" style="min-width: 200px;"
+                  onchange="location.href='/sinh-vien/dashboard?maHK=' + encodeURIComponent(this.value)">
+            <option th:each="hk : ${dashboard.hocKys}"
+                    th:value="${hk.maHK}"
+                    th:text="${hk.tenHocKy + ' (' + hk.namHoc + ')'}"
+                    th:selected="${hk.maHK == dashboard.currentHk}">
+              Học kỳ 1 (2024-2025)
+            </option>
+          </select>
+        </div>
+        <div class="text-muted small">
+          <i class="bi bi-person-heart text-danger me-1"></i> CVHT:
+          <span class="fw-semibold text-dark" th:text="${dashboard.tenCoVan}">ThS. Trần B</span>
+          <span th:if="${dashboard.emailCoVan != '—'}" class="text-muted" th:text="${'(' + dashboard.emailCoVan + ')'}">(tranb@qldt.edu.vn)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Thống kê tín chỉ & Điểm số (Stat Cards) -->
+  <div class="row g-3 mb-4">
+    <!-- Thẻ Tín chỉ học kỳ này -->
+    <div class="col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="text-muted small fw-medium">Tín chỉ đăng ký kỳ này</span>
+          <div class="p-2 bg-primary bg-opacity-10 text-primary rounded-3">
+            <i class="bi bi-journal-check fs-5"></i>
+          </div>
+        </div>
+        <div class="d-flex align-items-baseline gap-1 mb-1">
+          <span class="h3 fw-bold text-dark mb-0" th:text="${dashboard.registeredCreditsCurrentTerm + ' TC'}">18 TC</span>
+          <span class="text-muted small" th:text="${'/ ' + dashboard.maxCreditsTerm + ' TC max'}">/ 25 TC max</span>
+        </div>
+        <!-- Progress bar so với giới hạn -->
+        <div class="progress mt-2" style="height: 6px;">
+          <div class="progress-bar" role="progressbar"
+               th:classappend="${dashboard.registeredCreditsCurrentTerm < dashboard.minCreditsTerm ? 'bg-warning' : 'bg-success'}"
+               th:style="|width: ${(dashboard.registeredCreditsCurrentTerm * 100.0) / dashboard.maxCreditsTerm}%|"></div>
+        </div>
+        <div class="text-muted extra-small mt-1" style="font-size: 0.75rem;">
+          <span th:if="${dashboard.registeredCreditsCurrentTerm < dashboard.minCreditsTerm}" class="text-warning fw-semibold">
+            <i class="bi bi-exclamation-triangle-fill"></i> Dưới mức tối thiểu (<span th:text="${dashboard.minCreditsTerm}">14</span> TC)
+          </span>
+          <span th:unless="${dashboard.registeredCreditsCurrentTerm < dashboard.minCreditsTerm}" class="text-success fw-semibold">
+            <i class="bi bi-check-circle-fill"></i> Trong định mức cho phép
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Thẻ Tín chỉ tích lũy -->
+    <div class="col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="text-muted small fw-medium">Tín chỉ tích lũy toàn khóa</span>
+          <div class="p-2 bg-success bg-opacity-10 text-success rounded-3">
+            <i class="bi bi-award-fill fs-5"></i>
+          </div>
+        </div>
+        <div class="h3 fw-bold text-dark mb-1" th:text="${dashboard.totalCumulativeCredits + ' TC'}">64 TC</div>
+        <div class="text-muted small">Các môn đã đạt điểm ≥ 4.0</div>
+      </div>
+    </div>
+
+    <!-- Thẻ Điểm CPA tích lũy -->
+    <div class="col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="text-muted small fw-medium">Điểm trung bình CPA (Hệ 4)</span>
+          <div class="p-2 bg-info bg-opacity-10 text-info rounded-3">
+            <i class="bi bi-graph-up-arrow fs-5"></i>
+          </div>
+        </div>
+        <div class="h3 fw-bold text-primary mb-1"
+             th:text="${dashboard.cumulativeGpa4 != null ? #numbers.formatDecimal(dashboard.cumulativeGpa4, 1, 2) : '—'}">3.42</div>
+        <div class="text-muted small">
+          Xếp loại: <strong class="text-dark" th:text="${dashboard.academicStanding}">Khá</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Thẻ Môn học đang theo học -->
+    <div class="col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="text-muted small fw-medium">Số môn theo học kỳ này</span>
+          <div class="p-2 bg-warning bg-opacity-10 text-warning rounded-3">
+            <i class="bi bi-mortarboard-fill fs-5"></i>
+          </div>
+        </div>
+        <div class="h3 fw-bold text-dark mb-1" th:text="${dashboard.currentRegistrations.size() + ' môn'}">6 môn</div>
+        <div class="text-muted small">Lớp học phần chính thức</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Thanh thao tác nhanh Cổng Sinh viên -->
+  <div class="card border-0 shadow-sm rounded-3 p-3 bg-white mb-4">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div class="fw-semibold text-dark small">
+        <i class="bi bi-compass-fill text-primary me-1"></i> Cổng thông tin & Tiện ích:
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-sm btn-primary shadow-sm" th:href="@{/sinh-vien/dang-ky-hoc-phan}">
+          <i class="bi bi-plus-circle me-1"></i> Đăng ký học phần
+        </a>
+        <a class="btn btn-sm btn-outline-success" th:href="@{/sinh-vien/thoi-khoa-bieu}">
+          <i class="bi bi-calendar-week me-1"></i> Xem Thời khóa biểu tuần
+        </a>
+        <a class="btn btn-sm btn-outline-info" th:href="@{/sinh-vien/bang-diem}">
+          <i class="bi bi-file-earmark-spreadsheet me-1"></i> Tra cứu Bảng điểm
+        </a>
+        <a class="btn btn-sm btn-outline-secondary" th:href="@{/sinh-vien/tien-do-ctdt}">
+          <i class="bi bi-diagram-3 me-1"></i> Tiến độ Khung CTĐT
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Thông báo Quyết định học vụ (nếu có) -->
+  <div th:if="${!dashboard.recentDecisions.isEmpty()}" class="alert alert-warning border-warning shadow-sm rounded-3 mb-4 p-3" role="alert">
+    <div class="d-flex align-items-start gap-3">
+      <i class="bi bi-exclamation-octagon-fill fs-4 text-warning flex-shrink-0 mt-1"></i>
+      <div class="flex-grow-1">
+        <h2 class="h6 fw-bold mb-1">Cảnh báo / Quyết định học vụ được ghi nhận</h2>
+        <div class="small">
+          Bạn có <strong th:text="${dashboard.recentDecisions.size()}">1</strong> quyết định học vụ đã ban hành.
+          Vui lòng kiểm tra mục <a th:href="@{/sinh-vien/quyet-dinh}" class="alert-link text-decoration-underline">Quyết định học vụ</a> để biết thêm chi tiết.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bố cục 2 cột: Môn học đã chọn & Lịch học trong tuần -->
+  <div class="row g-4">
+    <!-- Cột trái: Danh sách môn học kỳ này -->
+    <div class="col-lg-7">
+      <div class="qd-panel">
+        <div class="qd-panel-header d-flex justify-content-between align-items-center">
+          <h2 class="qd-panel-title mb-0">Môn học đã đăng ký trong học kỳ</h2>
+          <a class="btn btn-sm btn-outline-primary" th:href="@{/sinh-vien/dang-ky-hoc-phan}">
+            Điều chỉnh <i class="bi bi-arrow-right ms-1"></i>
+          </a>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table qd-table mb-0 align-middle">
+            <thead>
+              <tr>
+                <th scope="col" style="width: 120px;">Mã LHP</th>
+                <th scope="col">Tên môn học</th>
+                <th scope="col" class="text-center" style="width: 70px;">Số TC</th>
+                <th scope="col">Giảng viên</th>
+                <th scope="col" class="text-center" style="width: 100px;">Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:if="${dashboard.currentRegistrations.isEmpty()}">
+                <td colspan="5" class="text-center text-muted py-4 small">
+                  <i class="bi bi-inbox me-2"></i>Bạn chưa đăng ký môn học nào trong học kỳ này
+                </td>
+              </tr>
+              <tr th:each="c : ${dashboard.currentRegistrations}">
+                <td>
+                  <span class="font-monospace fw-bold text-primary" th:text="${c.maLHP}">INT2204_1</span>
+                </td>
+                <td>
+                  <div class="fw-semibold text-dark" th:text="${c.tenMon}">Lập trình hướng đối tượng</div>
+                  <div class="text-muted extra-small" style="font-size: 0.75rem;" th:text="${c.lichHoc}">T3 (1-3) B201</div>
+                </td>
+                <td class="text-center fw-bold" th:text="${c.soTinChi}">3</td>
+                <td class="small text-muted" th:text="${c.tenGV}">TS. Nguyễn Văn A</td>
+                <td class="text-center">
+                  <span th:replace="~{fragments/status-badge :: registrationStatus(${c.trangThaiDangKy})}"></span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cột phải: Lịch học tuần này -->
+    <div class="col-lg-5">
+      <div class="qd-panel">
+        <div class="qd-panel-header d-flex justify-content-between align-items-center">
+          <h2 class="qd-panel-title mb-0">Thời khóa biểu trong tuần</h2>
+          <a class="btn btn-sm btn-outline-success" th:href="@{/sinh-vien/thoi-khoa-bieu}">
+            Toàn bộ lưới TKB <i class="bi bi-calendar3 ms-1"></i>
+          </a>
+        </div>
+
+        <div class="list-group list-group-flush">
+          <div th:if="${dashboard.weeklySchedule.isEmpty()}" class="p-3 text-center text-muted small">
+            <i class="bi bi-calendar-x me-1"></i> Chưa có lịch học trong tuần
+          </div>
+          <div th:each="slot : ${dashboard.weeklySchedule}" class="list-group-item px-3 py-3 border-bottom">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="badge bg-primary bg-opacity-10 text-primary fw-bold"
+                    th:text="${slot.thuTrongTuan == 8 ? 'Chủ nhật' : 'Thứ ' + slot.thuTrongTuan}">Thứ 2</span>
+              <span class="badge bg-light text-dark border font-monospace"
+                    th:text="${'Tiết ' + slot.tietBatDau + ' - ' + slot.tietKetThuc}">Tiết 1 - 3</span>
+            </div>
+            <div class="fw-semibold text-dark mb-1" th:text="${slot.tenMon}">Lập trình hướng đối tượng</div>
+            <div class="d-flex justify-content-between align-items-center text-muted small">
+              <span><i class="bi bi-geo-alt-fill text-danger me-1"></i>Phòng: <strong class="text-dark" th:text="${slot.phongHoc}">B201</strong></span>
+              <span class="text-muted" th:text="${slot.tenGiangVien}">TS. Nguyễn Văn A</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

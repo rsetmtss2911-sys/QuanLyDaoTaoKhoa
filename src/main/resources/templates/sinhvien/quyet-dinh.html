@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title>Quyết định học vụ cá nhân · QLĐT Khoa</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div th:replace="~{fragments/flash :: flash}"></div>
+
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+      <nav aria-label="Đường dẫn">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a th:href="@{/sinh-vien/dashboard}">Trang chủ</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Quyết định học vụ</li>
+        </ol>
+      </nav>
+      <h1 class="qd-h1 mb-0">Hồ sơ Quyết định Học vụ Cá nhân</h1>
+    </div>
+  </div>
+
+  <div class="qd-panel">
+    <div class="qd-panel-header">
+      <h2 class="qd-panel-title mb-0">Các quyết định học vụ đã được ban hành</h2>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table qd-table mb-0 align-middle">
+        <thead>
+          <tr>
+            <th scope="col" style="width: 180px;">Số quyết định</th>
+            <th scope="col" class="text-center" style="width: 150px;">Loại quyết định</th>
+            <th scope="col" style="width: 140px;">Ngày hiệu lực</th>
+            <th scope="col">Lý do ban hành / Nội dung</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${decisions.isEmpty()}">
+            <td colspan="4" class="text-center text-muted py-4 small">
+              <i class="bi bi-inbox me-2"></i>Không có quyết định học vụ nào được ghi nhận
+            </td>
+          </tr>
+          <tr th:each="d : ${decisions}">
+            <td class="font-monospace fw-bold text-dark" th:text="${d.maQuyetDinh}">1234/QĐ-ĐHQGHN</td>
+            <td class="text-center">
+              <span th:replace="~{fragments/status-badge :: decisionType(${d.loaiQuyetDinh})}"></span>
+            </td>
+            <td th:text="${#temporals.format(d.ngayHieuLuc, 'dd/MM/yyyy')}">15/09/2024</td>
+            <td th:text="${d.lyDo != null ? d.lyDo : '—'}">Lý do bảo lưu kết quả học tập</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+</body>
+</html>

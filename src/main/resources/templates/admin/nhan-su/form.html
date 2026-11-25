@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title th:text="${isEdit ? 'Chỉnh sửa nhân sự · QLĐT Khoa' : 'Thêm nhân sự mới · QLĐT Khoa'}">Nhân sự · QLĐT Khoa</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+      <nav aria-label="Đường dẫn" class="mb-2">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+          <li class="breadcrumb-item"><a th:href="@{/admin/nhan-su}">Nhân sự</a></li>
+          <li class="breadcrumb-item active" aria-current="page"
+              th:text="${isEdit ? 'Chỉnh sửa' : 'Thêm mới'}">Thêm mới</li>
+        </ol>
+      </nav>
+
+      <div class="qd-panel">
+        <div class="qd-panel-header">
+          <h1 class="qd-panel-title mb-0"
+              th:text="${isEdit ? 'Cập nhật thông tin cán bộ/giảng viên' : 'Thêm cán bộ/giảng viên mới'}">
+            Thêm cán bộ/giảng viên mới
+          </h1>
+        </div>
+
+        <div class="qd-panel-body">
+          <form method="post"
+                th:action="${isEdit ? '/admin/nhan-su/' + form.maNS : '/admin/nhan-su'}"
+                th:object="${form}" novalidate>
+
+            <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger mb-3" role="alert">
+              <i class="bi bi-exclamation-triangle-fill me-2"></i>
+              <span th:each="err : ${#fields.globalErrors()}" th:text="${err}">Lỗi nghiệp vụ</span>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="maNS" class="form-label qd-required">Mã nhân sự</label>
+                <input type="text" id="maNS" th:field="*{maNS}"
+                       class="form-control font-monospace"
+                       th:classappend="${#fields.hasErrors('maNS')} ? 'is-invalid'"
+                       placeholder="Ví dụ: NS001, GV01..."
+                       th:readonly="${isEdit}" required>
+                <div class="invalid-feedback" th:errors="*{maNS}">Mã không hợp lệ</div>
+                <div class="form-text" th:unless="${isEdit}">Mã định danh duy nhất trong hệ thống.</div>
+              </div>
+
+              <div class="col-md-6">
+                <label for="hoTen" class="form-label qd-required">Họ và tên</label>
+                <input type="text" id="hoTen" th:field="*{hoTen}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('hoTen')} ? 'is-invalid'"
+                       placeholder="Ví dụ: Nguyễn Văn An" required>
+                <div class="invalid-feedback" th:errors="*{hoTen}">Họ tên không được để trống</div>
+              </div>
+
+              <div class="col-md-6">
+                <label for="email" class="form-label qd-required">Email tài khoản</label>
+                <input type="email" id="email" th:field="*{email}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
+                       placeholder="canbo@vnu.edu.vn"
+                       th:readonly="${isEdit}" required>
+                <div class="invalid-feedback" th:errors="*{email}">Email không hợp lệ</div>
+              </div>
+
+              <div class="col-md-6" th:unless="${isEdit}">
+                <label for="matKhau" class="form-label">Mật khẩu ban đầu</label>
+                <input type="password" id="matKhau" th:field="*{matKhau}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('matKhau')} ? 'is-invalid'"
+                       placeholder="Mặc định: 123456">
+                <div class="invalid-feedback" th:errors="*{matKhau}">Mật khẩu không hợp lệ</div>
+                <div class="form-text">Để trống nếu muốn dùng mật khẩu mặc định (123456).</div>
+              </div>
+
+              <div class="col-md-6">
+                <label for="maVaiTro" class="form-label qd-required">Vai trò hệ thống</label>
+                <select id="maVaiTro" th:field="*{maVaiTro}"
+                        class="form-select"
+                        th:classappend="${#fields.hasErrors('maVaiTro')} ? 'is-invalid'"
+                        th:disabled="${isEdit}" required>
+                  <option value="">-- Chọn vai trò --</option>
+                  <option th:each="r : ${vaiTros}"
+                          th:if="${r.maVaiTro != 'SINH_VIEN'}"
+                          th:value="${r.maVaiTro}"
+                          th:text="${r.tenVaiTro}">Giảng viên</option>
+                </select>
+                <!-- Hidden if disabled on edit -->
+                <input type="hidden" th:if="${isEdit}" th:field="*{maVaiTro}">
+                <div class="invalid-feedback" th:errors="*{maVaiTro}">Vui lòng chọn vai trò</div>
+              </div>
+            </div>
+
+            <!-- Khối thông tin Giảng viên (hiển thị khi chọn vai trò GIANG_VIEN) -->
+            <div id="giangVienFields" class="border rounded p-3 bg-light mt-4">
+              <h6 class="fw-semibold text-primary mb-3">
+                <i class="bi bi-mortarboard-fill me-1"></i> Thông tin bổ sung cho Giảng viên
+              </h6>
+              <div class="row g-3">
+                <div class="col-md-12">
+                  <label for="maBoMon" class="form-label qd-required">Bộ môn trực thuộc</label>
+                  <select id="maBoMon" th:field="*{maBoMon}"
+                          class="form-select"
+                          th:classappend="${#fields.hasErrors('maBoMon')} ? 'is-invalid'">
+                    <option value="">-- Chọn bộ môn --</option>
+                    <option th:each="bm : ${boMons}"
+                            th:value="${bm.maBoMon}"
+                            th:text="${bm.tenBoMon + ' (' + bm.khoa.tenKhoa + ')'}">Bộ môn CNPM</option>
+                  </select>
+                  <div class="invalid-feedback" th:errors="*{maBoMon}">Giảng viên bắt buộc phải chọn bộ môn</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label for="hocVi" class="form-label qd-required">Học vị</label>
+                  <select id="hocVi" th:field="*{hocVi}"
+                          class="form-select"
+                          th:classappend="${#fields.hasErrors('hocVi')} ? 'is-invalid'">
+                    <option value="">-- Chọn học vị --</option>
+                    <option value="Cử nhân">Cử nhân</option>
+                    <option value="Kỹ sư">Kỹ sư</option>
+                    <option value="Thạc sĩ">Thạc sĩ</option>
+                    <option value="Tiến sĩ">Tiến sĩ</option>
+                    <option value="Tiến sĩ khoa học">Tiến sĩ khoa học</option>
+                  </select>
+                  <div class="invalid-feedback" th:errors="*{hocVi}">Vui lòng chọn học vị</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label for="hocHam" class="form-label">Học hàm (nếu có)</label>
+                  <select id="hocHam" th:field="*{hocHam}" class="form-select">
+                    <option value="">-- Không có --</option>
+                    <option value="Phó Giáo sư">Phó Giáo sư</option>
+                    <option value="Giáo sư">Giáo sư</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+              <a th:href="@{/admin/nhan-su}" class="btn btn-outline-secondary">Hủy bỏ</a>
+              <button type="submit" class="btn btn-primary px-4">
+                <i class="bi bi-check-lg me-1"></i>
+                <span th:text="${isEdit ? 'Lưu thay đổi' : 'Thêm mới'}">Lưu</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const vaiTroSelect = document.getElementById('maVaiTro');
+      const gvFields = document.getElementById('giangVienFields');
+
+      function toggleGvFields() {
+        if (!vaiTroSelect || !gvFields) return;
+        const val = vaiTroSelect.value;
+        if (val === 'GIANG_VIEN') {
+          gvFields.style.display = 'block';
+        } else {
+          gvFields.style.display = 'none';
+        }
+      }
+
+      if (vaiTroSelect) {
+        vaiTroSelect.addEventListener('change', toggleGvFields);
+        toggleGvFields();
+      }
+    });
+  </script>
+</main>
+</body>
+</html>

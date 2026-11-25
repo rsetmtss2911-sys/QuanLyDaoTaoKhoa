@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title>Quản lý Môn học & Học phần · QLĐT Khoa</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div th:replace="~{fragments/flash :: flash}"></div>
+
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+      <nav aria-label="Đường dẫn">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Môn học</li>
+        </ol>
+      </nav>
+      <h1 class="qd-h1 mb-0">Danh mục Môn học & Học phần</h1>
+    </div>
+    <div sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
+      <a class="btn btn-primary shadow-sm" th:href="@{/admin/mon-hoc/new}">
+        <i class="bi bi-journal-plus me-1"></i> Thêm môn học mới
+      </a>
+    </div>
+  </div>
+
+  <div class="qd-panel">
+    <form method="get" th:action="@{/admin/mon-hoc}" class="p-3 border-bottom d-flex flex-wrap gap-2 align-items-center" role="search">
+      <div class="input-group qd-search">
+        <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+        <input id="q" name="q" type="search" class="form-control border-start-0 ps-0"
+               th:value="${q}" placeholder="Tìm theo mã hoặc tên môn học...">
+      </div>
+
+      <select name="maBoMon" class="form-select w-auto" onchange="this.form.submit()">
+        <option value="">-- Tất cả bộ môn quản lý --</option>
+        <option th:each="bm : ${boMons}" th:value="${bm.maBoMon}" th:text="${bm.tenBoMon + ' (' + bm.maBoMon + ')'}"
+                th:selected="${bm.maBoMon == maBoMon}">Bộ môn CNPM</option>
+      </select>
+
+      <button class="btn btn-outline-secondary" type="submit">Lọc</button>
+      <a th:if="${(q != null and !q.isEmpty()) or (maBoMon != null and !maBoMon.isEmpty())}"
+         class="btn btn-link text-decoration-none" th:href="@{/admin/mon-hoc}">
+        Xóa bộ lọc
+      </a>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table qd-table">
+        <thead>
+          <tr>
+            <th scope="col" style="width: 140px;">Mã môn</th>
+            <th scope="col">Tên môn học</th>
+            <th scope="col" class="text-center" style="width: 110px;">Số TC (LT/TH)</th>
+            <th scope="col" class="text-center" style="width: 140px;">Trọng số điểm</th>
+            <th scope="col">Bộ môn quản lý</th>
+            <th scope="col" class="text-center" style="width: 110px;">Tiên quyết</th>
+            <th scope="col" class="text-end" style="width: 160px;">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${page.empty}">
+            <td colspan="7" class="text-center text-muted py-4">
+              <i class="bi bi-inbox me-2"></i>Chưa có môn học nào phù hợp
+            </td>
+          </tr>
+          <tr th:each="row : ${page.content}">
+            <td>
+              <a class="fw-bold font-monospace text-primary text-decoration-none"
+                 th:href="@{/admin/mon-hoc/{id}(id=${row.maMon})}"
+                 th:text="${row.maMon}">INT2204</a>
+            </td>
+            <td class="fw-semibold text-dark" th:text="${row.tenMon}">Lập trình hướng đối tượng</td>
+            <td class="text-center">
+              <span class="fw-bold text-dark" th:text="${row.soTinChi}">3</span>
+              <span class="text-muted small" th:text="${' (' + row.tinChiLT + '/' + row.tinChiTH + ')'}"> (2/1)</span>
+            </td>
+            <td class="text-center small">
+              <span class="badge bg-light text-dark border"
+                    th:text="${(row.trongSoQT != null ? #numbers.formatPercent(row.trongSoQT, 0, 0) : '0%') + ' / ' + (row.trongSoGK != null ? #numbers.formatPercent(row.trongSoGK, 0, 0) : '0%') + ' / ' + (row.trongSoCK != null ? #numbers.formatPercent(row.trongSoCK, 0, 0) : '0%')}">
+                20% / 30% / 50%
+              </span>
+            </td>
+            <td>
+              <span class="badge bg-secondary bg-opacity-10 text-secondary" th:text="${row.tenBoMon}">Bộ môn CNPM</span>
+            </td>
+            <td class="text-center">
+              <span th:if="${row.soLuongTienQuyet > 0}" class="badge bg-info bg-opacity-10 text-info fw-semibold"
+                    th:text="${row.soLuongTienQuyet + ' môn'}">1 môn</span>
+              <span th:unless="${row.soLuongTienQuyet > 0}" class="text-muted small">—</span>
+            </td>
+            <td class="text-end text-nowrap">
+              <a class="btn btn-sm btn-outline-info me-1" th:href="@{/admin/mon-hoc/{id}(id=${row.maMon})}" title="Chi tiết môn & Tiên quyết">
+                <i class="bi bi-eye"></i>
+              </a>
+              <span sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
+                <a class="btn btn-sm btn-outline-primary me-1" th:href="@{/admin/mon-hoc/{id}/edit(id=${row.maMon})}" title="Chỉnh sửa">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <form class="d-inline" method="post" th:action="@{/admin/mon-hoc/{id}/delete(id=${row.maMon})}"
+                      th:data-confirm="|Xóa môn học '${row.tenMon}'? Thao tác sẽ bị từ chối nếu môn đang thuộc CTĐT hoặc có lớp học phần.|">
+                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa môn">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div th:replace="~{fragments/pagination :: pager(${page}, '/admin/mon-hoc', ${q})}"></div>
+</main>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title>Tiến độ CTĐT · QLĐT Khoa</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div th:replace="~{fragments/flash :: flash}"></div>
+
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+      <nav aria-label="Đường dẫn">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a th:href="@{/sinh-vien/dashboard}">Trang chủ</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Tiến độ CTĐT</li>
+        </ol>
+      </nav>
+      <h1 class="qd-h1 mb-0">Tiến độ Hoàn thành Khung Chương trình Đào tạo</h1>
+    </div>
+  </div>
+
+  <!-- Thẻ tóm tắt phần trăm hoàn thành -->
+  <div class="card border-0 shadow-sm rounded-3 p-4 bg-white mb-4">
+    <div class="row align-items-center g-3">
+      <div class="col-md-8">
+        <h5 class="fw-bold text-dark mb-1">
+          Ngành <span th:text="${tenNganh}">Công nghệ thông tin</span>
+          · Khóa <span th:text="${maKhoaHoc}">K2023</span>
+        </h5>
+        <p class="text-muted small mb-3">
+          Tích lũy được <strong class="text-primary" th:text="${completedCredits}">45</strong> trên tổng số
+          <strong class="text-dark" th:text="${totalCurriculumCredits}">135</strong> tín chỉ quy định của CTĐT.
+        </p>
+        <div class="progress" style="height: 12px;">
+          <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated" role="progressbar"
+               th:style="'width: ' + ${progressPercent} + '%;'"
+               th:text="${progressPercent + '%'}">33%</div>
+        </div>
+      </div>
+      <div class="col-md-4 text-md-end">
+        <div class="display-5 fw-bold text-primary" th:text="${progressPercent + '%'}">33%</div>
+        <div class="text-muted small">Tiến độ hoàn thành toàn khóa</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Danh sách các môn học theo khung -->
+  <div class="qd-panel">
+    <div class="qd-panel-header">
+      <h2 class="qd-panel-title mb-0">Chi tiết danh mục môn học trong khung chương trình</h2>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table qd-table mb-0 align-middle">
+        <thead>
+          <tr>
+            <th scope="col" style="width: 80px;" class="text-center">HK chuẩn</th>
+            <th scope="col" style="width: 130px;">Mã môn</th>
+            <th scope="col">Tên môn học</th>
+            <th scope="col" class="text-center" style="width: 80px;">Số TC</th>
+            <th scope="col">Khối kiến thức</th>
+            <th scope="col" class="text-center" style="width: 120px;">Loại học phần</th>
+            <th scope="col" class="text-center" style="width: 140px;">Tình trạng</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="c : ${curriculum}"
+              th:classappend="${passedSubjects.contains(c.maMon) ? 'table-success bg-opacity-10' : ''}">
+            <td class="text-center fw-bold text-muted" th:text="${'HK ' + c.hocKyChuan}">HK 1</td>
+            <td class="font-monospace fw-bold" th:text="${c.maMon}">INT2204</td>
+            <td class="fw-semibold text-dark" th:text="${c.tenMon}">Lập trình hướng đối tượng</td>
+            <td class="text-center fw-bold" th:text="${c.soTinChi}">3</td>
+            <td>
+              <span th:if="${c.khoiKienThuc != null}" class="badge bg-secondary bg-opacity-10 text-secondary"
+                    th:text="${c.khoiKienThuc.label}">Cơ sở ngành</span>
+            </td>
+            <td class="text-center">
+              <span th:if="${c.loaiHocPhan != null}" class="badge"
+                    th:classappend="${c.loaiHocPhan.name() == 'BAT_BUOC' ? 'bg-primary bg-opacity-10 text-primary' : 'bg-warning bg-opacity-10 text-warning'}"
+                    th:text="${c.loaiHocPhan.label}">Bắt buộc</span>
+            </td>
+            <td class="text-center">
+              <span th:if="${passedSubjects.contains(c.maMon)}" class="badge bg-success">
+                <i class="bi bi-check-circle-fill me-1"></i> Đã tích lũy
+              </span>
+              <span th:unless="${passedSubjects.contains(c.maMon)}" class="badge bg-light text-muted border">
+                Chưa hoàn thành
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+</body>
+</html>

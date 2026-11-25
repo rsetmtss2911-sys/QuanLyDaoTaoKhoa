@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title>Khóa nhập học · QLĐT Khoa</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div th:replace="~{fragments/flash :: flash}"></div>
+
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+      <nav aria-label="Đường dẫn">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Khóa nhập học</li>
+        </ol>
+      </nav>
+      <h1 class="qd-h1 mb-0">Danh sách Khóa tuyển sinh</h1>
+    </div>
+    <div sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
+      <a class="btn btn-primary shadow-sm" th:href="@{/admin/khoa-nhap-hoc/new}">
+        <i class="bi bi-plus-lg me-1"></i> Thêm khóa mới
+      </a>
+    </div>
+  </div>
+
+  <div class="qd-panel">
+    <form method="get" th:action="@{/admin/khoa-nhap-hoc}" class="p-3 border-bottom d-flex flex-wrap gap-2 align-items-center" role="search">
+      <div class="input-group qd-search">
+        <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+        <input id="q" name="q" type="search" class="form-control border-start-0 ps-0"
+               th:value="${q}" placeholder="Tìm theo mã khóa (VD: K2024)...">
+      </div>
+      <button class="btn btn-outline-secondary" type="submit">Tìm kiếm</button>
+      <a th:if="${q != null and !q.isEmpty()}" class="btn btn-link text-decoration-none" th:href="@{/admin/khoa-nhap-hoc}">
+        Xóa tìm kiếm
+      </a>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table qd-table">
+        <thead>
+          <tr>
+            <th scope="col" style="width: 200px;">Mã khóa tuyển sinh</th>
+            <th scope="col">Năm bắt đầu tuyển sinh</th>
+            <th scope="col" class="text-end" style="width: 140px;">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${page.empty}">
+            <td colspan="3" class="text-center text-muted py-4">
+              <i class="bi bi-inbox me-2"></i>Chưa có khóa nhập học nào phù hợp
+            </td>
+          </tr>
+          <tr th:each="row : ${page.content}">
+            <td>
+              <span class="badge bg-light text-dark border font-monospace fs-6" th:text="${row.maKhoaHoc}">K2024</span>
+            </td>
+            <td>
+              <span class="fw-bold" th:text="${row.namBatDau}">2024</span>
+            </td>
+            <td class="text-end text-nowrap">
+              <span sec:authorize="hasRole('PHONG_DAO_TAO')">
+                <a class="btn btn-sm btn-outline-primary me-1" th:href="@{/admin/khoa-nhap-hoc/{id}/edit(id=${row.maKhoaHoc})}" title="Chỉnh sửa">
+                  <i class="bi bi-pencil"></i> Sửa
+                </a>
+                <form class="d-inline" method="post" th:action="@{/admin/khoa-nhap-hoc/{id}/delete(id=${row.maKhoaHoc})}"
+                      th:data-confirm="|Xóa khóa tuyển sinh '${row.maKhoaHoc}'? Thao tác sẽ bị chặn nếu đã có sinh viên hoặc CTĐT.|">
+                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </span>
+              <span sec:authorize="!hasRole('PHONG_DAO_TAO')" class="text-muted small">
+                Chỉ xem
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div th:replace="~{fragments/pagination :: pager(${page}, '/admin/khoa-nhap-hoc', ${q})}"></div>
+</main>
+</body>
+</html>

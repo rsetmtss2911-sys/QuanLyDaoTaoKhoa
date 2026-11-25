@@ -1,0 +1,60 @@
+<header th:fragment="topbar" class="qd-topbar" xmlns:th="http://www.thymeleaf.org"
+        xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+  <!-- Nút mở drawer trên mobile -->
+  <button class="btn btn-outline-secondary d-lg-none py-1 px-2" type="button" data-bs-toggle="offcanvas"
+          data-bs-target="#sidebar" aria-controls="sidebar" aria-label="Mở menu điều hướng">
+    <i class="bi bi-list fs-5" aria-hidden="true"></i>
+  </button>
+
+  <!-- Title / System Info -->
+  <div class="d-none d-md-flex align-items-center gap-2">
+    <span class="badge bg-light text-dark border">
+      <i class="bi bi-calendar3 text-primary me-1"></i>
+      Hệ thống đào tạo tín chỉ
+    </span>
+  </div>
+
+  <!-- User Menu & Actions -->
+  <div class="ms-auto d-flex align-items-center gap-3">
+    <!-- Hiển thị khi đã đăng nhập -->
+    <th:block sec:authorize="isAuthenticated()">
+      <div class="text-end d-none d-sm-block">
+        <div class="fw-bold small"
+             th:text="${#authentication != null and #authentication.principal instanceof T(com.qldtkhoa.qldtkhoa_app.security.AppUserPrincipal) ? #authentication.principal.displayName : #authentication?.name}">Họ và tên</div>
+        <div class="text-muted" style="font-size: 0.75rem;"
+             th:text="${#authentication != null and #authentication.principal instanceof T(com.qldtkhoa.qldtkhoa_app.security.AppUserPrincipal) ? #authentication.principal.username : #authentication?.name}">email@qldt.edu.vn</div>
+      </div>
+
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle d-flex align-items-center gap-1"
+                type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="bi bi-person-circle"></i>
+          <span class="d-none d-md-inline"
+                th:text="${#authentication != null and #authentication.principal instanceof T(com.qldtkhoa.qldtkhoa_app.security.AppUserPrincipal) ? #authentication.principal.role : 'Vai trò'}">Vai trò</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+          <li>
+            <a class="dropdown-item d-flex align-items-center gap-2" th:href="@{/doi-mat-khau}">
+              <i class="bi bi-key text-muted"></i> Đổi mật khẩu
+            </a>
+          </li>
+          <li><hr class="dropdown-divider"></li>
+          <li>
+            <form th:action="@{/logout}" method="post" class="m-0">
+              <button type="submit" class="dropdown-item text-danger d-flex align-items-center gap-2">
+                <i class="bi bi-box-arrow-right"></i> Đăng xuất
+              </button>
+            </form>
+          </li>
+        </ul>
+      </div>
+    </th:block>
+
+    <!-- Hiển thị khi chưa đăng nhập (Khách / Anonymous) -->
+    <th:block sec:authorize="!isAuthenticated()">
+      <a class="btn btn-primary btn-sm px-3 shadow-sm" th:href="@{/login}">
+        <i class="bi bi-box-arrow-in-right me-1"></i> Đăng nhập
+      </a>
+    </th:block>
+  </div>
+</header>

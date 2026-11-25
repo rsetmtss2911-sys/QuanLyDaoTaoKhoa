@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title th:text="${isEdit} ? 'Sửa ngành đào tạo · QLĐT Khoa' : 'Thêm ngành học mới · QLĐT Khoa'">Thêm ngành học</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div class="mb-4">
+    <nav aria-label="Đường dẫn">
+      <ol class="breadcrumb mb-1">
+        <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a th:href="@{/admin/nganh-hoc}">Ngành học</a></li>
+        <li class="breadcrumb-item active" aria-current="page" th:text="${isEdit} ? 'Chỉnh sửa' : 'Thêm mới'">Thêm mới</li>
+      </ol>
+    </nav>
+    <h1 class="qd-h1 mb-0" th:text="${isEdit} ? 'Chỉnh sửa thông tin ngành đào tạo' : 'Thêm mới ngành đào tạo'">Thêm ngành học</h1>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-7 col-md-9">
+      <div class="qd-panel p-4">
+        <form th:action="${isEdit} ? @{/admin/nganh-hoc/{id}(id=${form.maNganh})} : @{/admin/nganh-hoc}"
+              th:object="${form}" method="post" novalidate>
+
+          <div class="alert alert-danger" role="alert" th:if="${#fields.hasErrors('*')}">
+            <strong>Thông tin nhập liệu chưa hợp lệ. Vui lòng kiểm tra lại:</strong>
+            <ul class="mb-0 mt-1 small">
+              <li th:each="e : ${#fields.allErrors()}" th:text="${e}">Lỗi</li>
+            </ul>
+          </div>
+
+          <div class="mb-3">
+            <label for="maKhoa" class="form-label">Khoa quản lý chuyên môn <span class="text-danger">*</span></label>
+            <select id="maKhoa" class="form-select" th:field="*{maKhoa}" th:errorclass="is-invalid" required>
+              <option value="">-- Chọn khoa quản lý --</option>
+              <option th:each="k : ${khoas}" th:value="${k.maKhoa}" th:text="${k.tenKhoa}">Khoa CNTT</option>
+            </select>
+            <div class="invalid-feedback" th:errors="*{maKhoa}">Lỗi khoa</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="maNganh" class="form-label">Mã ngành đào tạo <span class="text-danger">*</span></label>
+            <input id="maNganh" type="text" class="form-control" th:field="*{maNganh}"
+                   th:errorclass="is-invalid" th:readonly="${isEdit}" maxlength="20"
+                   placeholder="VD: 7480201, 7480101..." required>
+            <div class="form-text" th:if="${!isEdit}">Tối đa 20 ký tự (mã ngành theo quy định Bộ GD&ĐT). Khóa sau khi tạo.</div>
+            <div class="invalid-feedback" th:errors="*{maNganh}">Lỗi mã ngành</div>
+          </div>
+
+          <div class="mb-4">
+            <label for="tenNganh" class="form-label">Tên ngành đào tạo <span class="text-danger">*</span></label>
+            <input id="tenNganh" type="text" class="form-control" th:field="*{tenNganh}"
+                   th:errorclass="is-invalid" maxlength="100" placeholder="VD: Công nghệ thông tin" required>
+            <div class="invalid-feedback" th:errors="*{tenNganh}">Lỗi tên ngành</div>
+          </div>
+
+          <div class="d-flex gap-2 pt-2 border-top">
+            <button type="submit" class="btn btn-primary" data-submit-once>
+              <i class="bi bi-check-lg me-1"></i> Lưu thông tin
+            </button>
+            <a class="btn btn-outline-secondary" th:href="@{/admin/nganh-hoc}">Hủy bỏ</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

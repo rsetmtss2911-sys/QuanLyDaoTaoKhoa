@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title>Quản lý Bộ môn · QLĐT Khoa</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div th:replace="~{fragments/flash :: flash}"></div>
+
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+      <nav aria-label="Đường dẫn">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Bộ môn</li>
+        </ol>
+      </nav>
+      <h1 class="qd-h1 mb-0">Danh sách Bộ môn trực thuộc</h1>
+    </div>
+    <div sec:authorize="hasRole('ADMIN')">
+      <a class="btn btn-primary shadow-sm" th:href="@{/admin/bo-mon/new}">
+        <i class="bi bi-plus-lg me-1"></i> Thêm bộ môn mới
+      </a>
+    </div>
+  </div>
+
+  <div class="qd-panel">
+    <!-- Toolbar tìm kiếm & Lọc theo Khoa -->
+    <form method="get" th:action="@{/admin/bo-mon}" class="p-3 border-bottom d-flex flex-wrap gap-2 align-items-center" role="search">
+      <div class="input-group qd-search">
+        <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+        <input id="q" name="q" type="search" class="form-control border-start-0 ps-0"
+               th:value="${q}" placeholder="Tìm theo mã hoặc tên bộ môn...">
+      </div>
+
+      <select name="maKhoa" class="form-select w-auto" onchange="this.form.submit()">
+        <option value="">-- Tất cả các khoa --</option>
+        <option th:each="k : ${khoas}" th:value="${k.maKhoa}" th:text="${k.tenKhoa}"
+                th:selected="${k.maKhoa == maKhoa}">Khoa CNTT</option>
+      </select>
+
+      <button class="btn btn-outline-secondary" type="submit">Lọc</button>
+      <a th:if="${(q != null and !q.isEmpty()) or (maKhoa != null and !maKhoa.isEmpty())}"
+         class="btn btn-link text-decoration-none" th:href="@{/admin/bo-mon}">
+        Xóa bộ lọc
+      </a>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table qd-table">
+        <thead>
+          <tr>
+            <th scope="col" style="width: 150px;">Mã bộ môn</th>
+            <th scope="col">Tên bộ môn</th>
+            <th scope="col">Khoa trực thuộc</th>
+            <th scope="col" class="text-end" style="width: 140px;">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${page.empty}">
+            <td colspan="4" class="text-center text-muted py-4">
+              <i class="bi bi-inbox me-2"></i>Chưa có bộ môn nào phù hợp
+            </td>
+          </tr>
+          <tr th:each="row : ${page.content}">
+            <td>
+              <span class="badge bg-light text-dark border font-monospace" th:text="${row.maBoMon}">BM_CNPM</span>
+            </td>
+            <td class="fw-semibold text-dark" th:text="${row.tenBoMon}">Công nghệ phần mềm</td>
+            <td>
+              <span class="badge bg-info bg-opacity-10 text-info fw-semibold" th:text="${row.tenKhoa}">Khoa CNTT</span>
+            </td>
+            <td class="text-end text-nowrap">
+              <span sec:authorize="hasRole('ADMIN')">
+                <a class="btn btn-sm btn-outline-primary me-1" th:href="@{/admin/bo-mon/{id}/edit(id=${row.maBoMon})}" title="Chỉnh sửa">
+                  <i class="bi bi-pencil"></i> Sửa
+                </a>
+                <form class="d-inline" method="post" th:action="@{/admin/bo-mon/{id}/delete(id=${row.maBoMon})}"
+                      th:data-confirm="|Xóa bộ môn '${row.tenBoMon}'? Hành động này sẽ thất bại nếu bộ môn đã có giảng viên hoặc môn học.|">
+                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa bộ môn">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </span>
+              <span sec:authorize="!hasRole('ADMIN')" class="text-muted small">
+                Chỉ xem
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div th:replace="~{fragments/pagination :: pager(${page}, '/admin/bo-mon', ${q})}"></div>
+</main>
+</body>
+</html>

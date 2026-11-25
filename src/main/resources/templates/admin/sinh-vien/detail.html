@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title th:text="${'Hồ sơ ' + sv.hoTen + ' (' + sv.maSV + ') · QLĐT Khoa'}">Hồ sơ sinh viên</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div th:replace="~{fragments/flash :: flash}"></div>
+
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+      <nav aria-label="Đường dẫn">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+          <li class="breadcrumb-item"><a th:href="@{/admin/sinh-vien}">Sinh viên</a></li>
+          <li class="breadcrumb-item active" aria-current="page" th:text="${sv.maSV}">23020001</li>
+        </ol>
+      </nav>
+      <div class="d-flex align-items-center gap-3">
+        <h1 class="qd-h1 mb-0" th:text="${sv.hoTen}">Trần Thị Mai</h1>
+        <span th:replace="~{fragments/status-badge :: studentStatus(${sv.trangThaiHienTai})}"></span>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-secondary" th:href="@{/admin/sinh-vien}">
+        <i class="bi bi-arrow-left me-1"></i> Danh sách
+      </a>
+      <span sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
+        <a class="btn btn-primary" th:href="@{/admin/sinh-vien/{id}/edit(id=${sv.maSV})}">
+          <i class="bi bi-pencil me-1"></i> Chỉnh sửa hồ sơ
+        </a>
+      </span>
+    </div>
+  </div>
+
+  <!-- Thẻ tóm tắt thông tin đầu trang -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
+        <div class="text-muted small mb-1">Mã số sinh viên (MSSV)</div>
+        <div class="h5 fw-bold font-monospace text-primary mb-0" th:text="${sv.maSV}">23020001</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
+        <div class="text-muted small mb-1">Lớp hành chính & Ngành</div>
+        <div class="fw-semibold text-dark mb-0">
+          <span th:if="${sv.lopHanhChinh != null}">
+            <a th:href="@{/admin/lop-hanh-chinh/{id}(id=${sv.lopHanhChinh.maLopHC})}" class="text-decoration-none" th:text="${sv.lopHanhChinh.maLopHC}">CNTT2023A</a>
+            <span class="text-muted" th:if="${sv.lopHanhChinh.nganhHoc != null}"> · </span>
+            <span th:if="${sv.lopHanhChinh.nganhHoc != null}" th:text="${sv.lopHanhChinh.nganhHoc.tenNganh}">CNTT</span>
+          </span>
+          <span th:unless="${sv.lopHanhChinh != null}" class="text-muted">—</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
+        <div class="text-muted small mb-1">Khóa tuyển sinh</div>
+        <div class="fw-semibold text-dark mb-0">
+          <span th:if="${sv.lopHanhChinh != null and sv.lopHanhChinh.khoaNhapHoc != null}">
+            <span th:text="${sv.lopHanhChinh.khoaNhapHoc.maKhoaHoc}">K2023</span>
+            <span class="text-muted small" th:text="${'(Năm ' + sv.lopHanhChinh.khoaNhapHoc.namBatDau + ')'}">(Năm 2023)</span>
+          </span>
+          <span th:unless="${sv.lopHanhChinh != null and sv.lopHanhChinh.khoaNhapHoc != null}" class="text-muted">—</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
+        <div class="text-muted small mb-1">Cố vấn học tập (CVHT)</div>
+        <div class="fw-semibold text-dark mb-0">
+          <span th:if="${sv.lopHanhChinh != null and sv.lopHanhChinh.coVan != null and sv.lopHanhChinh.coVan.nhanSu != null}" th:text="${sv.lopHanhChinh.coVan.nhanSu.hoTen}">TS. Nguyễn Văn A</span>
+          <span th:unless="${sv.lopHanhChinh != null and sv.lopHanhChinh.coVan != null and sv.lopHanhChinh.coVan.nhanSu != null}" class="badge bg-warning bg-opacity-10 text-warning">Chưa phân công</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab điều hướng chi tiết hồ sơ -->
+  <ul class="nav nav-tabs mb-4" id="svProfileTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active fw-semibold" id="info-tab" data-bs-toggle="tab" data-bs-target="#info-pane" type="button" role="tab">
+        <i class="bi bi-person me-1"></i> Thông tin cá nhân
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-semibold" id="grades-tab" data-bs-toggle="tab" data-bs-target="#grades-pane" type="button" role="tab">
+        <i class="bi bi-bar-chart-line me-1"></i> Bảng điểm & Kết quả (<span th:text="${tongTCTichLuy != null ? tongTCTichLuy + ' TC' : '0 TC'}">0 TC</span>)
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-semibold" id="courses-tab" data-bs-toggle="tab" data-bs-target="#courses-pane" type="button" role="tab">
+        <i class="bi bi-journal-check me-1"></i> Lịch sử đăng ký học phần (<span th:text="${dangKys.size()}">0</span>)
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-semibold" id="decisions-tab" data-bs-toggle="tab" data-bs-target="#decisions-pane" type="button" role="tab">
+        <i class="bi bi-award me-1"></i> Quyết định học vụ (<span th:text="${quyetDinhs.size()}">0</span>)
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="svProfileTabsContent">
+    <!-- Tab 1: Thông tin cá nhân -->
+    <div class="tab-pane fade show active" id="info-pane" role="tabpanel">
+      <div class="qd-panel">
+        <div class="qd-panel-header">
+          <h2 class="qd-panel-title">Sơ yếu lý lịch sinh viên</h2>
+        </div>
+        <div class="qd-panel-body">
+          <dl class="row mb-0">
+            <dt class="col-sm-3 text-muted">Họ và tên</dt>
+            <dd class="col-sm-9 fw-semibold text-dark" th:text="${sv.hoTen}">Trần Thị Mai</dd>
+
+            <dt class="col-sm-3 text-muted">Mã sinh viên</dt>
+            <dd class="col-sm-9 font-monospace" th:text="${sv.maSV}">23020001</dd>
+
+            <dt class="col-sm-3 text-muted">Giới tính</dt>
+            <dd class="col-sm-9" th:text="${sv.gioiTinh != null ? sv.gioiTinh.label : '—'}">Nữ</dd>
+
+            <dt class="col-sm-3 text-muted">Ngày sinh</dt>
+            <dd class="col-sm-9" th:text="${sv.ngaySinh != null ? #temporals.format(sv.ngaySinh, 'dd/MM/yyyy') : '—'}">15/08/2005</dd>
+
+
+            <dt class="col-sm-3 text-muted">Email tài khoản</dt>
+            <dd class="col-sm-9 text-muted" th:text="${sv.taiKhoan != null ? sv.taiKhoan.email : '—'}">mai.tt@vnu.edu.vn</dd>
+
+            <dt class="col-sm-3 text-muted">Trạng thái tài khoản</dt>
+            <dd class="col-sm-9">
+              <span th:if="${sv.taiKhoan != null and sv.taiKhoan.trangThaiKichHoat}" class="badge bg-success bg-opacity-10 text-success">Kích hoạt</span>
+              <span th:if="${sv.taiKhoan != null and !sv.taiKhoan.trangThaiKichHoat}" class="badge bg-secondary bg-opacity-10 text-secondary">Đã khóa</span>
+              <span th:if="${sv.taiKhoan == null}" class="text-muted">—</span>
+            </dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: Bảng điểm & Kết quả học tập -->
+    <div class="tab-pane fade" id="grades-pane" role="tabpanel">
+      <!-- Thẻ tóm tắt GPA & Tích lũy toàn khóa -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100 border-start border-4 border-primary">
+            <div class="text-muted small mb-1">Tổng tín chỉ tích lũy</div>
+            <div class="h3 fw-bold text-primary mb-0" th:text="${tongTCTichLuy + ' TC'}">45 TC</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100 border-start border-4 border-success">
+            <div class="text-muted small mb-1">Điểm trung bình tích lũy (CPA / Hệ 4)</div>
+            <div class="h3 fw-bold text-success mb-0" th:text="${cpa4 != null ? #numbers.formatDecimal(cpa4, 1, 2) : '—'}">3.45</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100 border-start border-4 border-info">
+            <div class="text-muted small mb-1">Xếp loại học lực tích lũy</div>
+            <div class="h3 fw-bold text-info mb-0" th:text="${xepLoai}">Khá</div>
+          </div>
+        </div>
+      </div>
+
+      <div th:if="${byTerm.isEmpty()}" class="qd-panel p-4 text-center text-muted small">
+        <i class="bi bi-inbox me-1"></i> Sinh viên chưa có kết quả điểm học phần nào được công bố.
+      </div>
+
+      <!-- Bảng điểm gom nhóm theo từng học kỳ -->
+      <div th:unless="${byTerm.isEmpty()}" class="d-flex flex-column gap-4">
+        <div th:each="entry : ${byTerm}" class="qd-panel">
+          <div class="qd-panel-header bg-light">
+            <h2 class="qd-panel-title text-primary">
+              <i class="bi bi-calendar3 me-1"></i>
+              <span th:text="${entry.key}">Học kỳ 1 (2024-2025)</span>
+            </h2>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table qd-table mb-0 align-middle">
+              <thead>
+                <tr>
+                  <th scope="col" style="width: 120px;">Mã môn</th>
+                  <th scope="col">Tên môn học</th>
+                  <th scope="col" class="text-center" style="width: 70px;">TC</th>
+                  <th scope="col" class="text-center" style="width: 90px;">Điểm QT</th>
+                  <th scope="col" class="text-center" style="width: 90px;">Điểm GK</th>
+                  <th scope="col" class="text-center" style="width: 90px;">Điểm CK</th>
+                  <th scope="col" class="text-center" style="width: 100px;">Tổng (10)</th>
+                  <th scope="col" class="text-center" style="width: 80px;">Hệ 4</th>
+                  <th scope="col" class="text-center" style="width: 80px;">Điểm chữ</th>
+                  <th scope="col" class="text-center" style="width: 100px;">Kết quả</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="row : ${entry.value}">
+                  <td class="font-monospace fw-bold" th:text="${row.maMon}">INT2204</td>
+                  <td class="fw-semibold text-dark" th:text="${row.tenMon}">Lập trình hướng đối tượng</td>
+                  <td class="text-center" th:text="${row.soTinChi}">3</td>
+                  <td class="text-center" th:text="${row.diemQuaTrinh != null ? #numbers.formatDecimal(row.diemQuaTrinh, 1, 1) : '—'}">8.5</td>
+                  <td class="text-center" th:text="${row.diemGiuaKy != null ? #numbers.formatDecimal(row.diemGiuaKy, 1, 1) : '—'}">8.0</td>
+                  <td class="text-center" th:text="${row.diemCuoiKy != null ? #numbers.formatDecimal(row.diemCuoiKy, 1, 1) : '—'}">9.0</td>
+                  <td class="text-center fw-bold text-primary" th:text="${row.diemTong != null ? #numbers.formatDecimal(row.diemTong, 1, 1) : '—'}">8.6</td>
+                  <td class="text-center fw-semibold" th:text="${row.diemHe4 != null ? #numbers.formatDecimal(row.diemHe4, 1, 1) : '—'}">4.0</td>
+                  <td class="text-center">
+                    <span class="badge"
+                          th:classappend="${row.diemChu == 'F' ? 'bg-danger text-white' : 'bg-success bg-opacity-10 text-success'}"
+                          th:text="${row.diemChu != null ? row.diemChu : '—'}">A</span>
+                  </td>
+                  <td class="text-center">
+                    <span th:if="${row.trangThaiDangKy != null and row.trangThaiDangKy.name() == 'CAM_THI'}"
+                          class="badge bg-danger">Cấm thi</span>
+                    <span th:unless="${row.trangThaiDangKy != null and row.trangThaiDangKy.name() == 'CAM_THI'}"
+                          class="badge"
+                          th:classappend="${row.ketQuaHocPhan == 'Đạt' ? 'bg-success' : ((row.ketQuaHocPhan == 'Học lại' or row.ketQuaHocPhan == 'Trượt') ? 'bg-danger' : 'bg-secondary')}"
+                          th:text="${row.ketQuaHocPhan != null ? row.ketQuaHocPhan : '—'}">Đạt</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 3: Lịch sử đăng ký học phần -->
+    <div class="tab-pane fade" id="courses-pane" role="tabpanel">
+      <div class="qd-panel">
+        <div class="qd-panel-header">
+          <h2 class="qd-panel-title">Danh sách học phần đã đăng ký</h2>
+        </div>
+        <div class="table-responsive">
+          <table class="table qd-table mb-0">
+            <thead>
+              <tr>
+                <th>Mã LHP</th>
+                <th>Môn học</th>
+                <th class="text-center">Số tín chỉ</th>
+                <th>Học kỳ</th>
+                <th>Thời gian ĐK</th>
+                <th class="text-center">Trạng thái ĐK</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:if="${dangKys.isEmpty()}">
+                <td colspan="6" class="text-center text-muted py-4">
+                  <i class="bi bi-inbox me-2"></i>Sinh viên chưa thực hiện đăng ký lớp học phần nào
+                </td>
+              </tr>
+              <tr th:each="dk : ${dangKys}">
+                <td class="font-monospace fw-bold" th:text="${dk.maLHP}">INT2204_1</td>
+                <td class="fw-semibold text-dark" th:text="${dk.tenMon}">Lập trình hướng đối tượng</td>
+                <td class="text-center" th:text="${dk.soTinChi}">3</td>
+                <td>
+                  <span class="badge bg-light text-dark border" th:text="${dk.maHK}">2023_1</span>
+                </td>
+                <td class="text-muted small" th:text="${#temporals.format(dk.ngayDangKy, 'dd/MM/yyyy HH:mm')}">10/09/2023 09:30</td>
+                <td class="text-center">
+                  <span th:replace="~{fragments/status-badge :: registrationStatus(${dk.trangThaiDangKy})}"></span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 3: Quyết định học vụ -->
+    <div class="tab-pane fade" id="decisions-pane" role="tabpanel">
+      <div class="qd-panel">
+        <div class="qd-panel-header d-flex justify-content-between align-items-center">
+          <h2 class="qd-panel-title">Lịch sử quyết định học vụ</h2>
+          <span sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
+            <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/quyet-dinh/new(maSV=${sv.maSV})}">
+              <i class="bi bi-file-earmark-plus me-1"></i> Ban hành quyết định mới
+            </a>
+          </span>
+        </div>
+        <div class="table-responsive">
+          <table class="table qd-table mb-0">
+            <thead>
+              <tr>
+                <th>Số quyết định</th>
+                <th>Loại quyết định</th>
+                <th>Ngày hiệu lực</th>
+                <th>Lý do</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:if="${quyetDinhs.isEmpty()}">
+                <td colspan="4" class="text-center text-muted py-4">
+                  <i class="bi bi-inbox me-2"></i>Hồ sơ học vụ bình thường, không có quyết định thay đổi trạng thái
+                </td>
+              </tr>
+              <tr th:each="qd : ${quyetDinhs}">
+                <td class="font-monospace fw-bold" th:text="${qd.maQuyetDinh}">QĐ-2024-001</td>
+                <td>
+                  <span th:replace="~{fragments/status-badge :: decisionType(${qd.loaiQuyetDinh})}"></span>
+                </td>
+                <td th:text="${#temporals.format(qd.ngayHieuLuc, 'dd/MM/yyyy')}">01/02/2024</td>
+                <td th:text="${qd.lyDo != null ? qd.lyDo : '—'}">Lý do sức khỏe</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

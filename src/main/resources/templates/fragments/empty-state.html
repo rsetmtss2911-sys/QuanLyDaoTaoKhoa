@@ -1,0 +1,12 @@
+<div th:fragment="empty(title, hint, actionUrl, actionLabel)" class="text-center py-3 px-3 text-muted"
+     xmlns:th="http://www.thymeleaf.org">
+  <div class="d-inline-flex flex-wrap align-items-center justify-content-center gap-2 small">
+    <i class="bi bi-inbox text-secondary"></i>
+    <span class="text-dark fw-medium" th:text="${title}">Chưa có dữ liệu</span>
+    <span th:if="${hint != null and !#strings.isEmpty(hint)}" class="text-muted" th:text="'— ' + ${hint}">— Không có bản ghi nào</span>
+    <a th:if="${actionUrl != null and !#strings.isEmpty(actionUrl)}" class="btn btn-outline-primary btn-sm py-0 px-2 ms-1" style="font-size: 0.75rem;" th:href="@{${actionUrl}}">
+      <i class="bi bi-plus-lg me-1"></i>
+      <span th:text="${actionLabel}">Thực hiện</span>
+    </a>
+  </div>
+</div>

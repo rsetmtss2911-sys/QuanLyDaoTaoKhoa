@@ -1,0 +1,16 @@
+<div th:fragment="flash" th:if="${flash != null}" xmlns:th="http://www.thymeleaf.org">
+  <div class="alert alert-dismissible fade show qd-flash-alert shadow-sm border mb-4"
+       th:classappend="'alert-' + ${flash.type}"
+       th:attr="role=${flash.type == 'danger'} ? 'alert' : 'status'">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi fs-5"
+         th:classappend="${flash.type == 'success'} ? 'bi-check-circle-fill text-success' :
+                         (${flash.type == 'danger'} ? 'bi-exclamation-triangle-fill text-danger' :
+                         (${flash.type == 'warning'} ? 'bi-exclamation-circle-fill text-warning' : 'bi-info-circle-fill text-info'))"></i>
+      <div>
+        <span th:text="${#messages.msgOrNullWithParams(flash.key, flash.args) ?: flash.key}">Nội dung thông báo</span>
+      </div>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+  </div>
+</div>

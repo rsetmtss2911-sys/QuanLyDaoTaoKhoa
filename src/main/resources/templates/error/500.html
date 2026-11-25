@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title>Lỗi hệ thống (500) · QLĐT Khoa</title>
+</head>
+<body>
+<main id="main" class="qd-main text-center py-5" tabindex="-1">
+  <div class="mb-4">
+    <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-danger bg-opacity-10 text-danger p-4" style="width: 80px; height: 80px;">
+      <i class="bi bi-bug fs-1"></i>
+    </div>
+  </div>
+  <h1 class="qd-h1 mb-3">500 - Lỗi xử lý nội bộ hệ thống</h1>
+  <p class="text-muted mx-auto mb-2" style="max-width: 500px;">
+    Đã xảy ra sự cố kỹ thuật trong quá trình xử lý yêu cầu của bạn. Hệ thống đã tự động ghi lại nhật ký lỗi để kỹ thuật viên kiểm tra.
+  </p>
+  <p class="small text-muted mb-4" th:if="${errorRef != null}">
+    Mã đối soát lỗi (Correlation ID): <code class="fw-bold fs-6 text-dark" th:text="${errorRef}">REF12345</code>
+  </p>
+  <div>
+    <a class="btn btn-primary" th:href="@{/}">
+      <i class="bi bi-house-door me-1"></i> Quay về trang chủ
+    </a>
+  </div>
+</main>
+</body>
+</html>

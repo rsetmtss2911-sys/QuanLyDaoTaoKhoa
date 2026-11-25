@@ -1,0 +1,219 @@
+/*
+ * QLDT Khoa design tokens, Bootstrap 5.3 bridge and base rules.
+ * Copy to src/main/resources/static/css/tokens.css and load it AFTER Bootstrap.
+ *
+ * Layers:  1) primitives (raw values)  2) semantic tokens (meaning)  3) Bootstrap variable mapping
+ * Rule:    components use semantic tokens only; never a hex value or a primitive.
+ * Verify:  re-check text contrast with a contrast tool whenever a colour value changes (target 4.5:1 text, 3:1 UI).
+ */
+
+/* ---------- 1. Primitives ---------- */
+:root {
+  /* Brand: deep spruce teal */
+  --qd-brand-50:  #EAF4F3;
+  --qd-brand-100: #CFE6E3;
+  --qd-brand-200: #A3CFCA;
+  --qd-brand-400: #4C9A94;
+  --qd-brand-500: #2A7F7A;
+  --qd-brand-600: #1F6A66;
+  --qd-brand-700: #185551;
+  --qd-brand-900: #0E3533;
+
+  /* Ink: cool blue-grey neutrals */
+  --qd-ink-900: #14202B;
+  --qd-ink-700: #2F3E4C;
+  --qd-ink-500: #566676;
+  --qd-ink-300: #B4BFCA;
+  --qd-ink-200: #D8DEE4;
+  --qd-ink-100: #EBEEF2;
+  --qd-ink-50:  #F5F7F9;
+  --qd-white:   #FFFFFF;
+
+  /* Status hues */
+  --qd-success-700: #17623F;  --qd-success-600: #1E7B4F;  --qd-success-50: #E7F4EC;
+  --qd-warning-700: #8A5300;  --qd-warning-50:  #FFF3DC;
+  --qd-danger-700:  #8E1C16;  --qd-danger-600:  #B3261E;  --qd-danger-50:  #FCEAE8;
+  --qd-info-700:    #174B7A;  --qd-info-600:    #1F5F99;  --qd-info-50:    #E6F0F9;
+
+  /* Type */
+  --qd-font-sans: "Inter", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --qd-font-mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, monospace;
+  --qd-text-xs: 0.75rem;    /* 12px  captions, table meta */
+  --qd-text-sm: 0.8125rem;  /* 13px  secondary text */
+  --qd-text-base: 0.875rem; /* 14px  admin body and tables */
+  --qd-text-md: 1rem;       /* 16px  forms on small screens, student portal body */
+  --qd-text-lg: 1.125rem;   /* 18px  card titles */
+  --qd-text-xl: 1.25rem;    /* 20px  section titles */
+  --qd-text-2xl: 1.5rem;    /* 24px  page titles */
+  --qd-text-3xl: 1.875rem;  /* 30px  dashboard figures */
+  --qd-leading-body: 1.55;  /* Vietnamese diacritics need generous line height */
+  --qd-leading-tight: 1.3;
+
+  /* Space: 4px base */
+  --qd-space-1: 0.25rem; --qd-space-2: 0.5rem;  --qd-space-3: 0.75rem; --qd-space-4: 1rem;
+  --qd-space-5: 1.5rem;  --qd-space-6: 2rem;    --qd-space-7: 3rem;
+
+  /* Shape: three deliberate radii, not one for everything */
+  --qd-radius-sm: 4px;   /* inputs, badges, buttons */
+  --qd-radius-md: 8px;   /* panels, cards, tables */
+  --qd-radius-lg: 12px;  /* modals, popovers */
+
+  /* Elevation: prefer borders; use shadow only for overlays */
+  --qd-shadow-overlay: 0 8px 24px rgba(20, 32, 43, 0.16);
+
+  /* Motion */
+  --qd-duration-fast: 120ms;
+  --qd-duration-base: 200ms;
+  --qd-ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ---------- 2. Semantic tokens (light) ---------- */
+:root,
+[data-bs-theme="light"] {
+  --qd-bg-app:      var(--qd-ink-50);
+  --qd-bg-surface:  var(--qd-white);
+  --qd-bg-subtle:   var(--qd-ink-100);
+  --qd-bg-sidebar:  var(--qd-brand-900);
+  --qd-text:        var(--qd-ink-900);
+  --qd-text-muted:  var(--qd-ink-500);
+  --qd-text-on-brand: var(--qd-white);
+  --qd-border:      var(--qd-ink-200);
+  --qd-border-strong: var(--qd-ink-300);
+  --qd-focus:       var(--qd-brand-500);
+  --qd-primary:        var(--qd-brand-600);
+  --qd-primary-hover:  var(--qd-brand-700);
+  --qd-primary-subtle: var(--qd-brand-50);
+
+  --qd-success: var(--qd-success-600); --qd-success-subtle: var(--qd-success-50); --qd-success-text: var(--qd-success-700);
+  --qd-warning-subtle: var(--qd-warning-50); --qd-warning-text: var(--qd-warning-700);
+  --qd-danger:  var(--qd-danger-600);  --qd-danger-subtle:  var(--qd-danger-50);  --qd-danger-text:  var(--qd-danger-700);
+  --qd-info:    var(--qd-info-600);    --qd-info-subtle:    var(--qd-info-50);    --qd-info-text:    var(--qd-info-700);
+}
+
+/* Dark theme: opt in with <html data-bs-theme="dark"> */
+[data-bs-theme="dark"] {
+  --qd-bg-app:      #0F171E;
+  --qd-bg-surface:  #17212B;
+  --qd-bg-subtle:   #1F2B37;
+  --qd-bg-sidebar:  #0B1218;
+  --qd-text:        #E6EBF0;
+  --qd-text-muted:  #9AA9B8;
+  --qd-border:      #2B3947;
+  --qd-border-strong: #3A4A5A;
+  --qd-focus:       #6FC0B9;
+  --qd-primary:        #4C9A94;
+  --qd-primary-hover:  #6FC0B9;
+  --qd-primary-subtle: #12302E;
+  --qd-success-subtle: #12301F; --qd-success-text: #6FD1A0;
+  --qd-warning-subtle: #3A2A0A; --qd-warning-text: #F0B454;
+  --qd-danger-subtle:  #3B1512; --qd-danger-text:  #FF8E86;
+  --qd-info-subtle:    #112A40; --qd-info-text:    #7DB8EC;
+}
+
+/* ---------- 3. Bootstrap 5.3 bridge ---------- */
+:root,
+[data-bs-theme="light"],
+[data-bs-theme="dark"] {
+  --bs-body-font-family: var(--qd-font-sans);
+  --bs-body-font-size: var(--qd-text-base);
+  --bs-body-line-height: var(--qd-leading-body);
+  --bs-body-color: var(--qd-text);
+  --bs-body-bg: var(--qd-bg-app);
+  --bs-secondary-color: var(--qd-text-muted);
+  --bs-border-color: var(--qd-border);
+  --bs-border-radius: var(--qd-radius-sm);
+  --bs-border-radius-lg: var(--qd-radius-md);
+  --bs-link-color: var(--qd-primary);
+  --bs-link-hover-color: var(--qd-primary-hover);
+  --bs-focus-ring-color: color-mix(in srgb, var(--qd-focus) 35%, transparent);
+}
+:root,
+[data-bs-theme="light"] {
+  --bs-primary: #1F6A66;           --bs-primary-rgb: 31, 106, 102;
+  --bs-success: #1E7B4F;           --bs-success-rgb: 30, 123, 79;
+  --bs-danger:  #B3261E;           --bs-danger-rgb: 179, 38, 30;
+  --bs-info:    #1F5F99;           --bs-info-rgb: 31, 95, 153;
+}
+
+.btn-primary {
+  --bs-btn-bg: var(--qd-primary);
+  --bs-btn-border-color: var(--qd-primary);
+  --bs-btn-color: var(--qd-text-on-brand);
+  --bs-btn-hover-bg: var(--qd-primary-hover);
+  --bs-btn-hover-border-color: var(--qd-primary-hover);
+  --bs-btn-hover-color: var(--qd-text-on-brand);
+  --bs-btn-active-bg: var(--qd-brand-900);
+  --bs-btn-active-border-color: var(--qd-brand-900);
+  --bs-btn-disabled-bg: var(--qd-primary);
+  --bs-btn-disabled-border-color: var(--qd-primary);
+  --bs-btn-focus-shadow-rgb: 42, 127, 122;
+}
+.card, .table-responsive { --bs-card-border-radius: var(--qd-radius-md); }
+.modal { --bs-modal-border-radius: var(--qd-radius-lg); }
+
+/* ---------- 4. Base rules ---------- */
+html { text-rendering: optimizeLegibility; -webkit-text-size-adjust: 100%; }
+body { font-feature-settings: "kern", "liga"; }
+
+h1, .qd-h1 { font-size: var(--qd-text-2xl); line-height: var(--qd-leading-tight); font-weight: 600; }
+h2, .qd-h2 { font-size: var(--qd-text-xl);  line-height: var(--qd-leading-tight); font-weight: 600; }
+h3, .qd-h3 { font-size: var(--qd-text-lg);  line-height: var(--qd-leading-tight); font-weight: 600; }
+
+/* Numbers in columns must align: scores, credits, counts */
+.qd-num, .table td.qd-num, .table th.qd-num {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Keyboard focus: always visible, never removed */
+:focus-visible {
+  outline: 2px solid var(--qd-focus);
+  outline-offset: 2px;
+}
+
+/* Long Vietnamese names and codes should wrap instead of breaking layouts */
+.qd-wrap { overflow-wrap: anywhere; }
+
+/* ---------- 5. Status badges (text always present; colour is reinforcement) ---------- */
+.qd-status {
+  display: inline-flex; align-items: center; gap: var(--qd-space-1);
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--qd-radius-sm);
+  font-size: var(--qd-text-xs); font-weight: 600; line-height: 1.5;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.qd-status--success { background: var(--qd-success-subtle); color: var(--qd-success-text); border-color: color-mix(in srgb, var(--qd-success-text) 25%, transparent); }
+.qd-status--warning { background: var(--qd-warning-subtle); color: var(--qd-warning-text); border-color: color-mix(in srgb, var(--qd-warning-text) 25%, transparent); }
+.qd-status--danger  { background: var(--qd-danger-subtle);  color: var(--qd-danger-text);  border-color: color-mix(in srgb, var(--qd-danger-text) 25%, transparent); }
+.qd-status--info    { background: var(--qd-info-subtle);    color: var(--qd-info-text);    border-color: color-mix(in srgb, var(--qd-info-text) 25%, transparent); }
+.qd-status--neutral { background: var(--qd-bg-subtle);      color: var(--qd-text-muted);   border-color: var(--qd-border); }
+
+/* ---------- 6. Data tables ---------- */
+.qd-table { --bs-table-bg: var(--qd-bg-surface); font-size: var(--qd-text-base); margin-bottom: 0; }
+.qd-table thead th {
+  position: sticky; top: 0; z-index: 1;
+  background: var(--qd-bg-subtle); color: var(--qd-text-muted);
+  font-size: var(--qd-text-sm); font-weight: 600; white-space: nowrap;
+  border-bottom: 1px solid var(--qd-border-strong);
+}
+.qd-table > :not(caption) > * > * { padding: 0.5rem 0.75rem; vertical-align: middle; }
+.qd-table--compact > :not(caption) > * > * { padding: 0.25rem 0.5rem; }
+.qd-table tbody tr:hover { background: var(--qd-primary-subtle); }
+
+.qd-panel {
+  background: var(--qd-bg-surface);
+  border: 1px solid var(--qd-border);
+  border-radius: var(--qd-radius-md);
+}
+
+/* ---------- 7. Motion preferences ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

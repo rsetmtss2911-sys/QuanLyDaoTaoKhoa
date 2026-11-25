@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title th:text="${'Chi tiết lớp ' + lop.maLopHC + ' · QLĐT Khoa'}">Chi tiết Lớp hành chính</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div th:replace="~{fragments/flash :: flash}"></div>
+
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+      <nav aria-label="Đường dẫn">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+          <li class="breadcrumb-item"><a th:href="@{/admin/lop-hanh-chinh}">Lớp hành chính</a></li>
+          <li class="breadcrumb-item active" aria-current="page" th:text="${lop.maLopHC}">CNTT2023A</li>
+        </ol>
+      </nav>
+      <h1 class="qd-h1 mb-0" th:text="${lop.tenLopHC}">Công nghệ thông tin 2023 A</h1>
+    </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-secondary" th:href="@{/admin/lop-hanh-chinh}">
+        <i class="bi bi-arrow-left me-1"></i> Quay lại
+      </a>
+      <span sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
+        <a class="btn btn-primary" th:href="@{/admin/lop-hanh-chinh/{id}/edit(id=${lop.maLopHC})}">
+          <i class="bi bi-pencil me-1"></i> Chỉnh sửa lớp
+        </a>
+      </span>
+    </div>
+  </div>
+
+  <!-- Thông tin lớp hành chính -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
+        <div class="text-muted small mb-1">Mã lớp hành chính</div>
+        <div class="h5 fw-bold font-monospace text-primary mb-0" th:text="${lop.maLopHC}">CNTT2023A</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
+        <div class="text-muted small mb-1">Khóa & Ngành</div>
+        <div class="fw-semibold text-dark mb-0">
+          <span th:text="${lop.khoaNhapHoc.maKhoaHoc}">K2023</span> - <span th:text="${lop.nganhHoc.tenNganh}">CNTT</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
+        <div class="text-muted small mb-1">Cố vấn học tập (CVHT)</div>
+        <div class="fw-semibold text-dark mb-0">
+          <span th:if="${lop.coVan != null}" th:text="${lop.coVan.nhanSu.hoTen}">TS. Nguyễn Văn A</span>
+          <span th:unless="${lop.coVan != null}" class="badge bg-warning bg-opacity-10 text-warning">Chưa phân công</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
+        <div class="text-muted small mb-1">Sĩ số sinh viên</div>
+        <div class="h5 fw-bold text-success mb-0" th:text="${sinhViens.size()} + ' sinh viên'">45 sinh viên</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Danh sách sinh viên thuộc lớp -->
+  <div class="qd-panel">
+    <div class="qd-panel-header d-flex justify-content-between align-items-center">
+      <h2 class="qd-panel-title mb-0">Danh sách sinh viên trong lớp</h2>
+      <div sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
+        <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/sinh-vien/new(maLopHC=${lop.maLopHC})}">
+          <i class="bi bi-person-plus me-1"></i> Thêm sinh viên vào lớp
+        </a>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table qd-table mb-0">
+        <thead>
+          <tr>
+            <th scope="col" style="width: 140px;">Mã sinh viên</th>
+            <th scope="col">Họ và tên</th>
+            <th scope="col">Giới tính</th>
+            <th scope="col">Ngày sinh</th>
+            <th scope="col">Email tài khoản</th>
+            <th scope="col" class="text-center" style="width: 130px;">Trạng thái</th>
+            <th scope="col" class="text-end" style="width: 130px;">Hồ sơ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${sinhViens.isEmpty()}">
+            <td colspan="7" class="text-center text-muted py-4">
+              <i class="bi bi-inbox me-2"></i>Lớp hiện chưa có sinh viên nào
+            </td>
+          </tr>
+          <tr th:each="sv : ${sinhViens}">
+            <td>
+              <a class="fw-bold font-monospace text-primary text-decoration-none"
+                 th:href="@{/admin/sinh-vien/{id}(id=${sv.maSV})}"
+                 th:text="${sv.maSV}">23020001</a>
+            </td>
+            <td class="fw-semibold text-dark" th:text="${sv.hoTen}">Trần Thị Mai</td>
+            <td>
+              <span th:if="${sv.gioiTinh != null}" th:text="${sv.gioiTinh.label}">Nữ</span>
+              <span th:unless="${sv.gioiTinh != null}" class="text-muted">—</span>
+            </td>
+            <td>
+              <span th:if="${sv.ngaySinh != null}" th:text="${#temporals.format(sv.ngaySinh, 'dd/MM/yyyy')}">15/08/2005</span>
+              <span th:unless="${sv.ngaySinh != null}" class="text-muted">—</span>
+            </td>
+            <td class="text-muted small" th:text="${sv.email}">mai.tt@vnu.edu.vn</td>
+            <td class="text-center">
+              <span th:replace="~{fragments/status-badge :: studentStatus(${sv.trangThaiHienTai})}"></span>
+            </td>
+            <td class="text-end text-nowrap">
+              <a class="btn btn-sm btn-outline-info" th:href="@{/admin/sinh-vien/{id}(id=${sv.maSV})}" title="Xem hồ sơ chi tiết">
+                <i class="bi bi-person-lines-fill me-1"></i> Hồ sơ
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+</body>
+</html>

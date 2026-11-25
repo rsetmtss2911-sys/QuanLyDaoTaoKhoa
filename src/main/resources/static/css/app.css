@@ -1,0 +1,659 @@
+/* ==============================================================================
+   QLDT KHOA - MODERN & ACCESSIBLE APPLICATION STYLES (APP.CSS)
+   Deep Spruce Teal Theme (#1F6A66) + Bootstrap 5.3 Bridge
+   ============================================================================== */
+
+/* ---------- 1. Shell & Layout ---------- */
+body {
+  font-family: var(--qd-font-sans);
+  background-color: var(--qd-bg-app);
+  color: var(--qd-text);
+  line-height: var(--qd-leading-body);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+.qd-shell {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.qd-sidebar,
+.qd-sidebar.offcanvas-lg {
+  --bs-offcanvas-width: 270px;
+  --bs-offcanvas-bg: var(--qd-bg-sidebar);
+  --bs-offcanvas-color: var(--qd-brand-100);
+  background-color: var(--qd-bg-sidebar) !important;
+  color: var(--qd-brand-100);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+  z-index: 1045;
+}
+
+.qd-sidebar-inner {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: var(--qd-space-4) var(--qd-space-3);
+  background-color: var(--qd-bg-sidebar);
+}
+
+@media (min-width: 992px) {
+  .qd-sidebar,
+  .qd-sidebar.offcanvas-lg {
+    width: 270px;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+    background-color: var(--qd-bg-sidebar) !important;
+  }
+}
+
+.qd-brand-wrapper {
+  padding: var(--qd-space-3) var(--qd-space-3) var(--qd-space-4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: var(--qd-space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--qd-space-3);
+}
+
+.qd-brand-logo {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--qd-radius-md);
+  background: linear-gradient(135deg, var(--qd-brand-400), var(--qd-brand-600));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--qd-white);
+  font-size: 1.25rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(31, 106, 102, 0.35);
+}
+
+.qd-brand-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--qd-white);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.qd-brand-subtitle {
+  font-size: 0.725rem;
+  color: var(--qd-brand-200);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+/* Sidebar Navigation Groups & Links */
+.qd-nav-group-title {
+  font-size: 0.685rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--qd-brand-400);
+  padding: var(--qd-space-3) var(--qd-space-3) var(--qd-space-1);
+}
+
+.qd-nav-link {
+  display: flex;
+  align-items: center;
+  gap: var(--qd-space-3);
+  padding: 0.625rem var(--qd-space-3);
+  color: #CFE6E3;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--qd-radius-sm);
+  transition: all var(--qd-duration-fast) var(--qd-ease);
+  position: relative;
+  margin-bottom: 2px;
+}
+
+.qd-nav-link i {
+  font-size: 1.1rem;
+  width: 22px;
+  text-align: center;
+  color: var(--qd-brand-200);
+  transition: transform var(--qd-duration-fast) ease;
+}
+
+.qd-nav-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--qd-white);
+}
+
+.qd-nav-link:hover i {
+  transform: scale(1.1);
+  color: var(--qd-white);
+}
+
+.qd-nav-link.is-active {
+  background: linear-gradient(90deg, rgba(76, 154, 148, 0.28), rgba(76, 154, 148, 0.08));
+  color: var(--qd-white);
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--qd-brand-200);
+}
+
+.qd-nav-link.is-active i {
+  color: var(--qd-brand-100);
+}
+
+/* Main Content Area */
+.qd-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--qd-bg-app);
+}
+
+.qd-topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--qd-space-3);
+  padding: var(--qd-space-3) var(--qd-space-5);
+  background: var(--qd-bg-surface);
+  border-bottom: 1px solid var(--qd-border);
+  box-shadow: 0 1px 3px rgba(20, 32, 43, 0.04);
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+}
+
+.qd-main {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: var(--qd-space-5);
+}
+
+@media (max-width: 991.98px) {
+  .qd-main {
+    padding: var(--qd-space-4);
+  }
+  .qd-topbar {
+    padding: var(--qd-space-3) var(--qd-space-4);
+  }
+}
+
+/* ---------- 2. Typography & Headings ---------- */
+.qd-h1 {
+  font-size: var(--qd-text-2xl);
+  font-weight: 700;
+  color: var(--qd-ink-900);
+  letter-spacing: -0.02em;
+}
+
+.qd-h2 {
+  font-size: var(--qd-text-xl);
+  font-weight: 700;
+  color: var(--qd-ink-900);
+}
+
+.qd-h3 {
+  font-size: var(--qd-text-lg);
+  font-weight: 600;
+  color: var(--qd-ink-900);
+}
+
+.qd-num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  text-align: right;
+}
+
+/* ---------- 3. Modern Cards & Panels ---------- */
+.qd-panel {
+  background: var(--qd-bg-surface);
+  border: 1px solid var(--qd-border);
+  border-radius: var(--qd-radius-md);
+  box-shadow: 0 1px 4px rgba(20, 32, 43, 0.04);
+  overflow: hidden;
+  margin-bottom: var(--qd-space-5);
+}
+
+.qd-panel-header {
+  padding: var(--qd-space-4) var(--qd-space-5);
+  border-bottom: 1px solid var(--qd-border);
+  background-color: var(--qd-bg-surface);
+}
+
+.qd-panel-body {
+  padding: var(--qd-space-5);
+  background-color: var(--qd-bg-surface);
+}
+
+.qd-panel-title {
+  font-size: var(--qd-text-xl);
+  font-weight: 700;
+  color: var(--qd-ink-900);
+  margin-bottom: 0.25rem;
+}
+
+.qd-card {
+  background: var(--qd-bg-surface);
+  border: 1px solid var(--qd-border);
+  border-radius: var(--qd-radius-md);
+  padding: var(--qd-space-4);
+  box-shadow: 0 1px 4px rgba(20, 32, 43, 0.04);
+  transition: transform var(--qd-duration-fast) var(--qd-ease), box-shadow var(--qd-duration-fast) var(--qd-ease);
+}
+
+.qd-card:hover {
+  box-shadow: 0 4px 12px rgba(20, 32, 43, 0.08);
+}
+
+/* Dashboard Stat Tiles */
+.qd-stat-tile {
+  background: var(--qd-bg-surface);
+  border: 1px solid var(--qd-border);
+  border-radius: var(--qd-radius-md);
+  padding: var(--qd-space-4) var(--qd-space-5);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--qd-duration-base) var(--qd-ease);
+  position: relative;
+  overflow: hidden;
+}
+
+.qd-stat-tile::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--qd-brand-500);
+}
+
+.qd-stat-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(20, 32, 43, 0.08);
+  color: inherit;
+  border-color: var(--qd-brand-400);
+}
+
+.qd-stat-tile--warning::before { background: #8A5300; }
+.qd-stat-tile--danger::before  { background: #B3261E; }
+.qd-stat-tile--info::before    { background: #1F5F99; }
+
+.qd-stat-number {
+  font-size: var(--qd-text-3xl);
+  font-weight: 800;
+  color: var(--qd-ink-900);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.qd-stat-label {
+  font-size: var(--qd-text-sm);
+  color: var(--qd-text-muted);
+  font-weight: 500;
+  margin-top: 0.25rem;
+}
+
+.qd-stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--qd-radius-md);
+  background: var(--qd-brand-50);
+  color: var(--qd-brand-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+/* Attention List Banner */
+.qd-attention-banner {
+  background: linear-gradient(135deg, #FFF9EB, #FFF3DC);
+  border: 1px solid #F0C371;
+  border-radius: var(--qd-radius-md);
+  padding: var(--qd-space-4) var(--qd-space-5);
+  margin-bottom: var(--qd-space-5);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--qd-space-4);
+}
+
+/* ---------- 4. Tables with Sticky Header ---------- */
+.qd-table {
+  width: 100%;
+  margin-bottom: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.qd-table th {
+  background-color: var(--qd-ink-50);
+  color: var(--qd-ink-700);
+  font-size: 0.775rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--qd-border-strong);
+  white-space: nowrap;
+}
+
+.qd-table td {
+  padding: 0.825rem 1rem;
+  font-size: 0.875rem;
+  color: var(--qd-text);
+  border-bottom: 1px solid var(--qd-border);
+  vertical-align: middle;
+}
+
+.qd-table tbody tr {
+  transition: background-color var(--qd-duration-fast) ease;
+}
+
+.qd-table tbody tr:hover {
+  background-color: rgba(31, 106, 102, 0.035);
+}
+
+.qd-wrap {
+  word-break: break-word;
+}
+
+/* ---------- 5. Semantic Status Badges ---------- */
+.qd-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.qd-status--success {
+  background-color: var(--qd-success-50);
+  color: var(--qd-success-700);
+  border: 1px solid rgba(23, 98, 63, 0.2);
+}
+
+.qd-status--warning {
+  background-color: var(--qd-warning-50);
+  color: var(--qd-warning-700);
+  border: 1px solid rgba(138, 83, 0, 0.2);
+}
+
+.qd-status--danger {
+  background-color: var(--qd-danger-50);
+  color: var(--qd-danger-700);
+  border: 1px solid rgba(142, 28, 22, 0.2);
+}
+
+.qd-status--info {
+  background-color: var(--qd-info-50);
+  color: var(--qd-info-700);
+  border: 1px solid rgba(23, 75, 122, 0.2);
+}
+
+.qd-status--secondary,
+.qd-status--neutral {
+  background-color: var(--qd-ink-100);
+  color: var(--qd-ink-700);
+  border: 1px solid var(--qd-ink-200);
+}
+
+/* ---------- 6. Forms & Controls ---------- */
+.form-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--qd-ink-900);
+  margin-bottom: 0.35rem;
+}
+
+.form-control, .form-select {
+  border-color: var(--qd-border);
+  border-radius: var(--qd-radius-sm);
+  font-size: 0.875rem;
+  padding: 0.5rem 0.75rem;
+  transition: border-color var(--qd-duration-fast) ease, box-shadow var(--qd-duration-fast) ease;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--qd-brand-500);
+  box-shadow: 0 0 0 3px rgba(31, 106, 102, 0.15);
+}
+
+.qd-search {
+  max-width: 24rem;
+}
+
+.qd-input-narrow {
+  max-width: 10rem;
+}
+
+/* ---------- 7. Weekly Timetable Grid ---------- */
+.timetable-container {
+  overflow-x: auto;
+  border-radius: var(--qd-radius-md);
+  border: 1px solid var(--qd-border);
+  background: var(--qd-white);
+}
+
+.timetable-table {
+  width: 100%;
+  min-width: 850px;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.timetable-table th, .timetable-table td {
+  border: 1px solid var(--qd-border);
+  padding: 0.35rem;
+  text-align: center;
+  font-size: 0.8rem;
+  min-height: 48px;
+  vertical-align: middle;
+}
+
+.timetable-table th {
+  background: var(--qd-ink-50);
+  font-weight: 700;
+  color: var(--qd-ink-700);
+}
+
+.timetable-period-col {
+  width: 75px;
+  background: var(--qd-ink-50);
+  font-weight: 600;
+  color: var(--qd-ink-700);
+}
+
+/* 3 Buổi theo yêu cầu: Sáng, Chiều, Tối */
+.timetable-session-header {
+  font-size: 0.825rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  padding: 0.5rem 0.75rem !important;
+}
+
+.timetable-session-header.session-morning {
+  background-color: rgba(31, 106, 102, 0.08) !important;
+  color: var(--qd-brand-700) !important;
+  border-left: 4px solid var(--qd-brand-600) !important;
+}
+
+.timetable-session-header.session-afternoon {
+  background-color: rgba(217, 119, 6, 0.08) !important;
+  color: #B45309 !important;
+  border-left: 4px solid #D97706 !important;
+}
+
+.timetable-session-header.session-evening {
+  background-color: rgba(79, 70, 229, 0.08) !important;
+  color: #4338CA !important;
+  border-left: 4px solid #4F46E5 !important;
+}
+
+.timetable-slot {
+  border-radius: var(--qd-radius-sm);
+  padding: 0.45rem;
+  text-align: left;
+  font-size: 0.775rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+}
+
+.timetable-slot-morning {
+  background: rgba(31, 106, 102, 0.09);
+  border: 1px solid rgba(31, 106, 102, 0.35);
+  border-left: 3px solid var(--qd-brand-600);
+  color: var(--qd-brand-900);
+}
+
+.timetable-slot-afternoon {
+  background: rgba(217, 119, 6, 0.09);
+  border: 1px solid rgba(217, 119, 6, 0.35);
+  border-left: 3px solid #D97706;
+  color: #78350F;
+}
+
+.timetable-slot-evening {
+  background: rgba(79, 70, 229, 0.09);
+  border: 1px solid rgba(79, 70, 229, 0.35);
+  border-left: 3px solid #4F46E5;
+  color: #312E81;
+}
+
+.timetable-slot:hover {
+  transform: translateY(-1px);
+  z-index: 2;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+.timetable-slot-title {
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 2px;
+}
+
+.timetable-slot-meta {
+  font-size: 0.715rem;
+  line-height: 1.35;
+}
+
+.timetable-slot-continuation {
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: var(--qd-radius-sm);
+  padding: 0.25rem 0.35rem;
+  font-size: 0.7rem;
+  color: var(--qd-ink-500);
+  font-style: italic;
+  display: block;
+}
+
+.timetable-add-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px dashed var(--qd-border);
+  color: var(--qd-ink-300);
+  background: transparent;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.timetable-add-btn:hover {
+  border-color: var(--qd-brand-500);
+  background-color: var(--qd-brand-50);
+  color: var(--qd-brand-600);
+  transform: scale(1.1);
+}
+
+/* ---------- 8. Grade Spreadsheet Grid ---------- */
+.grade-grid-table th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.grade-input {
+  width: 75px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.875rem;
+  border: 1px solid var(--qd-border);
+  border-radius: var(--qd-radius-sm);
+  transition: all 0.12s ease;
+}
+
+.grade-input:focus {
+  outline: none;
+  border-color: var(--qd-brand-600);
+  background-color: #F0FAF9;
+  box-shadow: 0 0 0 2px rgba(31, 106, 102, 0.25);
+}
+
+.grade-input:disabled {
+  background-color: var(--qd-ink-100);
+  color: var(--qd-ink-300);
+  cursor: not-allowed;
+}
+
+/* ---------- 9. Buttons & Utilities ---------- */
+.btn {
+  font-weight: 600;
+  border-radius: var(--qd-radius-sm);
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  transition: all var(--qd-duration-fast) var(--qd-ease);
+}
+
+.btn-primary {
+  background-color: var(--qd-brand-600);
+  border-color: var(--qd-brand-600);
+}
+
+.btn-primary:hover, .btn-primary:focus {
+  background-color: var(--qd-brand-700);
+  border-color: var(--qd-brand-700);
+}
+
+.btn-outline-primary {
+  color: var(--qd-brand-600);
+  border-color: var(--qd-brand-600);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--qd-brand-600);
+  border-color: var(--qd-brand-600);
+  color: var(--qd-white);
+}
+
+.btn-sm {
+  padding: 0.3rem 0.65rem;
+  font-size: 0.8rem;
+}
+
+.breadcrumb-item a {
+  text-decoration: none;
+  color: var(--qd-brand-600);
+}
+
+.breadcrumb-item.active {
+  color: var(--qd-ink-500);
+  font-weight: 500;
+}

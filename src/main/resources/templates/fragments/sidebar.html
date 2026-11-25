@@ -1,0 +1,149 @@
+<aside th:fragment="sidebar" id="sidebar" class="qd-sidebar offcanvas-lg offcanvas-start" tabindex="-1"
+       aria-label="Điều hướng chính" xmlns:th="http://www.thymeleaf.org"
+       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+  <div class="qd-sidebar-inner">
+    <!-- Brand Logo & Title -->
+    <div class="qd-brand-wrapper">
+      <div class="qd-brand-logo">
+        <i class="bi bi-mortarboard-fill"></i>
+      </div>
+      <div>
+        <div class="qd-brand-title">QLĐT KHOA</div>
+        <div class="qd-brand-subtitle">Học chế Tín chỉ</div>
+      </div>
+    </div>
+
+    <!-- Navigation List -->
+    <nav class="flex-grow-1 overflow-y-auto">
+
+      <!-- ================= ADMIN ================= -->
+      <div sec:authorize="hasRole('ADMIN')">
+        <ul class="list-unstyled mb-3">
+          <li th:replace="~{fragments/sidebar :: item('/admin/dashboard', 'grid-1x2-fill', 'Bàn làm việc')}"></li>
+        </ul>
+
+        <div class="qd-nav-group-title">Tổ chức & Con người gốc</div>
+        <ul class="list-unstyled mb-3">
+          <li th:replace="~{fragments/sidebar :: item('/admin/khoa', 'building', 'Khoa đào tạo')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/admin/bo-mon', 'diagram-3', 'Bộ môn trực thuộc')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/admin/nhan-su', 'person-badge', 'Nhân sự & Giảng viên')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/admin/tai-khoan', 'shield-lock', 'Tài khoản hệ thống')}"></li>
+        </ul>
+
+        <div class="qd-nav-group-title">Học vụ & Giám sát đào tạo</div>
+        <ul class="list-unstyled mb-3">
+          <li th:replace="~{fragments/sidebar :: item('/admin/nganh-hoc', 'journal-bookmark', 'Ngành đào tạo')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/admin/khoa-nhap-hoc', 'calendar-range', 'Khóa nhập học')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/admin/hoc-ky', 'clock-history', 'Học kỳ năm học')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/admin/mon-hoc', 'book', 'Môn học & Tiên quyết')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/admin/ctdt', 'diagram-2', 'Chương trình đào tạo')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/admin/lop-hanh-chinh', 'people', 'Lớp hành chính')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/admin/sinh-vien', 'person-lines-fill', 'Hồ sơ Sinh viên')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/admin/lop-hoc-phan', 'calendar3', 'Lớp học phần')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/admin/xep-lich', 'calendar-week', 'Xếp lịch giảng dạy')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/admin/quyet-dinh', 'file-earmark-text', 'Quyết định học vụ')}"></li>
+        </ul>
+      </div>
+
+      <!-- ================= PHÒNG ĐÀO TẠO ================= -->
+      <div sec:authorize="hasRole('PHONG_DAO_TAO')">
+        <ul class="list-unstyled mb-3">
+          <li th:replace="~{fragments/sidebar :: item('/admin/dashboard', 'grid-1x2-fill', 'Bàn làm việc')}"></li>
+        </ul>
+
+        <div class="qd-nav-group-title">Chương trình & Môn học</div>
+        <ul class="list-unstyled mb-3">
+          <li th:replace="~{fragments/sidebar :: item('/admin/nganh-hoc', 'journal-bookmark', 'Ngành đào tạo')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/admin/khoa-nhap-hoc', 'calendar-range', 'Khóa tuyển sinh')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/admin/hoc-ky', 'clock-history', 'Học kỳ năm học')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/admin/mon-hoc', 'book', 'Môn học & Tiên quyết')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/admin/ctdt', 'diagram-2', 'Khung CTĐT')}"></li>
+        </ul>
+
+        <div class="qd-nav-group-title">Người học & Lớp học</div>
+        <ul class="list-unstyled mb-3">
+          <li th:replace="~{fragments/sidebar :: item('/admin/lop-hanh-chinh', 'people', 'Lớp hành chính')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/admin/sinh-vien', 'person-lines-fill', 'Hồ sơ Sinh viên')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/admin/lop-hoc-phan', 'calendar3', 'Lớp học phần')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/admin/xep-lich', 'calendar-week', 'Xếp lịch giảng dạy')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/admin/quyet-dinh', 'file-earmark-text', 'Quyết định học vụ')}"></li>
+        </ul>
+
+        <div class="qd-nav-group-title">Tra cứu danh mục</div>
+        <ul class="list-unstyled mb-3">
+          <li th:replace="~{fragments/sidebar :: item('/admin/khoa', 'building', 'Khoa (Chỉ xem)')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/admin/bo-mon', 'diagram-3', 'Bộ môn (Chỉ xem)')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/admin/nhan-su', 'person-badge', 'Giảng viên (Chỉ xem)')}"></li>
+        </ul>
+      </div>
+
+      <!-- ================= GIẢNG VIÊN ================= -->
+      <div sec:authorize="hasRole('GIANG_VIEN')">
+        <ul class="list-unstyled mb-3">
+          <li th:replace="~{fragments/sidebar :: item('/giang-vien/dashboard', 'grid-1x2-fill', 'Bàn làm việc')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/giang-vien/lop-hoc-phan', 'calendar3', 'Lớp giảng dạy & Nhập điểm')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/giang-vien/lich-giang-day', 'clock', 'Lịch giảng dạy tuần')}"></li>
+        </ul>
+
+        <div class="qd-nav-group-title">Công tác Cố vấn</div>
+        <ul class="list-unstyled mb-3">
+          <li th:replace="~{fragments/sidebar :: item('/giang-vien/co-van/lop-hanh-chinh', 'person-hearts', 'Cố vấn học tập')}"></li>
+        </ul>
+      </div>
+
+      <!-- ================= SINH VIÊN ================= -->
+      <div sec:authorize="hasRole('SINH_VIEN')">
+        <ul class="list-unstyled mb-3">
+          <li th:replace="~{fragments/sidebar :: item('/sinh-vien/dashboard', 'grid-1x2-fill', 'Tổng quan')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/sinh-vien/dang-ky-hoc-phan', 'plus-square-fill', 'Đăng ký học phần')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/sinh-vien/thoi-khoa-bieu', 'calendar-week', 'Thời khóa biểu')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/sinh-vien/bang-diem', 'award', 'Bảng điểm & GPA')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/sinh-vien/tien-do-ctdt', 'check2-square', 'Tiến độ CTĐT')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/sinh-vien/quyet-dinh-hoc-vu', 'file-earmark-check', 'Quyết định học vụ')}"></li>
+        </ul>
+      </div>
+
+    </nav>
+
+    <!-- Footer Profile Info & Logout: Khi đã đăng nhập -->
+    <div sec:authorize="isAuthenticated()" class="pt-3 border-top border-secondary border-opacity-25 mt-auto">
+      <div class="d-flex align-items-center gap-2 mb-2 px-2">
+        <i class="bi bi-person-circle fs-5 text-white-50"></i>
+        <div class="overflow-hidden">
+          <div class="text-white small fw-bold text-truncate"
+               th:text="${#authentication != null and #authentication.principal instanceof T(com.qldtkhoa.qldtkhoa_app.security.AppUserPrincipal) ? #authentication.principal.displayName : #authentication?.name}">Họ tên</div>
+          <div class="text-white-50 extra-small" style="font-size: 0.75rem;"
+               th:text="${#authentication != null and #authentication.principal instanceof T(com.qldtkhoa.qldtkhoa_app.security.AppUserPrincipal) ? #authentication.principal.role : 'Vai trò'}">Vai trò</div>
+        </div>
+      </div>
+      <div class="d-flex gap-1 px-1">
+        <a class="btn btn-sm btn-outline-light w-50 py-1" style="font-size: 0.75rem;" th:href="@{/doi-mat-khau}">
+          <i class="bi bi-key"></i> Đổi MK
+        </a>
+        <form th:action="@{/logout}" method="post" class="w-50 m-0">
+          <button type="submit" class="btn btn-sm btn-outline-danger w-100 py-1" style="font-size: 0.75rem;">
+            <i class="bi bi-box-arrow-right"></i> Thoát
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Footer khi chưa đăng nhập (Khách / Anonymous) -->
+    <div sec:authorize="!isAuthenticated()" class="pt-3 border-top border-secondary border-opacity-25 mt-auto px-2 pb-2">
+      <a class="btn btn-sm btn-outline-light w-100 py-2 d-flex align-items-center justify-content-center gap-2" th:href="@{/login}">
+        <i class="bi bi-box-arrow-in-right"></i> Đăng nhập
+      </a>
+    </div>
+
+  </div>
+</aside>
+
+<!-- Fragment item menu điều hướng -->
+<li th:fragment="item(path, icon, label)" xmlns:th="http://www.thymeleaf.org">
+  <a class="qd-nav-link" th:href="@{${path}}"
+     th:classappend="${currentPath != null and path != null and currentPath.startsWith(path)} ? 'is-active'"
+     th:attr="aria-current=${currentPath != null and path != null and currentPath.startsWith(path)} ? 'page' : null">
+    <i class="bi" th:classappend="'bi-' + ${icon}" aria-hidden="true"></i>
+    <span th:text="${label}">Mục</span>
+  </a>
+</li>

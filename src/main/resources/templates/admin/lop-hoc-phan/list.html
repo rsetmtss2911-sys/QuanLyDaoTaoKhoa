@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title>Quản lý Lớp học phần · QLĐT Khoa</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div th:replace="~{fragments/flash :: flash}"></div>
+
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+      <nav aria-label="Đường dẫn">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Lớp học phần</li>
+        </ol>
+      </nav>
+      <h1 class="qd-h1 mb-0">Danh sách Lớp học phần đào tạo</h1>
+    </div>
+    <div sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
+      <a class="btn btn-primary shadow-sm" th:href="@{/admin/lop-hoc-phan/new}">
+        <i class="bi bi-calendar-plus me-1"></i> Mở lớp học phần mới
+      </a>
+    </div>
+  </div>
+
+  <div class="qd-panel">
+    <!-- Toolbar tìm kiếm & Bộ lọc -->
+    <form method="get" th:action="@{/admin/lop-hoc-phan}" class="p-3 border-bottom d-flex flex-wrap gap-2 align-items-center" role="search">
+      <div class="input-group qd-search">
+        <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+        <input id="q" name="q" type="search" class="form-control border-start-0 ps-0"
+               th:value="${q}" placeholder="Tìm theo mã lớp, môn, GV...">
+      </div>
+
+      <select name="maHK" class="form-select w-auto" onchange="this.form.submit()">
+        <option value="">-- Tất cả học kỳ --</option>
+        <option th:each="hk : ${hocKys}" th:value="${hk.maHK}" th:text="${hk.tenHocKy + ' (' + hk.namHoc + ')'}"
+                th:selected="${hk.maHK == maHK}">Học kỳ 1</option>
+      </select>
+
+      <select name="maMon" class="form-select w-auto" onchange="this.form.submit()">
+        <option value="">-- Tất cả môn học --</option>
+        <option th:each="m : ${monHocs}" th:value="${m.maMon}" th:text="${m.tenMon + ' (' + m.maMon + ')'}"
+                th:selected="${m.maMon == maMon}">Lập trình</option>
+      </select>
+
+      <select name="status" class="form-select w-auto" onchange="this.form.submit()">
+        <option value="">-- Tất cả trạng thái lớp --</option>
+        <option th:each="st : ${statuses}" th:value="${st.name()}" th:text="${st.label}"
+                th:selected="${status != null and st.name() == status.name()}">Đang mở ĐK</option>
+      </select>
+
+      <button class="btn btn-outline-secondary" type="submit">Lọc</button>
+      <a th:if="${(q != null and !q.isEmpty()) or (maHK != null and !maHK.isEmpty()) or (maMon != null and !maMon.isEmpty()) or (status != null)}"
+         class="btn btn-link text-decoration-none" th:href="@{/admin/lop-hoc-phan}">
+        Xóa bộ lọc
+      </a>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table qd-table">
+        <thead>
+          <tr>
+            <th scope="col" style="width: 140px;">Mã LHP</th>
+            <th scope="col">Môn học</th>
+            <th scope="col" class="text-center" style="width: 90px;">Số TC</th>
+            <th scope="col">Giảng viên giảng dạy</th>
+            <th scope="col">Học kỳ</th>
+            <th scope="col" class="text-center" style="width: 130px;">Sĩ số / Tối đa</th>
+            <th scope="col" class="text-center" style="width: 130px;">Trạng thái</th>
+            <th scope="col" class="text-end" style="width: 160px;">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${page.empty}">
+            <td colspan="8" class="text-center text-muted py-4">
+              <i class="bi bi-inbox me-2"></i>Chưa có lớp học phần nào phù hợp
+            </td>
+          </tr>
+          <tr th:each="row : ${page.content}">
+            <td>
+              <a class="fw-bold font-monospace text-primary text-decoration-none"
+                 th:href="@{/admin/lop-hoc-phan/{id}(id=${row.maLHP})}"
+                 th:text="${row.maLHP}">INT2204_1</a>
+            </td>
+            <td class="fw-semibold text-dark" th:text="${row.tenMon}">Lập trình hướng đối tượng</td>
+            <td class="text-center fw-bold" th:text="${row.soTinChi}">3</td>
+            <td>
+              <i class="bi bi-person text-secondary me-1"></i>
+              <span th:text="${row.tenGV}">TS. Nguyễn Văn A</span>
+            </td>
+            <td>
+              <span class="badge bg-light text-dark border font-monospace" th:text="${row.maHK}">2023_1</span>
+            </td>
+            <td class="text-center">
+              <div class="d-flex align-items-center justify-content-center gap-1">
+                <span class="fw-bold" th:classappend="${row.siSoHienTai >= row.siSoToiDa ? 'text-danger' : 'text-primary'}"
+                      th:text="${row.siSoHienTai}">48</span>
+                <span class="text-muted">/</span>
+                <span class="text-muted" th:text="${row.siSoToiDa}">50</span>
+              </div>
+              <div class="progress mt-1" style="height: 4px;">
+                <div class="progress-bar"
+                     th:classappend="${row.siSoHienTai >= row.siSoToiDa ? 'bg-danger' : 'bg-primary'}"
+                     role="progressbar"
+                     th:style="'width: ' + (${row.siSoToiDa > 0 ? (row.siSoHienTai * 100 / row.siSoToiDa) : 0}) + '%;'">
+                </div>
+              </div>
+            </td>
+            <td class="text-center">
+              <span th:replace="~{fragments/status-badge :: sectionStatus(${row.trangThaiLop})}"></span>
+            </td>
+            <td class="text-end text-nowrap">
+              <a class="btn btn-sm btn-outline-info me-1" th:href="@{/admin/lop-hoc-phan/{id}(id=${row.maLHP})}" title="Xem lịch & SV">
+                <i class="bi bi-calendar3"></i>
+              </a>
+              <span sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
+                <a class="btn btn-sm btn-outline-primary me-1" th:href="@{/admin/lop-hoc-phan/{id}/edit(id=${row.maLHP})}" title="Chỉnh sửa">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <form class="d-inline" method="post" th:action="@{/admin/lop-hoc-phan/{id}/delete(id=${row.maLHP})}"
+                      th:data-confirm="|Xóa lớp học phần '${row.maLHP}'? Thao tác sẽ bị từ chối nếu đã có sinh viên đăng ký.|">
+                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa lớp">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div th:replace="~{fragments/pagination :: pager(${page}, '/admin/lop-hoc-phan', ${q})}"></div>
+</main>
+</body>
+</html>

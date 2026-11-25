@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title>Lớp cố vấn học tập · QLĐT Khoa</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div th:replace="~{fragments/flash :: flash}"></div>
+
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+      <nav aria-label="Đường dẫn">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a th:href="@{/giang-vien/dashboard}">Trang chủ</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Cố vấn học tập</li>
+        </ol>
+      </nav>
+      <h1 class="qd-h1 mb-0">Danh sách Lớp sinh hoạt Cố vấn học tập (CVHT)</h1>
+    </div>
+  </div>
+
+  <div class="qd-panel">
+    <div class="qd-panel-header">
+      <h2 class="qd-panel-title mb-0">Các lớp hành chính được phân công phụ trách</h2>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table qd-table mb-0">
+        <thead>
+          <tr>
+            <th scope="col" style="width: 140px;">Mã lớp HC</th>
+            <th scope="col">Tên lớp hành chính</th>
+            <th scope="col">Khóa tuyển sinh</th>
+            <th scope="col">Ngành đào tạo</th>
+            <th scope="col" class="text-center" style="width: 110px;">Sĩ số sinh viên</th>
+            <th scope="col" class="text-end" style="width: 140px;">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${classes.isEmpty()}">
+            <td colspan="6" class="text-center text-muted py-4">
+              <i class="bi bi-inbox me-2"></i>Hiện chưa được phân công cố vấn lớp nào
+            </td>
+          </tr>
+          <tr th:each="c : ${classes}">
+            <td>
+              <span class="font-monospace fw-bold text-primary" th:text="${c.maLopHC}">CNTT2023A</span>
+            </td>
+            <td class="fw-semibold text-dark" th:text="${c.tenLopHC}">Công nghệ thông tin 2023 A</td>
+            <td>
+              <span class="badge bg-light text-dark border" th:text="${c.maKhoaHoc}">K2023</span>
+            </td>
+            <td th:text="${c.tenNganh}">Công nghệ thông tin</td>
+            <td class="text-center">
+              <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary fw-bold" th:text="${c.siSo}">45</span>
+            </td>
+            <td class="text-end text-nowrap">
+              <a class="btn btn-sm btn-outline-info" th:href="@{/giang-vien/co-van/lop-hanh-chinh/{id}(id=${c.maLopHC})}">
+                <i class="bi bi-people-fill me-1"></i> Danh sách SV
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+</body>
+</html>

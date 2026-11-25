@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title>Khung Chương trình Đào tạo (CTĐT) · QLĐT Khoa</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div th:replace="~{fragments/flash :: flash}"></div>
+
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+      <nav aria-label="Đường dẫn">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Chương trình đào tạo</li>
+        </ol>
+      </nav>
+      <h1 class="qd-h1 mb-0">Khung Chương trình Đào tạo Tín chỉ</h1>
+    </div>
+    <div sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
+      <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addCourseModal">
+        <i class="bi bi-plus-lg me-1"></i> Bổ sung môn vào CTĐT
+      </button>
+    </div>
+  </div>
+
+  <!-- Bộ chọn Ngành & Khóa tuyển sinh -->
+  <div class="qd-panel mb-4">
+    <form method="get" th:action="@{/admin/ctdt}" class="p-3 d-flex flex-wrap gap-3 align-items-center">
+      <div class="d-flex align-items-center gap-2">
+        <label for="maNganh" class="fw-semibold text-dark small text-nowrap">Ngành đào tạo:</label>
+        <select id="maNganh" name="maNganh" class="form-select w-auto" onchange="this.form.submit()">
+          <option th:each="ng : ${nganhs}" th:value="${ng.maNganh}" th:text="${ng.tenNganh + ' (' + ng.maNganh + ')'}"
+                  th:selected="${ng.maNganh == currentNganh}">Công nghệ thông tin</option>
+        </select>
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        <label for="maKhoaHoc" class="fw-semibold text-dark small text-nowrap">Khóa tuyển sinh:</label>
+        <select id="maKhoaHoc" name="maKhoaHoc" class="form-select w-auto" onchange="this.form.submit()">
+          <option th:each="kh : ${khoas}" th:value="${kh.maKhoaHoc}" th:text="${kh.maKhoaHoc + ' (Năm ' + kh.namBatDau + ')'}"
+                  th:selected="${kh.maKhoaHoc == currentKhoa}">K2023</option>
+        </select>
+      </div>
+
+      <button class="btn btn-outline-secondary" type="submit">Xem khung CTĐT</button>
+    </form>
+  </div>
+
+  <!-- Thẻ tóm tắt số tín chỉ -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100 border-start border-4 border-primary">
+        <div class="text-muted small mb-1">Tổng tín chỉ toàn khóa</div>
+        <div class="h3 fw-bold text-primary mb-0" th:text="${tongTinChi + ' TC'}">135 TC</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100 border-start border-4 border-success">
+        <div class="text-muted small mb-1">Học phần Bắt buộc</div>
+        <div class="h3 fw-bold text-success mb-0" th:text="${tcBatBuoc + ' TC'}">110 TC</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100 border-start border-4 border-warning">
+        <div class="text-muted small mb-1">Học phần Tự chọn</div>
+        <div class="h3 fw-bold text-warning mb-0" th:text="${tcTuChon + ' TC'}">25 TC</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bảng danh sách các môn trong CTĐT -->
+  <div class="qd-panel">
+    <div class="qd-panel-header">
+      <h2 class="qd-panel-title">Chi tiết danh mục học phần theo học kỳ khuyến nghị</h2>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table qd-table mb-0">
+        <thead>
+          <tr>
+            <th scope="col" style="width: 100px;" class="text-center">Học kỳ chuẩn</th>
+            <th scope="col" style="width: 140px;">Mã môn</th>
+            <th scope="col">Tên môn học</th>
+            <th scope="col" class="text-center" style="width: 100px;">Số TC</th>
+            <th scope="col">Khối kiến thức</th>
+            <th scope="col" class="text-center" style="width: 130px;">Loại học phần</th>
+            <th scope="col" class="text-end" style="width: 100px;">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${list.isEmpty()}">
+            <td colspan="7" class="text-center text-muted py-4 small">
+              <i class="bi bi-inbox me-2"></i>Khung chương trình chưa có môn học nào
+            </td>
+          </tr>
+          <tr th:each="r : ${list}">
+            <td class="text-center">
+              <span class="badge rounded-pill bg-light text-dark border fw-bold" th:text="${'HK ' + r.hocKyChuan}">HK 1</span>
+            </td>
+            <td>
+              <span class="font-monospace fw-bold text-primary" th:text="${r.maMon}">INT2204</span>
+            </td>
+            <td class="fw-semibold text-dark" th:text="${r.tenMon}">Lập trình hướng đối tượng</td>
+            <td class="text-center fw-bold" th:text="${r.soTinChi}">3</td>
+            <td>
+              <span th:if="${r.khoiKienThuc != null}" class="badge bg-secondary bg-opacity-10 text-secondary"
+                    th:text="${r.khoiKienThuc.label}">Cơ sở ngành</span>
+              <span th:unless="${r.khoiKienThuc != null}" class="text-muted">—</span>
+            </td>
+            <td class="text-center">
+              <span th:if="${r.loaiHocPhan != null}" class="badge"
+                    th:classappend="${r.loaiHocPhan.name() == 'BAT_BUOC' ? 'bg-success bg-opacity-10 text-success' : 'bg-warning bg-opacity-10 text-warning'}"
+                    th:text="${r.loaiHocPhan.label}">Bắt buộc</span>
+              <span th:unless="${r.loaiHocPhan != null}" class="text-muted">—</span>
+            </td>
+            <td class="text-end text-nowrap">
+              <span sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
+                <form class="d-inline" method="post" th:action="@{/admin/ctdt/delete}"
+                      th:data-confirm="|Xóa môn '${r.tenMon}' khỏi khung CTĐT của ngành này?|">
+                  <input type="hidden" name="maNganh" th:value="${r.maNganh}">
+                  <input type="hidden" name="maKhoaHoc" th:value="${r.maKhoaHoc}">
+                  <input type="hidden" name="maMon" th:value="${r.maMon}">
+                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa khỏi CTĐT">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal bổ sung môn vào CTĐT -->
+  <div class="modal fade" id="addCourseModal" tabindex="-1" aria-labelledby="addCourseModalLabel" aria-hidden="true"
+       sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form method="post" th:action="@{/admin/ctdt/add}" th:object="${form}">
+          <input type="hidden" th:field="*{maNganh}">
+          <input type="hidden" th:field="*{maKhoaHoc}">
+
+          <div class="modal-header">
+            <h5 class="modal-title" id="addCourseModalLabel">Bổ sung môn vào CTĐT</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-danger py-2 px-3 small mb-3" role="alert" th:if="${#fields.hasErrors('*')}">
+              <ul class="mb-0 ps-3">
+                <li th:each="e : ${#fields.allErrors()}" th:text="${e}">Lỗi nhập liệu</li>
+              </ul>
+            </div>
+            <div class="mb-3">
+              <label for="modalMaMon" class="form-label qd-required">Chọn môn học</label>
+              <select id="modalMaMon" th:field="*{maMon}" class="form-select" th:errorclass="is-invalid" required>
+                <option value="">-- Chọn môn học --</option>
+                <option th:each="m : ${allMonHocs}" th:value="${m.maMon}"
+                        th:text="${m.tenMon + ' (' + m.maMon + ' - ' + m.soTinChi + ' TC)'}">Môn học</option>
+              </select>
+              <div class="invalid-feedback" th:errors="*{maMon}">Lỗi môn học</div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="modalHocKyChuan" class="form-label qd-required">Học kỳ chuẩn</label>
+                <select id="modalHocKyChuan" th:field="*{hocKyChuan}" class="form-select" required>
+                  <option th:each="i : ${#numbers.sequence(1, 10)}" th:value="${i}" th:text="${'Học kỳ ' + i}">Học kỳ 1</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label for="modalLoaiHocPhan" class="form-label qd-required">Loại học phần</label>
+                <select id="modalLoaiHocPhan" th:field="*{loaiHocPhan}" class="form-select" required>
+                  <option th:each="l : ${T(com.qldtkhoa.qldtkhoa_app.entity.enums.LoaiHocPhan).values()}"
+                          th:value="${l.name()}" th:text="${l.label}">Bắt buộc</option>
+                </select>
+              </div>
+
+              <div class="col-12">
+                <label for="modalKhoiKienThuc" class="form-label qd-required">Khối kiến thức</label>
+                <select id="modalKhoiKienThuc" th:field="*{khoiKienThuc}" class="form-select" required>
+                  <option th:each="k : ${T(com.qldtkhoa.qldtkhoa_app.entity.enums.KhoiKienThuc).values()}"
+                          th:value="${k.name()}" th:text="${k.label}">Cơ sở ngành</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg me-1"></i> Lưu vào CTĐT
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script th:if="${showAddModal}">
+    document.addEventListener("DOMContentLoaded", function() {
+      var modalEl = document.getElementById("addCourseModal");
+      if (modalEl) {
+        var modal = new bootstrap.Modal(modalEl);
+        modal.show();
+      }
+    });
+  </script>
+</main>
+</body>
+</html>

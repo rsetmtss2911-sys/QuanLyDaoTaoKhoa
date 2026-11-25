@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title th:text="${isEdit ? 'Chỉnh sửa Môn học · QLĐT Khoa' : 'Thêm Môn học mới · QLĐT Khoa'}">Môn học · QLĐT Khoa</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+      <nav aria-label="Đường dẫn" class="mb-2">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+          <li class="breadcrumb-item"><a th:href="@{/admin/mon-hoc}">Môn học</a></li>
+          <li class="breadcrumb-item active" aria-current="page"
+              th:text="${isEdit ? 'Chỉnh sửa' : 'Thêm mới'}">Thêm mới</li>
+        </ol>
+      </nav>
+
+      <div class="qd-panel">
+        <div class="qd-panel-header">
+          <h1 class="qd-panel-title mb-0"
+              th:text="${isEdit ? 'Cập nhật thông tin Môn học' : 'Thêm Môn học & Học phần mới'}">
+            Thêm Môn học mới
+          </h1>
+        </div>
+
+        <div class="qd-panel-body">
+          <form method="post"
+                th:action="${isEdit ? '/admin/mon-hoc/' + form.maMon : '/admin/mon-hoc'}"
+                th:object="${form}" novalidate>
+
+            <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger mb-3" role="alert">
+              <i class="bi bi-exclamation-triangle-fill me-2"></i>
+              <span th:each="err : ${#fields.globalErrors()}" th:text="${err}">Lỗi nghiệp vụ</span>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-md-5">
+                <label for="maMon" class="form-label qd-required">Mã môn học</label>
+                <input type="text" id="maMon" th:field="*{maMon}"
+                       class="form-control font-monospace text-uppercase"
+                       th:classappend="${#fields.hasErrors('maMon')} ? 'is-invalid'"
+                       placeholder="Ví dụ: INT2204"
+                       th:readonly="${isEdit}" required>
+                <div class="invalid-feedback" th:errors="*{maMon}">Mã không hợp lệ</div>
+              </div>
+
+              <div class="col-md-7">
+                <label for="tenMon" class="form-label qd-required">Tên môn học</label>
+                <input type="text" id="tenMon" th:field="*{tenMon}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('tenMon')} ? 'is-invalid'"
+                       placeholder="Ví dụ: Lập trình hướng đối tượng" required>
+                <div class="invalid-feedback" th:errors="*{tenMon}">Tên môn học không được để trống</div>
+              </div>
+
+              <div class="col-md-12">
+                <label for="maBoMon" class="form-label qd-required">Bộ môn chuyên môn quản lý</label>
+                <select id="maBoMon" th:field="*{maBoMon}"
+                        class="form-select"
+                        th:classappend="${#fields.hasErrors('maBoMon')} ? 'is-invalid'" required>
+                  <option value="">-- Chọn bộ môn --</option>
+                  <option th:each="bm : ${boMons}"
+                          th:value="${bm.maBoMon}"
+                          th:text="${bm.tenBoMon + ' (' + bm.khoa.tenKhoa + ')'}">Bộ môn CNPM</option>
+                </select>
+                <div class="invalid-feedback" th:errors="*{maBoMon}">Vui lòng chọn bộ môn quản lý</div>
+              </div>
+
+              <div class="col-12"><hr class="my-2"></div>
+
+              <!-- Cấu trúc tín chỉ -->
+              <div class="col-md-4">
+                <label for="soTinChi" class="form-label qd-required">Tổng số tín chỉ</label>
+                <input type="number" id="soTinChi" th:field="*{soTinChi}" min="1" max="10"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('soTinChi')} ? 'is-invalid'" required>
+                <div class="invalid-feedback" th:errors="*{soTinChi}">Số tín chỉ từ 1 đến 10</div>
+              </div>
+
+              <div class="col-md-4">
+                <label for="tinChiLT" class="form-label qd-required">Tín chỉ lý thuyết (LT)</label>
+                <input type="number" id="tinChiLT" th:field="*{tinChiLT}" min="0" max="10"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('tinChiLT')} ? 'is-invalid'" required>
+                <div class="invalid-feedback" th:errors="*{tinChiLT}">Tín chỉ LT không hợp lệ</div>
+              </div>
+
+              <div class="col-md-4">
+                <label for="tinChiTH" class="form-label qd-required">Tín chỉ thực hành (TH)</label>
+                <input type="number" id="tinChiTH" th:field="*{tinChiTH}" min="0" max="10"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('tinChiTH')} ? 'is-invalid'" required>
+                <div class="invalid-feedback" th:errors="*{tinChiTH}">Tín chỉ TH không hợp lệ</div>
+              </div>
+
+              <div class="col-12"><hr class="my-2"></div>
+
+              <!-- Cơ cấu trọng số điểm -->
+              <div class="col-12">
+                <h6 class="fw-semibold text-primary mb-1">Cơ cấu trọng số điểm (Tổng phải bằng 1.0)</h6>
+                <p class="text-muted small mb-3">Ví dụ: 0.2 (Quá trình 20%) + 0.3 (Giữa kỳ 30%) + 0.5 (Cuối kỳ 50%) = 1.0</p>
+              </div>
+
+              <div class="col-md-4">
+                <label for="trongSoQT" class="form-label qd-required">Trọng số Quá trình (QT)</label>
+                <input type="number" step="0.05" min="0" max="1" id="trongSoQT" th:field="*{trongSoQT}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('trongSoQT')} ? 'is-invalid'" required>
+                <div class="invalid-feedback" th:errors="*{trongSoQT}">Trọng số QT không hợp lệ</div>
+              </div>
+
+              <div class="col-md-4">
+                <label for="trongSoGK" class="form-label qd-required">Trọng số Giữa kỳ (GK)</label>
+                <input type="number" step="0.05" min="0" max="1" id="trongSoGK" th:field="*{trongSoGK}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('trongSoGK')} ? 'is-invalid'" required>
+                <div class="invalid-feedback" th:errors="*{trongSoGK}">Trọng số GK không hợp lệ</div>
+              </div>
+
+              <div class="col-md-4">
+                <label for="trongSoCK" class="form-label qd-required">Trọng số Cuối kỳ (CK)</label>
+                <input type="number" step="0.05" min="0" max="1" id="trongSoCK" th:field="*{trongSoCK}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('trongSoCK')} ? 'is-invalid'" required>
+                <div class="invalid-feedback" th:errors="*{trongSoCK}">Trọng số CK không hợp lệ</div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+              <a th:href="@{/admin/mon-hoc}" class="btn btn-outline-secondary">Hủy bỏ</a>
+              <button type="submit" class="btn btn-primary px-4">
+                <i class="bi bi-check-lg me-1"></i>
+                <span th:text="${isEdit ? 'Lưu thay đổi' : 'Thêm môn'}">Lưu</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

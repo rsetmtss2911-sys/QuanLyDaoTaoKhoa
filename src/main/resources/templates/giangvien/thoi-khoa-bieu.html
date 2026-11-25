@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title>Lịch giảng dạy tuần · QLĐT Khoa</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div th:replace="~{fragments/flash :: flash}"></div>
+
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+      <nav aria-label="Đường dẫn">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a th:href="@{/giang-vien/dashboard}">Trang chủ</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Thời khóa biểu</li>
+        </ol>
+      </nav>
+      <h1 class="qd-h1 mb-0">Thời khóa biểu Giảng dạy Cá nhân</h1>
+    </div>
+
+    <!-- Chọn học kỳ -->
+    <form method="get" th:action="@{/giang-vien/thoi-khoa-bieu}" class="d-flex align-items-center gap-2">
+      <label for="maHK" class="fw-semibold text-dark small text-nowrap">Học kỳ:</label>
+      <select id="maHK" name="maHK" class="form-select w-auto" onchange="this.form.submit()">
+        <option th:each="hk : ${hocKys}" th:value="${hk.maHK}" th:text="${hk.tenHocKy + ' (' + hk.namHoc + ')'}"
+                th:selected="${hk.maHK == currentHk}">Học kỳ 1</option>
+      </select>
+    </form>
+  </div>
+
+  <div class="qd-panel">
+    <div class="qd-panel-header">
+      <h2 class="qd-panel-title mb-0">Lịch giảng dạy chi tiết theo tuần</h2>
+    </div>
+
+    <div class="qd-panel-body p-0">
+      <div th:if="${slots.isEmpty()}" class="p-5 text-center text-muted">
+        <i class="bi bi-calendar-x fs-1 d-block mb-2 text-secondary"></i>
+        <h3 class="qd-h3 mb-2 text-dark">Chưa có lịch dạy trong học kỳ này</h3>
+        <p class="text-muted mb-0 small">Bạn chưa được xếp lịch giảng dạy trên các phòng học trong học kỳ đã chọn.</p>
+      </div>
+
+      <div th:unless="${slots.isEmpty()}" class="p-3">
+        <div th:replace="~{fragments/timetable-grid :: grid(${slots})}"></div>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

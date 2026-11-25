@@ -1,0 +1,59 @@
+{
+  "properties": [
+    {
+      "name": "db.host",
+      "type": "java.lang.String",
+      "description": "Địa chỉ máy chủ SQL Server."
+    },
+    {
+      "name": "db.port",
+      "type": "java.lang.Integer",
+      "description": "Cổng kết nối TCP/IP của SQL Server."
+    },
+    {
+      "name": "db.name",
+      "type": "java.lang.String",
+      "description": "Tên cơ sở dữ liệu trong SQL Server."
+    },
+    {
+      "name": "db.username",
+      "type": "java.lang.String",
+      "description": "Tài khoản đăng nhập SQL Server."
+    },
+    {
+      "name": "db.password",
+      "type": "java.lang.String",
+      "description": "Mật khẩu đăng nhập SQL Server."
+    },
+    {
+      "name": "app.academic.pass-score",
+      "type": "java.lang.Double",
+      "description": "Điểm tổng kết tối thiểu (thang 10) để đạt học phần.",
+      "defaultValue": 4.0
+    },
+    {
+      "name": "app.academic.min-credits-per-term",
+      "type": "java.lang.Integer",
+      "description": "Số tín chỉ tối thiểu sinh viên cần đăng ký trong một học kỳ.",
+      "defaultValue": 14
+    },
+    {
+      "name": "app.academic.max-credits-per-term",
+      "type": "java.lang.Integer",
+      "description": "Số tín chỉ tối đa sinh viên được phép đăng ký trong một học kỳ.",
+      "defaultValue": 25
+    },
+    {
+      "name": "app.academic.registration-window-days",
+      "type": "java.lang.Integer",
+      "description": "Số ngày mở cổng đăng ký học phần tính từ ngày bắt đầu học kỳ.",
+      "defaultValue": 14
+    },
+    {
+      "name": "app.academic.withdraw-deadline-days",
+      "type": "java.lang.Integer",
+      "description": "Số ngày tối đa cho phép rút học phần tính từ ngày bắt đầu học kỳ.",
+      "defaultValue": 21
+    }
+  ]
+}

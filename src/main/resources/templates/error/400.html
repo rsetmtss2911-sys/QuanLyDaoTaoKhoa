@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title>Yêu cầu không hợp lệ (400) · QLĐT Khoa</title>
+</head>
+<body>
+<main id="main" class="qd-main text-center py-5" tabindex="-1">
+  <div class="mb-4">
+    <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-warning bg-opacity-10 text-warning p-4" style="width: 80px; height: 80px;">
+      <i class="bi bi-exclamation-triangle fs-1 text-warning"></i>
+    </div>
+  </div>
+  <h1 class="qd-h1 mb-3">400 - Yêu cầu không hợp lệ</h1>
+  <p class="text-muted mx-auto mb-4" style="max-width: 540px;"
+     th:text="${errorMessage != null} ? ${errorMessage} : (${messageKey != null} ? ${#messages.msgWithParams(messageKey, messageArgs)} : 'Yêu cầu không thể xử lý do dữ liệu không hợp lệ hoặc vi phạm quy tắc nghiệp vụ đào tạo.')">
+    Yêu cầu không hợp lệ hoặc vi phạm quy tắc nghiệp vụ đào tạo.
+  </p>
+  <div class="d-flex justify-content-center gap-2">
+    <a class="btn btn-outline-secondary" href="javascript:history.back()">
+      <i class="bi bi-arrow-left me-1"></i> Quay lại
+    </a>
+    <a class="btn btn-primary" th:href="@{/}">
+      <i class="bi bi-house-door me-1"></i> Quay về trang chủ
+    </a>
+  </div>
+</main>
+</body>
+</html>

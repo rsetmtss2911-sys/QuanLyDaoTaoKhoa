@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title>Quản lý Ngành học · QLĐT Khoa</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div th:replace="~{fragments/flash :: flash}"></div>
+
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+      <nav aria-label="Đường dẫn">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Ngành học</li>
+        </ol>
+      </nav>
+      <h1 class="qd-h1 mb-0">Danh sách Ngành đào tạo</h1>
+    </div>
+    <div sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
+      <a class="btn btn-primary shadow-sm" th:href="@{/admin/nganh-hoc/new}">
+        <i class="bi bi-plus-lg me-1"></i> Thêm ngành học mới
+      </a>
+    </div>
+  </div>
+
+  <div class="qd-panel">
+    <!-- Toolbar tìm kiếm & Lọc theo Khoa -->
+    <form method="get" th:action="@{/admin/nganh-hoc}" class="p-3 border-bottom d-flex flex-wrap gap-2 align-items-center" role="search">
+      <div class="input-group qd-search">
+        <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+        <input id="q" name="q" type="search" class="form-control border-start-0 ps-0"
+               th:value="${q}" placeholder="Tìm theo mã hoặc tên ngành...">
+      </div>
+
+      <select name="maKhoa" class="form-select w-auto" onchange="this.form.submit()">
+        <option value="">-- Tất cả các khoa --</option>
+        <option th:each="k : ${khoas}" th:value="${k.maKhoa}" th:text="${k.tenKhoa}"
+                th:selected="${k.maKhoa == maKhoa}">Khoa CNTT</option>
+      </select>
+
+      <button class="btn btn-outline-secondary" type="submit">Lọc</button>
+      <a th:if="${(q != null and !q.isEmpty()) or (maKhoa != null and !maKhoa.isEmpty())}"
+         class="btn btn-link text-decoration-none" th:href="@{/admin/nganh-hoc}">
+        Xóa bộ lọc
+      </a>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table qd-table">
+        <thead>
+          <tr>
+            <th scope="col" style="width: 150px;">Mã ngành</th>
+            <th scope="col">Tên ngành đào tạo</th>
+            <th scope="col">Khoa quản lý</th>
+            <th scope="col" class="text-end" style="width: 140px;">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${page.empty}">
+            <td colspan="4" class="text-center text-muted py-4">
+              <i class="bi bi-inbox me-2"></i>Chưa có ngành học nào phù hợp
+            </td>
+          </tr>
+          <tr th:each="row : ${page.content}">
+            <td>
+              <span class="badge bg-light text-dark border font-monospace" th:text="${row.maNganh}">7480201</span>
+            </td>
+            <td class="fw-semibold text-dark" th:text="${row.tenNganh}">Công nghệ thông tin</td>
+            <td>
+              <span class="badge bg-success bg-opacity-10 text-success fw-semibold" th:text="${row.tenKhoa}">Khoa CNTT</span>
+            </td>
+            <td class="text-end text-nowrap">
+              <span sec:authorize="hasRole('PHONG_DAO_TAO')">
+                <a class="btn btn-sm btn-outline-primary me-1" th:href="@{/admin/nganh-hoc/{id}/edit(id=${row.maNganh})}" title="Chỉnh sửa">
+                  <i class="bi bi-pencil"></i> Sửa
+                </a>
+                <form class="d-inline" method="post" th:action="@{/admin/nganh-hoc/{id}/delete(id=${row.maNganh})}"
+                      th:data-confirm="|Xóa ngành học '${row.tenNganh}'? Thao tác sẽ bị chặn nếu ngành đã có CTĐT hoặc lớp hành chính.|">
+                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa ngành học">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </span>
+              <span sec:authorize="!hasRole('PHONG_DAO_TAO')" class="text-muted small">
+                Chỉ xem
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div th:replace="~{fragments/pagination :: pager(${page}, '/admin/nganh-hoc', ${q})}"></div>
+</main>
+</body>
+</html>

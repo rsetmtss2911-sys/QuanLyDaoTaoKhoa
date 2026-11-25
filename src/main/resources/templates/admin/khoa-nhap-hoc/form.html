@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title th:text="${isEdit} ? 'Sửa khóa tuyển sinh · QLĐT Khoa' : 'Thêm khóa tuyển sinh · QLĐT Khoa'">Thêm khóa nhập học</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div class="mb-4">
+    <nav aria-label="Đường dẫn">
+      <ol class="breadcrumb mb-1">
+        <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a th:href="@{/admin/khoa-nhap-hoc}">Khóa nhập học</a></li>
+        <li class="breadcrumb-item active" aria-current="page" th:text="${isEdit} ? 'Chỉnh sửa' : 'Thêm mới'">Thêm mới</li>
+      </ol>
+    </nav>
+    <h1 class="qd-h1 mb-0" th:text="${isEdit} ? 'Chỉnh sửa khóa tuyển sinh' : 'Thêm khóa tuyển sinh mới'">Thêm khóa nhập học</h1>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-6 col-md-8">
+      <div class="qd-panel p-4">
+        <form th:action="${isEdit} ? @{/admin/khoa-nhap-hoc/{id}(id=${form.maKhoaHoc})} : @{/admin/khoa-nhap-hoc}"
+              th:object="${form}" method="post" novalidate>
+
+          <div class="alert alert-danger" role="alert" th:if="${#fields.hasErrors('*')}">
+            <strong>Thông tin nhập liệu chưa hợp lệ. Vui lòng kiểm tra lại:</strong>
+            <ul class="mb-0 mt-1 small">
+              <li th:each="e : ${#fields.allErrors()}" th:text="${e}">Lỗi</li>
+            </ul>
+          </div>
+
+          <div class="mb-3">
+            <label for="maKhoaHoc" class="form-label">Mã khóa tuyển sinh <span class="text-danger">*</span></label>
+            <input id="maKhoaHoc" type="text" class="form-control" th:field="*{maKhoaHoc}"
+                   th:errorclass="is-invalid" th:readonly="${isEdit}" maxlength="20"
+                   placeholder="VD: K2024, K2025..." required>
+            <div class="form-text" th:if="${!isEdit}">Định dạng thường dùng: K + Năm (VD: K2024). Cố định sau khi tạo.</div>
+            <div class="invalid-feedback" th:errors="*{maKhoaHoc}">Lỗi mã khóa</div>
+          </div>
+
+          <div class="mb-4">
+            <label for="namBatDau" class="form-label">Năm bắt đầu tuyển sinh <span class="text-danger">*</span></label>
+            <input id="namBatDau" type="number" class="form-control qd-input-narrow" th:field="*{namBatDau}"
+                   th:errorclass="is-invalid" min="1990" max="2100" placeholder="VD: 2024" required>
+            <div class="invalid-feedback" th:errors="*{namBatDau}">Lỗi năm bắt đầu</div>
+          </div>
+
+          <div class="d-flex gap-2 pt-2 border-top">
+            <button type="submit" class="btn btn-primary" data-submit-once>
+              <i class="bi bi-check-lg me-1"></i> Lưu thông tin
+            </button>
+            <a class="btn btn-outline-secondary" th:href="@{/admin/khoa-nhap-hoc}">Hủy bỏ</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title th:text="${isEdit ? 'Chỉnh sửa sinh viên · QLĐT Khoa' : 'Tiếp nhận sinh viên mới · QLĐT Khoa'}">Sinh viên · QLĐT Khoa</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+      <nav aria-label="Đường dẫn" class="mb-2">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+          <li class="breadcrumb-item"><a th:href="@{/admin/sinh-vien}">Sinh viên</a></li>
+          <li class="breadcrumb-item active" aria-current="page"
+              th:text="${isEdit ? 'Chỉnh sửa' : 'Tiếp nhận mới'}">Tiếp nhận mới</li>
+        </ol>
+      </nav>
+
+      <div class="qd-panel">
+        <div class="qd-panel-header">
+          <h1 class="qd-panel-title mb-0"
+              th:text="${isEdit ? 'Cập nhật hồ sơ sinh viên' : 'Tiếp nhận sinh viên mới'}">
+            Tiếp nhận sinh viên mới
+          </h1>
+        </div>
+
+        <div class="qd-panel-body">
+          <form method="post"
+                th:action="${isEdit ? '/admin/sinh-vien/' + form.maSV : '/admin/sinh-vien'}"
+                th:object="${form}" novalidate>
+
+            <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger mb-3" role="alert">
+              <i class="bi bi-exclamation-triangle-fill me-2"></i>
+              <span th:each="err : ${#fields.globalErrors()}" th:text="${err}">Lỗi nghiệp vụ</span>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="maSV" class="form-label qd-required">Mã sinh viên (MSSV)</label>
+                <input type="text" id="maSV" th:field="*{maSV}"
+                       class="form-control font-monospace"
+                       th:classappend="${#fields.hasErrors('maSV')} ? 'is-invalid'"
+                       placeholder="Ví dụ: 23020001"
+                       th:readonly="${isEdit}" required>
+                <div class="invalid-feedback" th:errors="*{maSV}">Mã sinh viên không hợp lệ</div>
+              </div>
+
+              <div class="col-md-6">
+                <label for="hoTen" class="form-label qd-required">Họ và tên</label>
+                <input type="text" id="hoTen" th:field="*{hoTen}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('hoTen')} ? 'is-invalid'"
+                       placeholder="Ví dụ: Trần Thị Mai" required>
+                <div class="invalid-feedback" th:errors="*{hoTen}">Họ tên không được để trống</div>
+              </div>
+
+              <div class="col-md-6">
+                <label for="ngaySinh" class="form-label">Ngày sinh</label>
+                <input type="date" id="ngaySinh" th:field="*{ngaySinh}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('ngaySinh')} ? 'is-invalid'">
+                <div class="invalid-feedback" th:errors="*{ngaySinh}">Ngày sinh không hợp lệ</div>
+              </div>
+
+              <div class="col-md-6">
+                <label for="gioiTinh" class="form-label">Giới tính</label>
+                <select id="gioiTinh" th:field="*{gioiTinh}" class="form-select">
+                  <option value="NAM">Nam</option>
+                  <option value="NU">Nữ</option>
+                  <option value="KHAC">Khác</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label for="maLopHC" class="form-label qd-required">Lớp sinh hoạt hành chính</label>
+                <select id="maLopHC" th:field="*{maLopHC}"
+                        class="form-select"
+                        th:classappend="${#fields.hasErrors('maLopHC')} ? 'is-invalid'" required>
+                  <option value="">-- Chọn lớp hành chính --</option>
+                  <option th:each="l : ${lopHanhChinhs}"
+                          th:value="${l.maLopHC}"
+                          th:text="${l.tenLopHC + ' (' + l.maLopHC + ')'}">CNTT2023A</option>
+                </select>
+                <div class="invalid-feedback" th:errors="*{maLopHC}">Vui lòng chọn lớp hành chính</div>
+              </div>
+
+
+
+              <div class="col-md-6">
+                <label for="email" class="form-label qd-required">Email tài khoản</label>
+                <input type="email" id="email" th:field="*{email}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
+                       placeholder="sinhvien@vnu.edu.vn"
+                       th:readonly="${isEdit}" required>
+                <div class="invalid-feedback" th:errors="*{email}">Email không hợp lệ</div>
+              </div>
+
+              <div class="col-md-6" th:unless="${isEdit}">
+                <label for="matKhau" class="form-label">Mật khẩu ban đầu</label>
+                <input type="password" id="matKhau" th:field="*{matKhau}"
+                       class="form-control"
+                       placeholder="Mặc định: 123456">
+                <div class="form-text">Mặc định là 123456 nếu để trống.</div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+              <a th:href="@{/admin/sinh-vien}" class="btn btn-outline-secondary">Hủy bỏ</a>
+              <button type="submit" class="btn btn-primary px-4">
+                <i class="bi bi-check-lg me-1"></i>
+                <span th:text="${isEdit ? 'Lưu hồ sơ' : 'Tiếp nhận'}">Lưu</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>
