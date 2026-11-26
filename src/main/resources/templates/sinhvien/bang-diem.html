@@ -46,14 +46,34 @@
     <i class="bi bi-inbox me-1"></i> Hiện tại chưa có môn học nào có kết quả đánh giá điểm số được công bố.
   </div>
 
+  <!-- Cảnh báo học vụ (nếu có) -->
+  <div th:if="${canhBaoHocVu}" class="alert alert-danger d-flex align-items-start gap-3 mb-4 rounded-3 shadow-sm" role="alert">
+    <i class="bi bi-exclamation-octagon-fill fs-4 flex-shrink-0"></i>
+    <div>
+      <div class="fw-bold">Cảnh báo học vụ theo quy chế tín chỉ</div>
+      <ul class="mb-0 mt-1 small ps-3" th:if="${lyDoCanhBao != null and !lyDoCanhBao.isEmpty()}">
+        <li th:each="reason : ${lyDoCanhBao}" th:text="${reason}">Lý do cảnh báo</li>
+      </ul>
+    </div>
+  </div>
+
   <!-- Bảng điểm gom nhóm theo từng học kỳ -->
   <div th:unless="${byTerm.isEmpty()}" class="d-flex flex-column gap-4">
     <div th:each="entry : ${byTerm}" class="qd-panel">
-      <div class="qd-panel-header bg-light">
-        <h2 class="qd-panel-title text-primary">
+      <div class="qd-panel-header bg-light d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <h2 class="qd-panel-title text-primary mb-0">
           <i class="bi bi-calendar3 me-1"></i>
           <span th:text="${entry.key}">Học kỳ 1 (2023-2024)</span>
         </h2>
+        <div th:if="${termSummaries != null and termSummaries.get(entry.key) != null}"
+             class="d-flex align-items-center gap-2 small">
+          <span class="badge bg-white text-dark border">
+            Đạt: <strong th:text="${termSummaries.get(entry.key).passedCredits() + ' TC'}">15 TC</strong>
+          </span>
+          <span class="badge bg-primary bg-opacity-10 text-primary">
+            GPA kỳ: <strong th:text="${termSummaries.get(entry.key).gpa4() != null ? #numbers.formatDecimal(termSummaries.get(entry.key).gpa4(), 1, 2) : '—'}">3.25</strong>
+          </span>
+        </div>
       </div>
 
       <div class="table-responsive">
@@ -75,7 +95,11 @@
           <tbody>
             <tr th:each="row : ${entry.value}">
               <td class="font-monospace fw-bold" th:text="${row.maMon}">INT2204</td>
-              <td class="fw-semibold text-dark" th:text="${row.tenMon}">Lập trình hướng đối tượng</td>
+              <td class="fw-semibold text-dark">
+                <span th:text="${row.tenMon}">Lập trình hướng đối tượng</span>
+                <span th:if="${row.tinhVaoGPA != null and !row.tinhVaoGPA}"
+                      class="badge bg-light text-secondary border ms-1">Không tính GPA</span>
+              </td>
               <td class="text-center" th:text="${row.soTinChi}">3</td>
               <td class="text-center" th:text="${row.diemQuaTrinh != null ? #numbers.formatDecimal(row.diemQuaTrinh, 1, 1) : '—'}">8.5</td>
               <td class="text-center" th:text="${row.diemGiuaKy != null ? #numbers.formatDecimal(row.diemGiuaKy, 1, 1) : '—'}">8.0</td>

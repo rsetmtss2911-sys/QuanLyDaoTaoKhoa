@@ -11,6 +11,7 @@ import com.qldtkhoa.qldtkhoa_app.repository.BoMonRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.GiangVienRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.KhoaRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.MonHocRepository;
+import com.qldtkhoa.qldtkhoa_app.util.LikeUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,7 +31,7 @@ public class BoMonService {
     private final MonHocRepository monHocRepository;
 
     public Page<BoMonRow> search(String q, String maKhoa, Pageable pageable) {
-        Page<BoMon> page = boMonRepository.search(q == null ? "" : q.trim(), maKhoa, pageable);
+        Page<BoMon> page = boMonRepository.search(LikeUtils.escape(q), maKhoa, pageable);
         return page.map(b -> new BoMonRow(
                 b.getMaBoMon(),
                 b.getTenBoMon(),

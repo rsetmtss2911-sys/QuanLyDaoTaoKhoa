@@ -1,6 +1,7 @@
 package com.qldtkhoa.qldtkhoa_app.controller.admin;
 
-import com.qldtkhoa.qldtkhoa_app.entity.TaiKhoan;
+import com.qldtkhoa.qldtkhoa_app.exception.BusinessRuleException;
+import com.qldtkhoa.qldtkhoa_app.security.AppUserPrincipal;
 import com.qldtkhoa.qldtkhoa_app.service.TaiKhoanService;
 import com.qldtkhoa.qldtkhoa_app.service.VaiTroService;
 import com.qldtkhoa.qldtkhoa_app.util.FlashMessage;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -35,20 +37,29 @@ public class TaiKhoanAdminController {
         return "admin/tai-khoan/list";
     }
 
-    @PostMapping("/{email}/toggle-lock")
-    public String toggleLock(@PathVariable String email, RedirectAttributes redirect) {
-        TaiKhoan tk = taiKhoanService.getByEmail(email);
-        boolean currentlyActive = Boolean.TRUE.equals(tk.getTrangThaiKichHoat());
-        taiKhoanService.setLockStatus(email, currentlyActive); // if currentlyActive, lock it
-        String key = currentlyActive ? "taikhoan.locked" : "taikhoan.unlocked";
-        redirect.addFlashAttribute("flash", FlashMessage.success(key, email));
+    @PostMapping("/toggle-lock")
+    public String toggleLock(@RequestParam String email,
+                             @AuthenticationPrincipal AppUserPrincipal principal,
+                             RedirectAttributes redirect) {
+        try {
+            String currentAdminEmail = principal != null ? principal.getEmail() : null;
+            boolean locked = taiKhoanService.toggleLock(email, currentAdminEmail);
+            String key = locked ? "taikhoan.locked" : "taikhoan.unlocked";
+            redirect.addFlashAttribute("flash", FlashMessage.success(key, email));
+        } catch (BusinessRuleException ex) {
+            redirect.addFlashAttribute("flash", FlashMessage.danger(ex.getMessageKey(), ex.getArgs()));
+        }
         return "redirect:/admin/tai-khoan";
     }
 
-    @PostMapping("/{email}/reset-password")
-    public String resetPassword(@PathVariable String email, RedirectAttributes redirect) {
-        taiKhoanService.resetPassword(email, "123456");
-        redirect.addFlashAttribute("flash", FlashMessage.success("taikhoan.resetPassword.success", email));
+    @PostMapping("/reset-password")
+    public String resetPassword(@RequestParam String email, RedirectAttributes redirect) {
+        try {
+            taiKhoanService.resetPassword(email, "123456");
+            redirect.addFlashAttribute("flash", FlashMessage.success("taikhoan.resetPassword.success", email));
+        } catch (BusinessRuleException ex) {
+            redirect.addFlashAttribute("flash", FlashMessage.danger(ex.getMessageKey(), ex.getArgs()));
+        }
         return "redirect:/admin/tai-khoan";
     }
 }

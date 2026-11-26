@@ -34,7 +34,7 @@
        class="alert alert-warning py-3 px-4 d-flex align-items-center gap-3 mb-4 rounded-3 shadow-sm border-warning" role="alert">
     <i class="bi bi-exclamation-triangle-fill fs-3 text-warning flex-shrink-0"></i>
     <div>
-      <div class="fw-bold">Tài khoản hiện không ở trạng thái Được học (Trạng thái học vụ: <span th:text="${sinhVien.trangThaiHienTai.label}">Bảo lưu</span>)</div>
+      <div class="fw-bold">Tài khoản hiện không ở trạng thái Đang học (Trạng thái học vụ: <span th:text="${sinhVien.trangThaiHienTai.label}">Bảo lưu</span>)</div>
       <div class="small text-muted">Bạn không thể thực hiện đăng ký học phần trong thời gian này. Vui lòng liên hệ Phòng Đào tạo nếu cần hỗ trợ học vụ.</div>
     </div>
   </div>
@@ -104,6 +104,10 @@
             <td>
               <span class="fw-semibold text-dark" th:text="${row.tenMon}">Lập trình hướng đối tượng</span>
               <span class="text-muted small font-monospace d-block" th:text="${row.maMon}">INT2204</span>
+              <span th:if="${row.blockReason != null}" class="badge bg-danger bg-opacity-10 text-danger mt-1 d-inline-block"
+                    th:text="${row.blockReason}">Lý do chặn</span>
+              <span th:if="${row.warningNote != null}" class="badge bg-warning bg-opacity-10 text-warning mt-1 d-inline-block"
+                    th:text="${row.warningNote}">Cảnh báo CTĐT</span>
             </td>
             <td class="text-center fw-bold" th:text="${row.soTinChi}">3</td>
             <td th:text="${row.tenGV}">TS. Nguyễn Văn A</td>
@@ -135,27 +139,22 @@
                 Đã chọn lớp khác
               </span>
 
-              <!-- Trường hợp 3: Hết chỗ -->
-              <span th:if="${!row.daDangKy and !row.daDangKyMonKhac and row.siSoHienTai >= row.siSoToiDa}"
-                    class="badge bg-danger bg-opacity-10 text-danger">
-                Hết chỗ
+              <!-- Trường hợp 3: Không đủ điều kiện / Hết chỗ / Khóa -->
+              <span th:if="${!row.daDangKy and !row.daDangKyMonKhac and !row.eligible}"
+                    class="badge bg-danger bg-opacity-10 text-danger"
+                    th:text="${row.siSoHienTai >= row.siSoToiDa ? 'Hết chỗ' : 'Không đủ ĐK'}">
+                Không đủ ĐK
               </span>
 
-              <!-- Trường hợp 4: Có thể đăng ký (nếu SV đang ở trạng thái Được học) -->
-              <form th:if="${!row.daDangKy and !row.daDangKyMonKhac and row.siSoHienTai < row.siSoToiDa and (sinhVien == null or sinhVien.trangThaiHienTai.name() == 'DANG_HOC')}"
+              <!-- Trường hợp 4: Có thể đăng ký -->
+              <form th:if="${!row.daDangKy and !row.daDangKyMonKhac and row.eligible}"
                     method="post" th:action="@{/sinh-vien/dang-ky-hoc-phan/register}">
                 <input type="hidden" name="maLHP" th:value="${row.maLHP}">
                 <input type="hidden" name="maHK" th:value="${currentHk}">
-                <button type="submit" class="btn btn-sm btn-primary">
+                <button type="submit" class="btn btn-sm btn-primary" data-submit-once>
                   <i class="bi bi-plus-lg me-1"></i> Đăng ký
                 </button>
               </form>
-
-              <!-- Trường hợp 5: Tạm khóa do trạng thái học vụ (Bảo lưu, Đình chỉ, v.v.) -->
-              <button th:if="${!row.daDangKy and !row.daDangKyMonKhac and row.siSoHienTai < row.siSoToiDa and sinhVien != null and sinhVien.trangThaiHienTai.name() != 'DANG_HOC'}"
-                      type="button" class="btn btn-sm btn-secondary" disabled title="Tài khoản không ở trạng thái Được học">
-                <i class="bi bi-lock-fill me-1"></i> Khóa ĐK
-              </button>
             </td>
           </tr>
         </tbody>

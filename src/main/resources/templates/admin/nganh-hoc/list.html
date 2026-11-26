@@ -73,7 +73,7 @@
               <span class="badge bg-success bg-opacity-10 text-success fw-semibold" th:text="${row.tenKhoa}">Khoa CNTT</span>
             </td>
             <td class="text-end text-nowrap">
-              <span sec:authorize="hasRole('PHONG_DAO_TAO')">
+              <span sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
                 <a class="btn btn-sm btn-outline-primary me-1" th:href="@{/admin/nganh-hoc/{id}/edit(id=${row.maNganh})}" title="Chỉnh sửa">
                   <i class="bi bi-pencil"></i> Sửa
                 </a>
@@ -84,7 +84,7 @@
                   </button>
                 </form>
               </span>
-              <span sec:authorize="!hasRole('PHONG_DAO_TAO')" class="text-muted small">
+              <span sec:authorize="!hasAnyRole('ADMIN','PHONG_DAO_TAO')" class="text-muted small">
                 Chỉ xem
               </span>
             </td>

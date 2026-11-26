@@ -22,8 +22,8 @@ public interface MonHocRepository extends JpaRepository<MonHoc, String> {
     @Query("""
            select m from MonHoc m
            where (:maBoMon is null or :maBoMon = '' or m.boMon.maBoMon = :maBoMon)
-             and (:q = '' or lower(m.maMon) like lower(concat('%', :q, '%'))
-                         or lower(m.tenMon) like lower(concat('%', :q, '%')))
+             and (:q = '' or lower(m.maMon) like lower(concat('%', :q, '%')) escape '\\'
+                         or lower(m.tenMon) like lower(concat('%', :q, '%')) escape '\\')
            """)
     Page<MonHoc> search(@Param("q") String q, @Param("maBoMon") String maBoMon, Pageable pageable);
 

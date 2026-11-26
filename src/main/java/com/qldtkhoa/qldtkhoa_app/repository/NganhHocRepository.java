@@ -23,8 +23,8 @@ public interface NganhHocRepository extends JpaRepository<NganhHoc, String> {
     @Query("""
            select nh from NganhHoc nh
            where (:maKhoa is null or :maKhoa = '' or nh.khoa.maKhoa = :maKhoa)
-             and (:q = '' or lower(nh.maNganh) like lower(concat('%', :q, '%'))
-                         or lower(nh.tenNganh) like lower(concat('%', :q, '%')))
+             and (:q = '' or lower(nh.maNganh) like lower(concat('%', :q, '%')) escape '\\'
+                         or lower(nh.tenNganh) like lower(concat('%', :q, '%')) escape '\\')
            """)
     Page<NganhHoc> search(@Param("q") String q, @Param("maKhoa") String maKhoa, Pageable pageable);
 

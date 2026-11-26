@@ -3,12 +3,15 @@ package com.qldtkhoa.qldtkhoa_app.controller;
 import com.qldtkhoa.qldtkhoa_app.dto.ChangePasswordForm;
 import com.qldtkhoa.qldtkhoa_app.exception.BusinessRuleException;
 import com.qldtkhoa.qldtkhoa_app.service.TaiKhoanService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.security.core.Authentication;
 import org.springframework.ui.ConcurrentModel;
 import org.springframework.ui.Model;
@@ -24,19 +27,26 @@ class AuthControllerTest {
     @Mock
     private TaiKhoanService taiKhoanService;
 
+    @Mock
+    private Environment environment;
+
     @InjectMocks
     private AuthController controller;
 
     @Test
-    @DisplayName("login: Người dùng chưa đăng nhập thì trả về view auth/login")
+    @DisplayName("login: Người dùng chưa đăng nhập thì trả về view auth/login và ẩn tài khoản mẫu khi không ở profile dev/local")
     void login_anonymous_returnsLoginView() {
         Authentication auth = mock(Authentication.class);
         when(auth.isAuthenticated()).thenReturn(false);
+        when(environment.acceptsProfiles(any(Profiles.class))).thenReturn(false);
 
-        String view = controller.login(auth);
+        Model model1 = new ConcurrentModel();
+        String view = controller.login(auth, model1);
         assertThat(view).isEqualTo("auth/login");
+        assertThat(model1.getAttribute("showDemoCredentials")).isEqualTo(false);
 
-        String viewNull = controller.login(null);
+        Model model2 = new ConcurrentModel();
+        String viewNull = controller.login(null, model2);
         assertThat(viewNull).isEqualTo("auth/login");
     }
 
@@ -47,7 +57,7 @@ class AuthControllerTest {
         when(auth.isAuthenticated()).thenReturn(true);
         when(auth.getName()).thenReturn("admin@vnu.edu.vn");
 
-        String view = controller.login(auth);
+        String view = controller.login(auth, new ConcurrentModel());
         assertThat(view).isEqualTo("redirect:/");
     }
 
@@ -70,7 +80,7 @@ class AuthControllerTest {
         Authentication auth = mock(Authentication.class);
         RedirectAttributes redirect = mock(RedirectAttributes.class);
 
-        String view = controller.changePassword(form, result, auth, redirect);
+        String view = controller.changePassword(form, result, auth, null, redirect);
 
         assertThat(view).isEqualTo("auth/change-password");
         verifyNoInteractions(taiKhoanService);
@@ -85,11 +95,12 @@ class AuthControllerTest {
         Authentication auth = mock(Authentication.class);
         when(auth.getName()).thenReturn("user@vnu.edu.vn");
         RedirectAttributes redirect = mock(RedirectAttributes.class);
+        HttpServletRequest request = mock(HttpServletRequest.class);
 
-        String view = controller.changePassword(form, result, auth, redirect);
+        String view = controller.changePassword(form, result, auth, request, redirect);
 
         assertThat(view).isEqualTo("redirect:/");
-        verify(taiKhoanService).changePassword("user@vnu.edu.vn", form);
+        verify(taiKhoanService).changePassword("user@vnu.edu.vn", form, null);
         verify(redirect).addFlashAttribute(eq("flash"), any());
     }
 
@@ -104,9 +115,9 @@ class AuthControllerTest {
         RedirectAttributes redirect = mock(RedirectAttributes.class);
 
         doThrow(new BusinessRuleException("auth.password.oldMismatch", "Mật khẩu cũ không đúng"))
-                .when(taiKhoanService).changePassword("user@vnu.edu.vn", form);
+                .when(taiKhoanService).changePassword("user@vnu.edu.vn", form, null);
 
-        String view = controller.changePassword(form, result, auth, redirect);
+        String view = controller.changePassword(form, result, auth, null, redirect);
 
         assertThat(view).isEqualTo("auth/change-password");
         verify(result).reject(eq("auth.password.oldMismatch"), anyString());

@@ -10,6 +10,7 @@ public class MonHocForm {
 
     @NotBlank(message = "{monhoc.maMon.required}")
     @Size(max = 20, message = "{monhoc.maMon.size}")
+    @Pattern(regexp = "^[A-Za-z0-9_.-]+$", message = "{common.code.pattern}")
     private String maMon;
 
     @NotBlank(message = "{monhoc.tenMon.required}")

@@ -12,8 +12,10 @@ import com.qldtkhoa.qldtkhoa_app.exception.ResourceNotFoundException;
 import com.qldtkhoa.qldtkhoa_app.repository.BoMonRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.ChuongTrinhDaoTaoRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.DieuKienMonHocRepository;
+import com.qldtkhoa.qldtkhoa_app.repository.KetQuaHocTapRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.LopHocPhanRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.MonHocRepository;
+import com.qldtkhoa.qldtkhoa_app.util.LikeUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,10 +34,12 @@ public class MonHocService {
     private final DieuKienMonHocRepository dieuKienMonHocRepository;
     private final ChuongTrinhDaoTaoRepository chuongTrinhDaoTaoRepository;
     private final LopHocPhanRepository lopHocPhanRepository;
+    private final KetQuaHocTapRepository ketQuaHocTapRepository;
 
     public Page<MonHocRow> search(String q, String maBoMon, Pageable pageable) {
-        return monHocRepository.search(q == null ? "" : q.trim(), maBoMon, pageable)
-                .map(this::toRow);
+        Page<MonHoc> page = monHocRepository.search(LikeUtils.escape(q), maBoMon, pageable);
+        Map<String, Integer> prereqCountMap = loadPrereqCountMap(page.getContent());
+        return page.map(mh -> toRow(mh, prereqCountMap.getOrDefault(mh.getMaMon(), 0)));
     }
 
     public List<MonHoc> findAll() {
@@ -101,6 +105,15 @@ public class MonHocService {
     public void update(String maMon, MonHocForm form) {
         MonHoc mh = getOrThrow(maMon);
         validateCreditsAndWeights(form);
+
+        boolean hasGrades = ketQuaHocTapRepository.existsByDangKy_LopHocPhan_MonHoc_MaMonAndDiemTongIsNotNull(maMon);
+        boolean weightsOrCreditsChanged = !Objects.equals(mh.getSoTinChi(), form.getSoTinChi())
+                || Math.abs(mh.getTrongSoQT() - form.getTrongSoQT()) > 0.00001
+                || Math.abs(mh.getTrongSoGK() - form.getTrongSoGK()) > 0.00001
+                || Math.abs(mh.getTrongSoCK() - form.getTrongSoCK()) > 0.00001;
+        if (hasGrades && weightsOrCreditsChanged) {
+            throw new BusinessRuleException("monhoc.trongSoLocked");
+        }
 
         BoMon bm = boMonRepository.findById(form.getMaBoMon())
                 .orElseThrow(() -> new ResourceNotFoundException("bomon.notFound", form.getMaBoMon()));
@@ -195,13 +208,30 @@ public class MonHocService {
         }
 
         double sumWeights = form.getTrongSoQT() + form.getTrongSoGK() + form.getTrongSoCK();
-        if (Math.abs(sumWeights - 1.0) > 0.01) {
+        if (Math.abs(sumWeights - 1.0) >= 0.0001) {
             throw new BusinessRuleException("Tổng trọng số đánh giá (QT + GK + CK) phải bằng 1.0 (100%)! Hiện tại: " + Math.round(sumWeights * 100) + "%");
         }
     }
 
+    private Map<String, Integer> loadPrereqCountMap(List<MonHoc> list) {
+        if (list == null || list.isEmpty()) {
+            return Map.of();
+        }
+        List<String> ids = list.stream().map(mh -> mh.getMaMon()).toList();
+        List<Object[]> counts = dieuKienMonHocRepository.countByMonHocIn(ids);
+        Map<String, Integer> map = new HashMap<>();
+        for (Object[] row : counts) {
+            map.put((String) row[0], ((Number) row[1]).intValue());
+        }
+        return map;
+    }
+
     public MonHocRow toRow(MonHoc mh) {
         int soLuongTienQuyet = (int) dieuKienMonHocRepository.countByMonHoc_MaMon(mh.getMaMon());
+        return toRow(mh, soLuongTienQuyet);
+    }
+
+    private MonHocRow toRow(MonHoc mh, int soLuongTienQuyet) {
         return new MonHocRow(
                 mh.getMaMon(),
                 mh.getTenMon(),

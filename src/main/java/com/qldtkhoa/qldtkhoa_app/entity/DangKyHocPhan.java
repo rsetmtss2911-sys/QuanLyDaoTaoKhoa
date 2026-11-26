@@ -41,6 +41,9 @@ public class DangKyHocPhan extends AssignedIdEntity<DangKyHocPhanId> {
     @Column(name = "TrangThaiDangKy", length = 50, nullable = false)
     private TrangThaiDangKy trangThaiDangKy = TrangThaiDangKy.HOP_LE;
 
+    @Column(name = "LyDoCamThi", length = 255)
+    private String lyDoCamThi;
+
     public static DangKyHocPhan of(SinhVien sv, LopHocPhan lhp) {
         DangKyHocPhan dk = new DangKyHocPhan();
         dk.id = new DangKyHocPhanId(sv.getMaSV(), lhp.getMaLHP());

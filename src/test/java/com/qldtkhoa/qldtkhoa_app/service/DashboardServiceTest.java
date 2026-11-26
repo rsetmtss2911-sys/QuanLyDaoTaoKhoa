@@ -6,14 +6,11 @@ import com.qldtkhoa.qldtkhoa_app.entity.HocKyNamHoc;
 import com.qldtkhoa.qldtkhoa_app.entity.SinhVien;
 import com.qldtkhoa.qldtkhoa_app.entity.enums.TrangThaiSinhVien;
 import com.qldtkhoa.qldtkhoa_app.entity.view.BangDiemSinhVienView;
-import com.qldtkhoa.qldtkhoa_app.repository.BangDiemSinhVienViewRepository;
-import com.qldtkhoa.qldtkhoa_app.repository.LichGiangDayRepository;
-import com.qldtkhoa.qldtkhoa_app.repository.QuyetDinhHocVuRepository;
-import com.qldtkhoa.qldtkhoa_app.repository.SinhVienRepository;
+import com.qldtkhoa.qldtkhoa_app.repository.*;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -31,6 +28,24 @@ class DashboardServiceTest {
     private SinhVienRepository sinhVienRepository;
 
     @Mock
+    private GiangVienRepository giangVienRepository;
+
+    @Mock
+    private LopHocPhanRepository lopHocPhanRepository;
+
+    @Mock
+    private LopHocPhanService lopHocPhanService;
+
+    @Mock
+    private MonHocRepository monHocRepository;
+
+    @Mock
+    private LopHanhChinhRepository lopHanhChinhRepository;
+
+    @Mock
+    private LopHanhChinhService lopHanhChinhService;
+
+    @Mock
     private HocKyService hocKyService;
 
     @Mock
@@ -43,13 +58,26 @@ class DashboardServiceTest {
     private QuyetDinhHocVuRepository quyetDinhHocVuRepository;
 
     @Mock
+    private ThongKeLopHocPhanViewRepository thongKeLopHocPhanViewRepository;
+
+    @Mock
     private BangDiemSinhVienViewRepository bangDiemViewRepository;
 
     @Mock
     private AcademicPolicy academicPolicy;
 
-    @InjectMocks
     private DashboardService dashboardService;
+
+    @BeforeEach
+    void setUp() {
+        HocLucService hocLucService = new HocLucService(bangDiemViewRepository, academicPolicy);
+        dashboardService = new DashboardService(
+                sinhVienRepository, giangVienRepository, lopHocPhanRepository, lopHocPhanService,
+                monHocRepository, lopHanhChinhRepository, lopHanhChinhService, quyetDinhHocVuRepository,
+                thongKeLopHocPhanViewRepository, hocKyService, dangKyHocPhanService,
+                lichGiangDayRepository, bangDiemViewRepository, academicPolicy, hocLucService
+        );
+    }
 
     @Test
     @DisplayName("getSinhVienDashboard: Sử dụng passScore từ AcademicPolicy để tính tín chỉ tích lũy và GPA")
@@ -78,12 +106,20 @@ class DashboardServiceTest {
         when(quyetDinhHocVuRepository.findBySinhVien_MaSVOrderByNgayHieuLucDesc("SV001")).thenReturn(Collections.emptyList());
 
         BangDiemSinhVienView v1 = mock(BangDiemSinhVienView.class);
+        when(v1.getMaMon()).thenReturn("INT1001");
+        when(v1.getTenHK()).thenReturn("Học kỳ 1");
+        when(v1.getNamHoc()).thenReturn(2024);
         when(v1.getDiemTong()).thenReturn(8.0);
         when(v1.getDiemHe4()).thenReturn(3.5);
         when(v1.getSoTinChi()).thenReturn(3);
+        when(v1.getTinhVaoGPA()).thenReturn(true);
 
         BangDiemSinhVienView v2 = mock(BangDiemSinhVienView.class);
+        when(v2.getMaMon()).thenReturn("INT1002");
+        when(v2.getTenHK()).thenReturn("Học kỳ 1");
+        when(v2.getNamHoc()).thenReturn(2024);
         when(v2.getDiemTong()).thenReturn(3.0); // Fail (< 4.0)
+        when(v2.getTinhVaoGPA()).thenReturn(true);
 
         when(bangDiemViewRepository.findById_MaSVOrderByNamHocDescMaHKAscTenMonAsc("SV001"))
                 .thenReturn(List.of(v1, v2));
@@ -97,6 +133,6 @@ class DashboardServiceTest {
         assertThat(view.minCreditsTerm()).isEqualTo(14);
         assertThat(view.maxCreditsTerm()).isEqualTo(25);
 
-        verify(academicPolicy).passScore();
+        verify(academicPolicy, atLeastOnce()).passScore();
     }
 }

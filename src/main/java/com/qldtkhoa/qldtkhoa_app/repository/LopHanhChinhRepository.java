@@ -30,8 +30,8 @@ public interface LopHanhChinhRepository extends JpaRepository<LopHanhChinh, Stri
            select lhc from LopHanhChinh lhc
            where (:maNganh is null or :maNganh = '' or lhc.nganhHoc.maNganh = :maNganh)
              and (:maKhoaHoc is null or :maKhoaHoc = '' or lhc.khoaNhapHoc.maKhoaHoc = :maKhoaHoc)
-             and (:q = '' or lower(lhc.maLopHC) like lower(concat('%', :q, '%'))
-                         or lower(lhc.tenLopHC) like lower(concat('%', :q, '%')))
+             and (:q = '' or lower(lhc.maLopHC) like lower(concat('%', :q, '%')) escape '\\'
+                         or lower(lhc.tenLopHC) like lower(concat('%', :q, '%')) escape '\\')
            """)
     Page<LopHanhChinh> search(@Param("q") String q,
                               @Param("maNganh") String maNganh,

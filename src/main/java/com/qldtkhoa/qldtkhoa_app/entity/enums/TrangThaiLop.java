@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 public enum TrangThaiLop implements DbLabeled {
     CHO_MO("Chờ mở"),
     DA_CHOT_DANH_SACH("Đã chốt danh sách"),
+    DA_KHOA_DIEM("Đã khóa điểm"),
     DA_HUY("Đã hủy");
 
     private final String label;

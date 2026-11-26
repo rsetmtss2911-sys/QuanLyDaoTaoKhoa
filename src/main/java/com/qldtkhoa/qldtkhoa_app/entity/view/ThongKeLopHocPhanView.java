@@ -45,6 +45,9 @@ public class ThongKeLopHocPhanView {
     @Column(name = "SoChoConTrong")
     private Integer soChoConTrong;
 
+    @Column(name = "SoDaChamDiem")
+    private Integer soDaChamDiem;
+
     @Column(name = "TrangThaiLop")
     private TrangThaiLop trangThaiLop;
 }

@@ -13,6 +13,23 @@ public record DiemRow(
         Double diemTong,
         Double diemHe4,
         String diemChu,
-        boolean camThi
+        boolean camThi,
+        String lyDoCamThi
 ) {
+    public DiemRow(
+            String maSV,
+            String hoTen,
+            String maLopHC,
+            TrangThaiDangKy trangThaiDangKy,
+            Double diemQuaTrinh,
+            Double diemGiuaKy,
+            Double diemCuoiKy,
+            Double diemTong,
+            Double diemHe4,
+            String diemChu,
+            boolean camThi
+    ) {
+        this(maSV, hoTen, maLopHC, trangThaiDangKy, diemQuaTrinh, diemGiuaKy, diemCuoiKy,
+                diemTong, diemHe4, diemChu, camThi, null);
+    }
 }

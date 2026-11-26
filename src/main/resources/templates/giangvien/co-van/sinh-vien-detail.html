@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title th:text="${'Hồ sơ học tập ' + sv.maSV + ' · Cố vấn học tập'}">Hồ sơ học tập sinh viên</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div th:replace="~{fragments/flash :: flash}"></div>
+
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+      <nav aria-label="Đường dẫn">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a th:href="@{/giang-vien/dashboard}">Trang chủ</a></li>
+          <li class="breadcrumb-item"><a th:href="@{/giang-vien/co-van/lop-hanh-chinh}">Cố vấn học tập</a></li>
+          <li class="breadcrumb-item" th:if="${sv.lopHanhChinh != null}">
+            <a th:href="@{/giang-vien/co-van/lop-hanh-chinh/{id}(id=${sv.lopHanhChinh.maLopHC})}"
+               th:text="${sv.lopHanhChinh.maLopHC}">CNTT2023A</a>
+          </li>
+          <li class="breadcrumb-item active" aria-current="page" th:text="${sv.maSV}">23020001</li>
+        </ol>
+      </nav>
+      <div class="d-flex align-items-center gap-3">
+        <h1 class="qd-h1 mb-0" th:text="${sv.hoTen + ' (' + sv.maSV + ')'}">Nguyễn Văn A</h1>
+        <span th:replace="~{fragments/status-badge :: studentStatus(${sv.trangThaiHienTai})}"></span>
+      </div>
+    </div>
+    <a class="btn btn-outline-secondary"
+       th:href="${sv.lopHanhChinh != null} ? @{/giang-vien/co-van/lop-hanh-chinh/{id}(id=${sv.lopHanhChinh.maLopHC})} : @{/giang-vien/co-van/lop-hanh-chinh}">
+      <i class="bi bi-arrow-left me-1"></i> Quay lại lớp cố vấn
+    </a>
+  </div>
+
+  <!-- Tóm tắt học lực & tiến độ CTĐT -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
+        <div class="text-muted small mb-1">CPA tích lũy (Hệ 4)</div>
+        <div class="h3 fw-bold text-primary mb-0"
+             th:text="${transcript.cpa4 != null ? #numbers.formatDecimal(transcript.cpa4, 1, 2) : '—'}">3.45</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
+        <div class="text-muted small mb-1">Xếp loại học lực</div>
+        <div class="h3 fw-bold text-info mb-0" th:text="${transcript.xepLoai}">Khá</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
+        <div class="text-muted small mb-1">Tín chỉ tích lũy</div>
+        <div class="h3 fw-bold text-success mb-0" th:text="${transcript.tongTCTichLuy + ' TC'}">45 TC</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
+        <div class="text-muted small mb-1">Hoàn thành CTĐT</div>
+        <div class="h3 fw-bold text-dark mb-0"
+             th:text="${tienDo.completedCredits + ' / ' + tienDo.totalCurriculumCredits + ' TC (' + tienDo.progressPercent + '%)'}">45 / 135 TC</div>
+      </div>
+    </div>
+  </div>
+
+  <div th:if="${transcript.canhBaoHocVu}" class="alert alert-danger mb-4" role="alert">
+    <strong>Cảnh báo học vụ:</strong>
+    <ul class="mb-0 mt-1 small ps-3">
+      <li th:each="w : ${transcript.lyDoCanhBao}" th:text="${w}">Lý do</li>
+    </ul>
+  </div>
+
+  <!-- Quyết định học vụ -->
+  <div class="qd-panel mb-4">
+    <div class="qd-panel-header">
+      <h2 class="qd-panel-title mb-0">Lịch sử Quyết định học vụ</h2>
+    </div>
+    <div class="table-responsive">
+      <table class="table qd-table mb-0">
+        <thead>
+          <tr>
+            <th scope="col">Số quyết định</th>
+            <th scope="col">Loại quyết định</th>
+            <th scope="col">Ngày hiệu lực</th>
+            <th scope="col">Lý do</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${decisions == null or decisions.isEmpty()}">
+            <td colspan="4" class="text-center text-muted py-3 small">Chưa có quyết định học vụ nào</td>
+          </tr>
+          <tr th:each="qd : ${decisions}">
+            <td class="font-monospace fw-bold" th:text="${qd.maQuyetDinh}">QD01</td>
+            <td><span th:replace="~{fragments/status-badge :: decisionType(${qd.loaiQuyetDinh})}"></span></td>
+            <td th:text="${#temporals.format(qd.ngayHieuLuc, 'dd/MM/yyyy')}">01/09/2025</td>
+            <td class="small" th:text="${qd.lyDo}">Lý do</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Kết quả học tập theo kỳ -->
+  <div class="qd-panel">
+    <div class="qd-panel-header">
+      <h2 class="qd-panel-title mb-0">Bảng điểm chi tiết theo học kỳ</h2>
+    </div>
+    <div th:if="${transcript.byTerm.isEmpty()}" class="p-4 text-center text-muted small">Chưa có kết quả học tập</div>
+    <div th:each="entry : ${transcript.byTerm}" class="border-top">
+      <div class="px-3 py-2 bg-light fw-semibold small text-primary d-flex justify-content-between">
+        <span th:text="${entry.key}">Học kỳ 1</span>
+        <span th:if="${transcript.termSummaries != null and transcript.termSummaries.get(entry.key) != null}"
+              th:text="${'GPA kỳ: ' + (transcript.termSummaries.get(entry.key).gpa4 != null ? #numbers.formatDecimal(transcript.termSummaries.get(entry.key).gpa4(), 1, 2) : '—')}">GPA</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table qd-table mb-0">
+          <thead>
+            <tr>
+              <th scope="col">Mã môn</th>
+              <th scope="col">Tên môn</th>
+              <th scope="col" class="text-center">TC</th>
+              <th scope="col" class="text-center">Tổng (10)</th>
+              <th scope="col" class="text-center">Hệ 4</th>
+              <th scope="col" class="text-center">Điểm chữ</th>
+              <th scope="col" class="text-center">Kết quả</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="row : ${entry.value}">
+              <td class="font-monospace fw-bold" th:text="${row.maMon}">INT2204</td>
+              <td th:text="${row.tenMon}">Môn học</td>
+              <td class="text-center" th:text="${row.soTinChi}">3</td>
+              <td class="text-center fw-bold" th:text="${row.diemTong != null ? #numbers.formatDecimal(row.diemTong, 1, 1) : '—'}">8.5</td>
+              <td class="text-center" th:text="${row.diemHe4 != null ? #numbers.formatDecimal(row.diemHe4, 1, 1) : '—'}">3.5</td>
+              <td class="text-center" th:text="${row.diemChu != null ? row.diemChu : '—'}">B+</td>
+              <td class="text-center" th:text="${row.ketQuaHocPhan != null ? row.ketQuaHocPhan : '—'}">Đạt</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

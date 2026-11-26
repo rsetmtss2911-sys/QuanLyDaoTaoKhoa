@@ -45,9 +45,9 @@ public interface LopHocPhanRepository extends JpaRepository<LopHocPhan, String> 
              and (:maMon is null or :maMon = '' or l.monHoc.maMon = :maMon)
              and (:maGV is null or :maGV = '' or l.giangVien.maNS = :maGV)
              and (:status is null or l.trangThaiLop = :status)
-             and (:q = '' or lower(l.maLHP) like lower(concat('%', :q, '%'))
-                         or lower(l.monHoc.tenMon) like lower(concat('%', :q, '%'))
-                         or lower(l.giangVien.nhanSu.hoTen) like lower(concat('%', :q, '%')))
+             and (:q = '' or lower(l.maLHP) like lower(concat('%', :q, '%')) escape '\\'
+                         or lower(l.monHoc.tenMon) like lower(concat('%', :q, '%')) escape '\\'
+                         or lower(l.giangVien.nhanSu.hoTen) like lower(concat('%', :q, '%')) escape '\\')
            """)
     Page<LopHocPhan> search(@Param("q") String q,
                             @Param("maHK") String maHK,
@@ -57,6 +57,8 @@ public interface LopHocPhanRepository extends JpaRepository<LopHocPhan, String> 
                             Pageable pageable);
 
     long countByTrangThaiLop(TrangThaiLop status);
+
+    long countByHocKy_MaHK(String maHK);
 
     @EntityGraph(attributePaths = {"monHoc", "giangVien", "giangVien.nhanSu", "hocKy"})
     @Query("""

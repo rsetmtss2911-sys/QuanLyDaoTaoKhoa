@@ -1,7 +1,9 @@
 package com.qldtkhoa.qldtkhoa_app.service;
 
+import com.qldtkhoa.qldtkhoa_app.config.AcademicPolicy;
 import com.qldtkhoa.qldtkhoa_app.dto.LichGiangDayForm;
 import com.qldtkhoa.qldtkhoa_app.entity.*;
+import com.qldtkhoa.qldtkhoa_app.entity.enums.TrangThaiDangKy;
 import com.qldtkhoa.qldtkhoa_app.entity.enums.TrangThaiLop;
 import com.qldtkhoa.qldtkhoa_app.exception.BusinessRuleException;
 import com.qldtkhoa.qldtkhoa_app.repository.*;
@@ -16,8 +18,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,6 +40,12 @@ class LopHocPhanServiceTest {
     private DangKyHocPhanRepository dangKyHocPhanRepository;
     @Mock
     private LichGiangDayRepository lichGiangDayRepository;
+    @Mock
+    private KetQuaHocTapRepository ketQuaHocTapRepository;
+    @Mock
+    private AcademicPolicy academicPolicy;
+    @Mock
+    private AuditService auditService;
 
     @InjectMocks
     private LopHocPhanService lopHocPhanService;
@@ -106,7 +117,8 @@ class LopHocPhanServiceTest {
 
         assertThatThrownBy(() -> lopHocPhanService.addSchedule("LHP01", form))
                 .isInstanceOf(BusinessRuleException.class)
-                .hasMessageContaining("Không thể xếp lịch cho lớp học phần đã bị hủy");
+                .extracting("messageKey")
+                .isEqualTo("lophp.schedule.lockedState");
 
         verify(lichGiangDayRepository, never()).save(any());
     }
@@ -123,7 +135,8 @@ class LopHocPhanServiceTest {
 
         assertThatThrownBy(() -> lopHocPhanService.addSchedule("LHP01", form))
                 .isInstanceOf(BusinessRuleException.class)
-                .hasMessageContaining("Tiết học không hợp lệ");
+                .extracting("messageKey")
+                .isEqualTo("lophp.schedule.invalidPeriods");
     }
 
     @Test
@@ -152,7 +165,8 @@ class LopHocPhanServiceTest {
 
         assertThatThrownBy(() -> lopHocPhanService.addSchedule("LHP01", form))
                 .isInstanceOf(BusinessRuleException.class)
-                .hasMessageContaining("Xung đột phòng học");
+                .extracting("messageKey")
+                .isEqualTo("lophp.schedule.roomConflict");
 
         verify(lichGiangDayRepository, never()).save(any());
     }
@@ -212,7 +226,8 @@ class LopHocPhanServiceTest {
 
         assertThatThrownBy(() -> lopHocPhanService.addSchedule("LHP01", form))
                 .isInstanceOf(BusinessRuleException.class)
-                .hasMessageContaining("Xung đột lịch giảng dạy");
+                .extracting("messageKey")
+                .isEqualTo("lophp.schedule.lecturerConflict");
     }
 
     @Test
@@ -223,5 +238,77 @@ class LopHocPhanServiceTest {
         lopHocPhanService.removeSchedule("LHP01", 2, 1);
 
         verify(lichGiangDayRepository, times(1)).deleteById(any());
+    }
+
+    @Test
+    @DisplayName("lockEnrollment: Chặn chốt danh sách nếu chưa xếp lịch hoặc chưa đủ sĩ số tối thiểu")
+    void lockEnrollment_noScheduleOrBelowMinStudents_throwsBusinessRuleException() {
+        when(lopHocPhanRepository.findByIdForUpdate("LHP01")).thenReturn(Optional.of(activeLhp));
+        when(lichGiangDayRepository.findByLopHocPhan_MaLHPOrderByThuTrongTuanAscTietBatDauAsc("LHP01"))
+                .thenReturn(List.of());
+
+        assertThatThrownBy(() -> lopHocPhanService.lockEnrollment("LHP01", "pdt@faculty.edu.vn"))
+                .isInstanceOf(BusinessRuleException.class)
+                .extracting("messageKey")
+                .isEqualTo("lophp.lock.noSchedule");
+
+        when(lichGiangDayRepository.findByLopHocPhan_MaLHPOrderByThuTrongTuanAscTietBatDauAsc("LHP01"))
+                .thenReturn(List.of(mock(LichGiangDay.class)));
+        when(dangKyHocPhanRepository.countByLopHocPhan_MaLHPAndTrangThaiDangKyIn(eq("LHP01"), anyCollection()))
+                .thenReturn(2L);
+        when(academicPolicy.minSectionStudents()).thenReturn(5);
+
+        assertThatThrownBy(() -> lopHocPhanService.lockEnrollment("LHP01", "pdt@faculty.edu.vn"))
+                .isInstanceOf(BusinessRuleException.class)
+                .extracting("messageKey")
+                .isEqualTo("lophp.lock.belowMinStudents");
+    }
+
+    @Test
+    @DisplayName("lockEnrollment & lockGrades: Chuyển trạng thái CHO_MO -> DA_CHOT_DANH_SACH -> DA_KHOA_DIEM và ghi audit")
+    void lockEnrollmentAndGrades_validLifecycle_transitionsAndAudits() {
+        when(lopHocPhanRepository.findByIdForUpdate("LHP01")).thenReturn(Optional.of(activeLhp));
+        when(lichGiangDayRepository.findByLopHocPhan_MaLHPOrderByThuTrongTuanAscTietBatDauAsc("LHP01"))
+                .thenReturn(List.of(mock(LichGiangDay.class)));
+        when(dangKyHocPhanRepository.countByLopHocPhan_MaLHPAndTrangThaiDangKyIn(eq("LHP01"), anyCollection()))
+                .thenReturn(15L);
+        when(academicPolicy.minSectionStudents()).thenReturn(5);
+
+        lopHocPhanService.lockEnrollment("LHP01", "pdt@faculty.edu.vn");
+        verify(activeLhp).setTrangThaiLop(TrangThaiLop.DA_CHOT_DANH_SACH);
+        verify(auditService).logAs(eq("pdt@faculty.edu.vn"), eq("LOCK_ENROLLMENT"),
+                eq("LopHocPhan"), eq("LHP01"), any(), any(), any());
+
+        when(activeLhp.getTrangThaiLop()).thenReturn(TrangThaiLop.DA_CHOT_DANH_SACH);
+        lopHocPhanService.lockGrades("LHP01", "pdt@faculty.edu.vn");
+        verify(activeLhp).setTrangThaiLop(TrangThaiLop.DA_KHOA_DIEM);
+        verify(auditService).logAs(eq("pdt@faculty.edu.vn"), eq("LOCK_GRADES"),
+                eq("LopHocPhan"), eq("LHP01"), any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("cancelSection: Chặn hủy lớp nếu đã có điểm; lớp chưa có điểm sẽ rút toàn bộ SV và hủy lớp")
+    void cancelSection_hasGradesOrValid_enforcesRuleAndWithdrawsStudents() {
+        when(lopHocPhanRepository.findByIdForUpdate("LHP01")).thenReturn(Optional.of(activeLhp));
+        when(ketQuaHocTapRepository.existsByDangKy_LopHocPhan_MaLHP("LHP01")).thenReturn(true);
+
+        assertThatThrownBy(() -> lopHocPhanService.cancelSection("LHP01", "Không đủ sĩ số", "pdt@faculty.edu.vn"))
+                .isInstanceOf(BusinessRuleException.class)
+                .extracting("messageKey")
+                .isEqualTo("lophp.cancel.hasGrades");
+
+        when(ketQuaHocTapRepository.existsByDangKy_LopHocPhan_MaLHP("LHP01")).thenReturn(false);
+        DangKyHocPhan dk1 = mock(DangKyHocPhan.class);
+        when(dk1.getTrangThaiDangKy()).thenReturn(TrangThaiDangKy.HOP_LE);
+        when(dangKyHocPhanRepository.findByLopHocPhan_MaLHPOrderBySinhVien_HoTenAsc("LHP01"))
+                .thenReturn(List.of(dk1));
+
+        int withdrawn = lopHocPhanService.cancelSection("LHP01", "Không mở được lớp", "pdt@faculty.edu.vn");
+
+        assertThat(withdrawn).isEqualTo(1);
+        verify(dk1).setTrangThaiDangKy(TrangThaiDangKy.DA_RUT_LOP);
+        verify(activeLhp).setTrangThaiLop(TrangThaiLop.DA_HUY);
+        verify(auditService).logAs(eq("pdt@faculty.edu.vn"), eq("CANCEL_SECTION"),
+                eq("LopHocPhan"), eq("LHP01"), any(), any(), any());
     }
 }

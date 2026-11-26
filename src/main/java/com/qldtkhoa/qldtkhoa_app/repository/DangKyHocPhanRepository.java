@@ -2,6 +2,7 @@ package com.qldtkhoa.qldtkhoa_app.repository;
 
 import com.qldtkhoa.qldtkhoa_app.entity.DangKyHocPhan;
 import com.qldtkhoa.qldtkhoa_app.entity.enums.TrangThaiDangKy;
+import com.qldtkhoa.qldtkhoa_app.entity.enums.TrangThaiLop;
 import com.qldtkhoa.qldtkhoa_app.entity.id.DangKyHocPhanId;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,6 +24,8 @@ public interface DangKyHocPhanRepository extends JpaRepository<DangKyHocPhan, Da
 
     boolean existsBySinhVien_MaSV(String maSV);
 
+    boolean existsByLopHocPhan_MaLHP(String maLHP);
+
     @EntityGraph(attributePaths = {"sinhVien", "sinhVien.lopHanhChinh", "lopHocPhan"})
     List<DangKyHocPhan> findByLopHocPhan_MaLHPOrderBySinhVien_HoTenAsc(String maLHP);
 
@@ -30,8 +33,56 @@ public interface DangKyHocPhanRepository extends JpaRepository<DangKyHocPhan, Da
     long countByLopHocPhan_MaLHPAndTrangThaiDangKyIn(@Param("maLHP") String maLHP,
                                                      @Param("statuses") Collection<TrangThaiDangKy> statuses);
 
-    boolean existsBySinhVien_MaSVAndLopHocPhan_MonHoc_MaMonAndLopHocPhan_HocKy_MaHKAndTrangThaiDangKy(
-            String maSV, String maMon, String maHK, TrangThaiDangKy status);
+    @Query("""
+           select dk.lopHocPhan.maLHP, count(dk)
+           from DangKyHocPhan dk
+           where dk.lopHocPhan.maLHP in :maLHPs
+             and dk.trangThaiDangKy in :statuses
+           group by dk.lopHocPhan.maLHP
+           """)
+    List<Object[]> countActiveByMaLHPIn(@Param("maLHPs") Collection<String> maLHPs,
+                                        @Param("statuses") Collection<TrangThaiDangKy> statuses);
+
+    @Query("""
+           select count(dk) > 0 from DangKyHocPhan dk
+           where dk.sinhVien.maSV = :maSV
+             and dk.lopHocPhan.monHoc.maMon = :maMon
+             and dk.lopHocPhan.hocKy.maHK = :maHK
+             and dk.trangThaiDangKy in :statuses
+             and dk.lopHocPhan.trangThaiLop <> :excludedSectionStatus
+           """)
+    boolean existsActiveCourseInTerm(@Param("maSV") String maSV,
+                                     @Param("maMon") String maMon,
+                                     @Param("maHK") String maHK,
+                                     @Param("statuses") Collection<TrangThaiDangKy> statuses,
+                                     @Param("excludedSectionStatus") TrangThaiLop excludedSectionStatus);
+
+    @Query("""
+           select dk from DangKyHocPhan dk
+           join fetch dk.lopHocPhan lhp
+           join fetch lhp.monHoc
+           where dk.sinhVien.maSV in :maSVs
+             and lhp.hocKy.maHK = :maHK
+             and lhp.maLHP <> :excludedMaLHP
+             and dk.trangThaiDangKy in :statuses
+             and lhp.trangThaiLop <> :cancelledStatus
+           """)
+    List<DangKyHocPhan> findOtherActiveRegistrationsForStudents(@Param("maSVs") Collection<String> maSVs,
+                                                                @Param("maHK") String maHK,
+                                                                @Param("excludedMaLHP") String excludedMaLHP,
+                                                                @Param("statuses") Collection<TrangThaiDangKy> statuses,
+                                                                @Param("cancelledStatus") TrangThaiLop cancelledStatus);
+
+    @Query("""
+           select dk from DangKyHocPhan dk
+           join fetch dk.lopHocPhan lhp
+           where dk.sinhVien.maSV = :maSV
+             and lhp.trangThaiLop = :openStatus
+             and dk.trangThaiDangKy in :statuses
+           """)
+    List<DangKyHocPhan> findActiveInSectionsWithStatus(@Param("maSV") String maSV,
+                                                       @Param("openStatus") TrangThaiLop openStatus,
+                                                       @Param("statuses") Collection<TrangThaiDangKy> statuses);
 
     @EntityGraph(attributePaths = {"sinhVien", "lopHocPhan"})
     Optional<DangKyHocPhan> findById_MaSVAndId_MaLHP(String maSV, String maLHP);

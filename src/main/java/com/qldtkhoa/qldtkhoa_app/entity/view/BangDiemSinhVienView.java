@@ -1,6 +1,7 @@
 package com.qldtkhoa.qldtkhoa_app.entity.view;
 
 import com.qldtkhoa.qldtkhoa_app.entity.enums.TrangThaiDangKy;
+import com.qldtkhoa.qldtkhoa_app.entity.enums.TrangThaiLop;
 import com.qldtkhoa.qldtkhoa_app.entity.id.DangKyHocPhanId;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -30,6 +31,12 @@ public class BangDiemSinhVienView {
     @Column(name = "NamHoc")
     private Integer namHoc;
 
+    @Column(name = "MaLHP", insertable = false, updatable = false)
+    private String maLHP;
+
+    @Column(name = "TrangThaiLop")
+    private TrangThaiLop trangThaiLop;
+
     @Column(name = "MaMon")
     private String maMon;
 
@@ -48,8 +55,14 @@ public class BangDiemSinhVienView {
     @Column(name = "TrongSoCK")
     private Double trongSoCK;
 
+    @Column(name = "TinhVaoGPA")
+    private Boolean tinhVaoGPA;
+
     @Column(name = "TrangThaiDangKy")
     private TrangThaiDangKy trangThaiDangKy;
+
+    @Column(name = "LyDoCamThi")
+    private String lyDoCamThi;
 
     @Column(name = "DiemQuaTrinh")
     private Double diemQuaTrinh;

@@ -28,6 +28,7 @@
           <li th:replace="~{fragments/sidebar :: item('/admin/bo-mon', 'diagram-3', 'Bộ môn trực thuộc')}"></li>
           <li th:replace="~{fragments/sidebar :: item('/admin/nhan-su', 'person-badge', 'Nhân sự & Giảng viên')}"></li>
           <li th:replace="~{fragments/sidebar :: item('/admin/tai-khoan', 'shield-lock', 'Tài khoản hệ thống')}"></li>
+          <li th:replace="~{fragments/sidebar :: item('/admin/nhat-ky', 'journal-text', 'Nhật ký hệ thống')}"></li>
         </ul>
 
         <div class="qd-nav-group-title">Học vụ & Giám sát đào tạo</div>
@@ -141,8 +142,8 @@
 <!-- Fragment item menu điều hướng -->
 <li th:fragment="item(path, icon, label)" xmlns:th="http://www.thymeleaf.org">
   <a class="qd-nav-link" th:href="@{${path}}"
-     th:classappend="${currentPath != null and path != null and currentPath.startsWith(path)} ? 'is-active'"
-     th:attr="aria-current=${currentPath != null and path != null and currentPath.startsWith(path)} ? 'page' : null">
+     th:classappend="${currentPath != null and path != null and (currentPath.equals(path) or currentPath.startsWith(path + '/'))} ? 'is-active'"
+     th:attr="aria-current=${currentPath != null and path != null and (currentPath.equals(path) or currentPath.startsWith(path + '/'))} ? 'page' : null">
     <i class="bi" th:classappend="'bi-' + ${icon}" aria-hidden="true"></i>
     <span th:text="${label}">Mục</span>
   </a>

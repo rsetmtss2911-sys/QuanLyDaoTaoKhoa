@@ -6,6 +6,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
 
@@ -18,6 +20,7 @@ public class QuyetDinhHocVu extends AssignedIdEntity<String> {
 
     @Id
     @Setter(AccessLevel.NONE)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "MaQuyetDinh", length = 50, nullable = false)
     private String maQuyetDinh;
 

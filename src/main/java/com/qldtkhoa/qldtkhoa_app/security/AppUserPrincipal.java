@@ -1,18 +1,25 @@
 package com.qldtkhoa.qldtkhoa_app.security;
 
 import lombok.Getter;
+import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.io.Serial;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 @Getter
-public class AppUserPrincipal implements UserDetails {
+public class AppUserPrincipal implements UserDetails, CredentialsContainer {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private final String email;
-    private final String password;
+    private String password;
     private final String role;
     private final boolean enabled;
     private final String displayName;
@@ -32,6 +39,11 @@ public class AppUserPrincipal implements UserDetails {
         this.maSV = maSV;
         this.isAdvisor = isAdvisor;
         this.authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+    }
+
+    @Override
+    public void eraseCredentials() {
+        this.password = null;
     }
 
     @Override
@@ -67,5 +79,21 @@ public class AppUserPrincipal implements UserDetails {
     @Override
     public boolean isEnabled() {
         return enabled;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AppUserPrincipal other)) return false;
+        return Objects.equals(normalizedEmail(email), normalizedEmail(other.email));
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(normalizedEmail(email));
+    }
+
+    private static String normalizedEmail(String value) {
+        return value == null ? null : value.trim().toLowerCase(Locale.ROOT);
     }
 }

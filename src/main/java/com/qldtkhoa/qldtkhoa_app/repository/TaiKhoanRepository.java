@@ -15,11 +15,13 @@ public interface TaiKhoanRepository extends JpaRepository<TaiKhoan, String> {
     @EntityGraph(attributePaths = "vaiTro")
     Optional<TaiKhoan> findByEmail(String email);
 
+    long countByVaiTro_MaVaiTroAndTrangThaiKichHoat(String maVaiTro, Boolean trangThaiKichHoat);
+
     @EntityGraph(attributePaths = "vaiTro")
     @Query("""
            select tk from TaiKhoan tk
            where (:maVaiTro is null or :maVaiTro = '' or tk.vaiTro.maVaiTro = :maVaiTro)
-             and (:q = '' or lower(tk.email) like lower(concat('%', :q, '%')))
+             and (:q = '' or lower(tk.email) like lower(concat('%', :q, '%')) escape '\\')
            """)
     Page<TaiKhoan> search(@Param("q") String q, @Param("maVaiTro") String maVaiTro, Pageable pageable);
 }

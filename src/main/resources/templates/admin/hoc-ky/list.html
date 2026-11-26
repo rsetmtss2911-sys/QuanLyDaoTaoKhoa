@@ -66,7 +66,7 @@
             <td class="font-monospace text-muted" th:text="${row.ngayBatDau != null ? #temporals.format(row.ngayBatDau, 'dd/MM/yyyy') : '-'}">01/09/2025</td>
             <td class="font-monospace text-muted" th:text="${row.ngayKetThuc != null ? #temporals.format(row.ngayKetThuc, 'dd/MM/yyyy') : '-'}">15/01/2026</td>
             <td class="text-end text-nowrap">
-              <span sec:authorize="hasRole('PHONG_DAO_TAO')">
+              <span sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
                 <a class="btn btn-sm btn-outline-primary me-1" th:href="@{/admin/hoc-ky/{id}/edit(id=${row.maHK})}" title="Chỉnh sửa">
                   <i class="bi bi-pencil"></i> Sửa
                 </a>
@@ -77,7 +77,7 @@
                   </button>
                 </form>
               </span>
-              <span sec:authorize="!hasRole('PHONG_DAO_TAO')" class="text-muted small">
+              <span sec:authorize="!hasAnyRole('ADMIN','PHONG_DAO_TAO')" class="text-muted small">
                 Chỉ xem
               </span>
             </td>

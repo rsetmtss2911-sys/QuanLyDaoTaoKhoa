@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+<head>
+  <title>Nhật ký hệ thống · QLĐT Khoa</title>
+</head>
+<body>
+<main id="main" class="qd-main" tabindex="-1">
+  <div th:replace="~{fragments/flash :: flash}"></div>
+
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+      <nav aria-label="Đường dẫn">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Nhật ký hệ thống</li>
+        </ol>
+      </nav>
+      <h1 class="qd-h1 mb-0">Nhật ký Kiểm toán Hệ thống (Audit Log)</h1>
+    </div>
+  </div>
+
+  <div class="qd-panel">
+    <form method="get" th:action="@{/admin/nhat-ky}" class="p-3 border-bottom d-flex flex-wrap gap-2 align-items-center" role="search">
+      <div class="input-group qd-search">
+        <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+        <input id="q" name="q" type="search" class="form-control border-start-0 ps-0"
+               th:value="${q}" placeholder="Tìm theo người thực hiện, mã bản ghi, lý do...">
+      </div>
+
+      <select name="doiTuong" class="form-select w-auto" aria-label="Lọc theo đối tượng">
+        <option value="">-- Tất cả đối tượng --</option>
+        <option th:each="dt : ${doiTuongs}" th:value="${dt}" th:text="${dt}" th:selected="${dt == doiTuong}">KetQuaHocTap</option>
+      </select>
+
+      <select name="hanhDong" class="form-select w-auto" aria-label="Lọc theo hành động">
+        <option value="">-- Tất cả hành động --</option>
+        <option th:each="hd : ${hanhDongs}" th:value="${hd}" th:text="${hd}" th:selected="${hd == hanhDong}">EDIT_LOCKED_GRADE</option>
+      </select>
+
+      <button class="btn btn-outline-secondary" type="submit">Lọc</button>
+      <a th:if="${(q != null and !q.isEmpty()) or (doiTuong != null and !doiTuong.isEmpty()) or (hanhDong != null and !hanhDong.isEmpty())}"
+         class="btn btn-link text-decoration-none" th:href="@{/admin/nhat-ky}">
+        Xóa bộ lọc
+      </a>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table qd-table mb-0">
+        <thead>
+          <tr>
+            <th scope="col" style="width: 155px;">Thời gian</th>
+            <th scope="col" style="width: 190px;">Người thực hiện</th>
+            <th scope="col" style="width: 170px;">Hành động</th>
+            <th scope="col" style="width: 150px;">Đối tượng / Mã</th>
+            <th scope="col">Giá trị cũ</th>
+            <th scope="col">Giá trị mới</th>
+            <th scope="col">Lý do</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${page.empty}">
+            <td colspan="7" class="text-center text-muted py-4">
+              <i class="bi bi-inbox me-2"></i>Chưa có bản ghi nhật ký nào phù hợp
+            </td>
+          </tr>
+          <tr th:each="row : ${page.content}">
+            <td class="font-monospace small text-muted" th:text="${#temporals.format(row.thoiGian, 'dd/MM/yyyy HH:mm:ss')}">26/11/2026 15:00:00</td>
+            <td class="small fw-semibold" th:text="${row.nguoiThucHien}">daotao@khoa.edu.vn</td>
+            <td>
+              <span class="badge bg-primary bg-opacity-10 text-primary font-monospace" th:text="${row.hanhDong}">EDIT_LOCKED_GRADE</span>
+            </td>
+            <td class="small">
+              <div class="fw-semibold" th:text="${row.doiTuong}">KetQuaHocTap</div>
+              <div class="font-monospace text-muted" th:text="${row.maBanGhi}">LHP01:SV01</div>
+            </td>
+            <td class="small text-muted font-monospace" th:text="${row.giaTriCu != null ? row.giaTriCu : '—'}">—</td>
+            <td class="small text-dark font-monospace" th:text="${row.giaTriMoi != null ? row.giaTriMoi : '—'}">—</td>
+            <td class="small" th:text="${row.lyDo != null ? row.lyDo : '—'}">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div th:replace="~{fragments/pagination :: pager(${page}, '/admin/nhat-ky', ${q})}"></div>
+</main>
+</body>
+</html>

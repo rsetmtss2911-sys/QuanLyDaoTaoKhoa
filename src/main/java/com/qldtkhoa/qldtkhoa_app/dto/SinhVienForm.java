@@ -1,10 +1,10 @@
 package com.qldtkhoa.qldtkhoa_app.dto;
 
 import com.qldtkhoa.qldtkhoa_app.entity.enums.GioiTinh;
-import com.qldtkhoa.qldtkhoa_app.entity.enums.TrangThaiSinhVien;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,6 +18,7 @@ public class SinhVienForm {
 
     @NotBlank(message = "{sinhvien.maSV.required}")
     @Size(max = 20, message = "{sinhvien.maSV.size}")
+    @Pattern(regexp = "^[A-Za-z0-9_.-]+$", message = "{common.code.pattern}")
     private String maSV;
 
     @NotBlank(message = "{sinhvien.hoTen.required}")
@@ -38,6 +39,4 @@ public class SinhVienForm {
     private String email;
 
     private String matKhau;
-
-    private TrangThaiSinhVien trangThaiHienTai = TrangThaiSinhVien.DANG_HOC;
 }

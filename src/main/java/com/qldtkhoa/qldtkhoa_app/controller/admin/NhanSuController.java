@@ -3,6 +3,7 @@ package com.qldtkhoa.qldtkhoa_app.controller.admin;
 import com.qldtkhoa.qldtkhoa_app.dto.NhanSuForm;
 import com.qldtkhoa.qldtkhoa_app.exception.BusinessRuleException;
 import com.qldtkhoa.qldtkhoa_app.exception.DuplicateResourceException;
+import com.qldtkhoa.qldtkhoa_app.security.AppUserPrincipal;
 import com.qldtkhoa.qldtkhoa_app.service.BoMonService;
 import com.qldtkhoa.qldtkhoa_app.service.NhanSuService;
 import com.qldtkhoa.qldtkhoa_app.service.VaiTroService;
@@ -13,9 +14,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -28,6 +31,11 @@ public class NhanSuController {
     private final NhanSuService nhanSuService;
     private final BoMonService boMonService;
     private final VaiTroService vaiTroService;
+
+    @InitBinder("form")
+    public void initFormBinder(WebDataBinder binder) {
+        binder.setAllowedFields("maNS", "hoTen", "email", "matKhau", "maVaiTro", "hocHam", "hocVi", "maBoMon");
+    }
 
     @GetMapping
     public String list(@RequestParam(defaultValue = "") String q,
@@ -118,9 +126,12 @@ public class NhanSuController {
 
     @PostMapping("/{maNS}/delete")
     @PreAuthorize("hasRole('ADMIN')")
-    public String delete(@PathVariable String maNS, RedirectAttributes redirect) {
+    public String delete(@PathVariable String maNS,
+                         @AuthenticationPrincipal AppUserPrincipal principal,
+                         RedirectAttributes redirect) {
         try {
-            nhanSuService.delete(maNS);
+            String currentAdminEmail = principal != null ? principal.getEmail() : null;
+            nhanSuService.delete(maNS, currentAdminEmail);
             redirect.addFlashAttribute("flash", FlashMessage.success("nhansu.deleted", maNS));
         } catch (BusinessRuleException ex) {
             redirect.addFlashAttribute("flash", FlashMessage.danger(ex.getMessageKey(), ex.getArgs()));

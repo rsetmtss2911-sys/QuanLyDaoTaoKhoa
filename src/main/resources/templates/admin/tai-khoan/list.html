@@ -78,8 +78,9 @@
             </td>
             <td class="text-end text-nowrap">
               <!-- Nút Khóa / Mở khóa -->
-              <form class="d-inline" method="post" th:action="@{/admin/tai-khoan/{email}/toggle-lock(email=${row.email})}"
+              <form class="d-inline" method="post" th:action="@{/admin/tai-khoan/toggle-lock}"
                     th:data-confirm="${row.trangThaiKichHoat ? 'Khóa tài khoản ' + row.email + '? Người dùng sẽ không thể đăng nhập.' : 'Mở khóa cho tài khoản ' + row.email + '?'}">
+                <input type="hidden" name="email" th:value="${row.email}">
                 <button class="btn btn-sm"
                         th:classappend="${row.trangThaiKichHoat ? 'btn-outline-warning' : 'btn-outline-success'}"
                         type="submit"
@@ -90,8 +91,9 @@
               </form>
 
               <!-- Nút Đặt lại mật khẩu -->
-              <form class="d-inline ms-1" method="post" th:action="@{/admin/tai-khoan/{email}/reset-password(email=${row.email})}"
+              <form class="d-inline ms-1" method="post" th:action="@{/admin/tai-khoan/reset-password}"
                     th:data-confirm="'Đặt lại mật khẩu cho ' + ${row.email} + ' về mặc định: 123456?'">
+                <input type="hidden" name="email" th:value="${row.email}">
                 <button class="btn btn-sm btn-outline-secondary" type="submit" title="Đặt lại mật khẩu về 123456">
                   <i class="bi bi-key me-1"></i> Reset MK
                 </button>

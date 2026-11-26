@@ -1,6 +1,5 @@
 package com.qldtkhoa.qldtkhoa_app.service;
 
-import com.qldtkhoa.qldtkhoa_app.config.AcademicPolicy;
 import com.qldtkhoa.qldtkhoa_app.dto.BangDiemLopForm;
 import com.qldtkhoa.qldtkhoa_app.dto.BangDiemSinhVienResponse;
 import com.qldtkhoa.qldtkhoa_app.dto.DiemEntryForm;
@@ -8,8 +7,9 @@ import com.qldtkhoa.qldtkhoa_app.dto.DiemRow;
 import com.qldtkhoa.qldtkhoa_app.entity.DangKyHocPhan;
 import com.qldtkhoa.qldtkhoa_app.entity.KetQuaHocTap;
 import com.qldtkhoa.qldtkhoa_app.entity.LopHocPhan;
+import com.qldtkhoa.qldtkhoa_app.entity.MonHoc;
 import com.qldtkhoa.qldtkhoa_app.entity.enums.TrangThaiDangKy;
-import com.qldtkhoa.qldtkhoa_app.entity.id.DangKyHocPhanId;
+import com.qldtkhoa.qldtkhoa_app.entity.enums.TrangThaiLop;
 import com.qldtkhoa.qldtkhoa_app.entity.view.BangDiemSinhVienView;
 import com.qldtkhoa.qldtkhoa_app.exception.BusinessRuleException;
 import com.qldtkhoa.qldtkhoa_app.exception.ResourceNotFoundException;
@@ -22,9 +22,10 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -37,40 +38,11 @@ public class DiemService {
     private final DangKyHocPhanRepository dangKyHocPhanRepository;
     private final KetQuaHocTapRepository ketQuaHocTapRepository;
     private final BangDiemSinhVienViewRepository bangDiemViewRepository;
-    private final AcademicPolicy academicPolicy;
+    private final HocLucService hocLucService;
+    private final AuditService auditService;
 
     public BangDiemSinhVienResponse getTranscriptView(String maSV) {
-        List<BangDiemSinhVienView> list = bangDiemViewRepository.findById_MaSVOrderByNamHocDescMaHKAscTenMonAsc(maSV);
-
-        Map<String, List<BangDiemSinhVienView>> byTerm = list.stream()
-                .collect(Collectors.groupingBy(
-                        v -> v.getTenHK() + " (" + v.getNamHoc() + ")",
-                        LinkedHashMap::new,
-                        Collectors.toList()
-                ));
-
-        double passScore = academicPolicy.passScore();
-        int tongTCTichLuy = 0;
-        double tongDiemHe4NhanTC = 0.0;
-        for (BangDiemSinhVienView v : list) {
-            if (v.getDiemTong() != null && v.getDiemTong() >= passScore && v.getDiemHe4() != null) {
-                tongTCTichLuy += v.getSoTinChi();
-                tongDiemHe4NhanTC += (v.getDiemHe4() * v.getSoTinChi());
-            }
-        }
-
-        Double cpa4 = tongTCTichLuy > 0 ? Math.round((tongDiemHe4NhanTC / tongTCTichLuy) * 100.0) / 100.0 : null;
-
-        String xepLoai = "—";
-        if (cpa4 != null) {
-            if (cpa4 >= 3.6) xepLoai = "Xuất sắc";
-            else if (cpa4 >= 3.2) xepLoai = "Giỏi";
-            else if (cpa4 >= 2.5) xepLoai = "Khá";
-            else if (cpa4 >= 2.0) xepLoai = "Trung bình";
-            else xepLoai = "Yếu";
-        }
-
-        return new BangDiemSinhVienResponse(byTerm, tongTCTichLuy, cpa4, xepLoai);
+        return hocLucService.evaluateStudent(maSV);
     }
 
     public List<DiemRow> getGradeSheet(String maLHP) {
@@ -83,25 +55,41 @@ public class DiemService {
                         dk -> dk.getSinhVien().getLopHanhChinh().getMaLopHC(),
                         (existing, replacement) -> existing
                 ));
+        Map<String, String> lyDoMap = registrations.stream()
+                .filter(dk -> dk.getSinhVien() != null && dk.getLyDoCamThi() != null)
+                .collect(Collectors.toMap(
+                        dk -> dk.getSinhVien().getMaSV(),
+                        dk -> dk.getLyDoCamThi(),
+                        (existing, replacement) -> existing
+                ));
 
         List<BangDiemSinhVienView> views = bangDiemViewRepository.findById_MaLHPOrderByHoTenAsc(maLHP);
         if (!views.isEmpty()) {
-            return views.stream().map(v -> new DiemRow(
-                    v.getMaSV(),
-                    v.getHoTen(),
-                    lopHcMap.getOrDefault(v.getMaSV(), "—"),
-                    v.getTrangThaiDangKy(),
-                    v.getDiemQuaTrinh(),
-                    v.getDiemGiuaKy(),
-                    v.getDiemCuoiKy(),
-                    v.getDiemTong(),
-                    v.getDiemHe4(),
-                    v.getDiemChu(),
-                    v.getTrangThaiDangKy() == TrangThaiDangKy.CAM_THI)).toList();
+            return views.stream().map(v -> {
+                boolean camThi = v.getTrangThaiDangKy() == TrangThaiDangKy.CAM_THI;
+                Double tong = camThi ? Double.valueOf(0.0) : v.getDiemTong();
+                Double he4 = camThi ? Double.valueOf(0.0)
+                        : (v.getDiemHe4() != null ? v.getDiemHe4() : GradeScale.toGpa4(tong));
+                String chu = camThi ? "F" : (v.getDiemChu() != null ? v.getDiemChu() : GradeScale.toLetter(tong));
+                return new DiemRow(
+                        v.getMaSV(),
+                        v.getHoTen(),
+                        lopHcMap.getOrDefault(v.getMaSV(), "—"),
+                        v.getTrangThaiDangKy(),
+                        v.getDiemQuaTrinh(),
+                        v.getDiemGiuaKy(),
+                        v.getDiemCuoiKy(),
+                        tong,
+                        he4,
+                        chu,
+                        camThi,
+                        v.getLyDoCamThi() != null ? v.getLyDoCamThi() : lyDoMap.get(v.getMaSV())
+                );
+            }).toList();
         }
 
         Map<String, KetQuaHocTap> gradeMap = ketQuaHocTapRepository.findById_MaLHP(maLHP).stream()
-                .collect(Collectors.toMap(k -> k.getId().getMaSV(), Function.identity()));
+                .collect(Collectors.toMap(k -> k.getId().getMaSV(), Function.identity(), (a, b) -> a));
 
         return registrations.stream()
                 .filter(dk -> dk.getTrangThaiDangKy() != TrangThaiDangKy.DA_RUT_LOP)
@@ -110,7 +98,14 @@ public class DiemService {
                     Double qt = kq != null ? kq.getDiemQuaTrinh() : null;
                     Double gk = kq != null ? kq.getDiemGiuaKy() : null;
                     Double ck = kq != null ? kq.getDiemCuoiKy() : null;
-                    Double tong = kq != null ? kq.getDiemTong() : null;
+                    boolean camThi = dk.getTrangThaiDangKy() == TrangThaiDangKy.CAM_THI;
+                    MonHoc mon = dk.getLopHocPhan() != null ? dk.getLopHocPhan().getMonHoc() : null;
+                    Double tong = camThi ? Double.valueOf(0.0)
+                            : (kq != null && kq.getDiemTong() != null
+                                ? kq.getDiemTong()
+                                : (kq != null && mon != null
+                                    ? GradeScale.calculateTotal(qt, gk, ck, mon.getTrongSoQT(), mon.getTrongSoGK(), mon.getTrongSoCK())
+                                    : null));
 
                     String maLopHC = (dk.getSinhVien() != null && dk.getSinhVien().getLopHanhChinh() != null)
                             ? dk.getSinhVien().getLopHanhChinh().getMaLopHC()
@@ -122,99 +117,176 @@ public class DiemService {
                             maLopHC,
                             dk.getTrangThaiDangKy(),
                             qt, gk, ck, tong,
-                            calculateGpa4(tong),
-                            calculateLetter(tong),
-                            dk.getTrangThaiDangKy() == TrangThaiDangKy.CAM_THI);
+                            camThi ? Double.valueOf(0.0) : calculateGpa4(tong),
+                            camThi ? "F" : calculateLetter(tong),
+                            camThi,
+                            dk.getLyDoCamThi());
                 }).toList();
     }
 
+    /**
+     * Lưu bảng điểm lớp học phần.
+     *
+     * @param isTrainingOffice {@code true} khi Phòng Đào tạo hiệu chỉnh (được phép sửa cả lớp {@code DA_KHOA_DIEM}
+     *                         nhưng bắt buộc nhập lý do và ghi {@code NhatKyHeThong} theo GATE 3c);
+     *                         {@code false} khi Giảng viên phụ trách chấm điểm (chỉ sửa được khi {@code DA_CHOT_DANH_SACH}).
+     */
     @Transactional
-    public void saveGradeSheet(String maLHP, BangDiemLopForm form, String lecturerMaNS, boolean isAdmin) {
+    public void saveGradeSheet(String maLHP, BangDiemLopForm form, String actorId, boolean isTrainingOffice) {
         LopHocPhan lhp = lopHocPhanRepository.findById(maLHP)
                 .orElseThrow(() -> new ResourceNotFoundException("lophp.notFound", maLHP));
 
-        // Kiểm tra quyền sở hữu (Record Ownership): Chỉ giảng viên được phân công mới
-        // được nhập điểm
-        if (!isAdmin && !lhp.getGiangVien().getMaNS().equalsIgnoreCase(lecturerMaNS)) {
+        if (!isTrainingOffice && (lhp.getGiangVien() == null || !lhp.getGiangVien().getMaNS().equalsIgnoreCase(actorId))) {
             throw new AccessDeniedException("Bạn không phải là giảng viên phụ trách lớp học phần này!");
         }
 
+        TrangThaiLop sectionStatus = lhp.getTrangThaiLop();
+        if (!isTrainingOffice) {
+            if (sectionStatus == TrangThaiLop.DA_KHOA_DIEM) {
+                throw new BusinessRuleException("grade.classGradesLocked");
+            }
+            if (sectionStatus != TrangThaiLop.DA_CHOT_DANH_SACH) {
+                throw new BusinessRuleException("grade.classNotLocked");
+            }
+        } else if (sectionStatus == TrangThaiLop.CHO_MO || sectionStatus == TrangThaiLop.DA_HUY) {
+            throw new BusinessRuleException("grade.classNotLocked");
+        }
+
+        boolean editingLockedGrades = isTrainingOffice && sectionStatus == TrangThaiLop.DA_KHOA_DIEM;
+        String editReason = form != null && form.getLyDoChinhSua() != null ? form.getLyDoChinhSua().trim() : "";
+        if (editingLockedGrades && editReason.isEmpty()) {
+            throw new BusinessRuleException("grade.editReason.required");
+        }
+
+        if (form == null || form.getEntries() == null || form.getEntries().isEmpty()) {
+            return;
+        }
+
+        Map<String, DangKyHocPhan> regMap = dangKyHocPhanRepository
+                .findByLopHocPhan_MaLHPOrderBySinhVien_HoTenAsc(maLHP).stream()
+                .collect(Collectors.toMap(
+                        dk -> dk.getId().getMaSV(),
+                        Function.identity(),
+                        (a, b) -> a
+                ));
+
+        Map<String, KetQuaHocTap> gradeMap = ketQuaHocTapRepository.findById_MaLHP(maLHP).stream()
+                .collect(Collectors.toMap(
+                        kq -> kq.getId().getMaSV(),
+                        Function.identity(),
+                        (a, b) -> a
+                ));
+
+        List<DangKyHocPhan> updatedRegistrations = new ArrayList<>();
+        List<KetQuaHocTap> updatedGrades = new ArrayList<>();
+        List<PendingAudit> pendingAudits = new ArrayList<>();
+
         for (DiemEntryForm entry : form.getEntries()) {
             String maSV = entry.getMaSV();
-            DangKyHocPhan dk = dangKyHocPhanRepository.findById(new DangKyHocPhanId(maSV, maLHP))
-                    .orElseThrow(() -> new ResourceNotFoundException("registration.notFound", maSV));
-
-            if (dk.getTrangThaiDangKy() == TrangThaiDangKy.DA_RUT_LOP) {
-                throw new BusinessRuleException("Không thể nhập điểm cho sinh viên đã rút lớp (" + maSV + ")!");
+            DangKyHocPhan dk = regMap.get(maSV);
+            if (dk == null) {
+                throw new ResourceNotFoundException("registration.notFound", maSV);
             }
 
-            // Xử lý Cấm thi (Mã lỗi 50011: DiemCuoiKy phải là NULL)
+            if (dk.getTrangThaiDangKy() == TrangThaiDangKy.DA_RUT_LOP) {
+                throw new BusinessRuleException("grade.error.withdrawn", maSV);
+            }
+
+            TrangThaiDangKy oldRegStatus = dk.getTrangThaiDangKy();
+            String oldBanReason = dk.getLyDoCamThi();
+
             if (entry.isCamThi()) {
                 dk.setTrangThaiDangKy(TrangThaiDangKy.CAM_THI);
+                String banReason = entry.getLyDoCamThi() != null ? entry.getLyDoCamThi().trim() : null;
+                dk.setLyDoCamThi(banReason != null && !banReason.isEmpty() ? banReason : null);
                 entry.setDiemCuoiKy(null);
             } else {
                 dk.setTrangThaiDangKy(TrangThaiDangKy.HOP_LE);
+                dk.setLyDoCamThi(null);
             }
-            dangKyHocPhanRepository.save(dk);
+            updatedRegistrations.add(dk);
 
             validateGradeBounds(entry.getDiemQuaTrinh());
             validateGradeBounds(entry.getDiemGiuaKy());
             validateGradeBounds(entry.getDiemCuoiKy());
 
-            KetQuaHocTap kq = ketQuaHocTapRepository.findById_MaSVAndId_MaLHP(maSV, maLHP)
-                    .orElseGet(() -> new KetQuaHocTap(dk, null, null, null));
+            KetQuaHocTap existing = gradeMap.get(maSV);
+            Double oldQt = existing != null ? existing.getDiemQuaTrinh() : null;
+            Double oldGk = existing != null ? existing.getDiemGiuaKy() : null;
+            Double oldCk = existing != null ? existing.getDiemCuoiKy() : null;
 
+            boolean statusChanged = oldRegStatus != dk.getTrangThaiDangKy()
+                    || !Objects.equals(oldBanReason, dk.getLyDoCamThi());
+            boolean gradesChanged = !Objects.equals(oldQt, entry.getDiemQuaTrinh())
+                    || !Objects.equals(oldGk, entry.getDiemGiuaKy())
+                    || !Objects.equals(oldCk, entry.getDiemCuoiKy());
+
+            if (editingLockedGrades && (statusChanged || gradesChanged)) {
+                String oldSnap = formatSnapshot(oldRegStatus, oldQt, oldGk, oldCk);
+                String newSnap = formatSnapshot(dk.getTrangThaiDangKy(), entry.getDiemQuaTrinh(),
+                        entry.getDiemGiuaKy(), entry.getDiemCuoiKy());
+                pendingAudits.add(new PendingAudit("EDIT_LOCKED_GRADE", "KetQuaHocTap",
+                        maLHP + ":" + maSV, oldSnap, newSnap, editReason));
+            } else if (oldRegStatus != dk.getTrangThaiDangKy()) {
+                pendingAudits.add(new PendingAudit("TOGGLE_EXAM_BAN", "DangKyHocPhan",
+                        maLHP + ":" + maSV, oldRegStatus.getLabel(), dk.getTrangThaiDangKy().getLabel(),
+                        dk.getLyDoCamThi()));
+            }
+
+            boolean allNull = entry.getDiemQuaTrinh() == null
+                    && entry.getDiemGiuaKy() == null
+                    && entry.getDiemCuoiKy() == null;
+            if (existing == null && allNull) {
+                continue;
+            }
+
+            KetQuaHocTap kq = existing != null ? existing : new KetQuaHocTap(dk, null, null, null);
             kq.setDiemQuaTrinh(entry.getDiemQuaTrinh());
             kq.setDiemGiuaKy(entry.getDiemGiuaKy());
             kq.setDiemCuoiKy(entry.getDiemCuoiKy());
+            updatedGrades.add(kq);
+        }
 
-            ketQuaHocTapRepository.save(kq);
+        // Bắt buộc flush UPDATE DangKyHocPhan trước KetQuaHocTap để tránh lỗi Trigger 50011 khi bỏ Cấm thi + nhập CK
+        if (!updatedRegistrations.isEmpty()) {
+            dangKyHocPhanRepository.saveAllAndFlush(updatedRegistrations);
+        }
+        if (!updatedGrades.isEmpty()) {
+            ketQuaHocTapRepository.saveAllAndFlush(updatedGrades);
+        }
+
+        for (PendingAudit audit : pendingAudits) {
+            auditService.log(audit.hanhDong(), audit.doiTuong(), audit.maBanGhi(),
+                    audit.giaTriCu(), audit.giaTriMoi(), audit.lyDo());
         }
     }
 
+    private String formatSnapshot(TrangThaiDangKy status, Double qt, Double gk, Double ck) {
+        return (status != null ? status.getLabel() : "—")
+                + " | QT=" + qt + ", GK=" + gk + ", CK=" + ck;
+    }
+
     private void validateGradeBounds(Double diem) {
-        if (diem != null && (diem < 0.0 || diem > 10.0)) {
-            throw new BusinessRuleException("Điểm số phải nằm trong thang điểm từ 0.0 đến 10.0!");
+        if (diem != null && (!Double.isFinite(diem) || diem < 0.0 || diem > 10.0)) {
+            throw new BusinessRuleException("grade.scoreRange");
         }
     }
 
     public static String calculateLetter(Double diemTong) {
-        if (diemTong == null)
-            return "—";
-        if (diemTong >= 8.5)
-            return "A";
-        if (diemTong >= 8.0)
-            return "B+";
-        if (diemTong >= 7.0)
-            return "B";
-        if (diemTong >= 6.5)
-            return "C+";
-        if (diemTong >= 5.5)
-            return "C";
-        if (diemTong >= 5.0)
-            return "D+";
-        if (diemTong >= 4.0)
-            return "D";
-        return "F";
+        return GradeScale.toLetter(diemTong);
     }
 
     public static Double calculateGpa4(Double diemTong) {
-        if (diemTong == null)
-            return null;
-        if (diemTong >= 8.5)
-            return 4.0;
-        if (diemTong >= 8.0)
-            return 3.5;
-        if (diemTong >= 7.0)
-            return 3.0;
-        if (diemTong >= 6.5)
-            return 2.5;
-        if (diemTong >= 5.5)
-            return 2.0;
-        if (diemTong >= 5.0)
-            return 1.5;
-        if (diemTong >= 4.0)
-            return 1.0;
-        return 0.0;
+        return GradeScale.toGpa4(diemTong);
+    }
+
+    private record PendingAudit(
+            String hanhDong,
+            String doiTuong,
+            String maBanGhi,
+            String giaTriCu,
+            String giaTriMoi,
+            String lyDo
+    ) {
     }
 }

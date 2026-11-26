@@ -9,5 +9,17 @@ public record BangDiemSinhVienResponse(
         Map<String, List<BangDiemSinhVienView>> byTerm,
         int tongTCTichLuy,
         Double cpa4,
-        String xepLoai
-) {}
+        String xepLoai,
+        Map<String, TermTranscriptSummary> termSummaries,
+        boolean canhBaoHocVu,
+        List<String> lyDoCanhBao
+) {
+    public BangDiemSinhVienResponse(
+            Map<String, List<BangDiemSinhVienView>> byTerm,
+            int tongTCTichLuy,
+            Double cpa4,
+            String xepLoai
+    ) {
+        this(byTerm, tongTCTichLuy, cpa4, xepLoai, Map.of(), false, List.of());
+    }
+}

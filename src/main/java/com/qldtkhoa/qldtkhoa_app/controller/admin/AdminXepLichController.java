@@ -76,6 +76,11 @@ public class AdminXepLichController {
         List<LopHocPhan> activeSections = lichGiangDayService.getActiveSections(maHK);
         List<LopHocPhan> unscheduledSections = lichGiangDayService.getUnscheduledSections(maHK);
 
+        LichGiangDayForm scheduleForm = new LichGiangDayForm();
+        if ("THEO_PHONG".equalsIgnoreCase(viewMode) && phongHoc != null && !phongHoc.isBlank()) {
+            scheduleForm.setPhongHoc(phongHoc);
+        }
+
         model.addAttribute("hocKys", hocKys);
         model.addAttribute("currentHk", maHK);
         model.addAttribute("viewMode", viewMode);
@@ -86,7 +91,7 @@ public class AdminXepLichController {
         model.addAttribute("slots", slots);
         model.addAttribute("activeSections", activeSections);
         model.addAttribute("unscheduledSections", unscheduledSections);
-        model.addAttribute("scheduleForm", new LichGiangDayForm());
+        model.addAttribute("scheduleForm", scheduleForm);
 
         return "admin/xep-lich/index";
     }
@@ -101,16 +106,16 @@ public class AdminXepLichController {
                                @RequestParam(required = false) String currentGv,
                                RedirectAttributes redirect) {
         if (bindingResult.hasErrors()) {
-            redirect.addFlashAttribute("flash", FlashMessage.danger("Dữ liệu xếp lịch không hợp lệ, vui lòng kiểm tra lại!"));
-            return buildRedirect(currentHk, viewMode, currentPhong, currentGv);
+            redirect.addFlashAttribute("flash", FlashMessage.danger("lhp.schedule.invalidInput"));
+            return buildRedirect(redirect, currentHk, viewMode, currentPhong, currentGv);
         }
         try {
             lopHocPhanService.addSchedule(maLHP, form);
-            redirect.addFlashAttribute("flash", FlashMessage.success("Đã xếp lịch giảng dạy cho lớp " + maLHP + " thành công!"));
+            redirect.addFlashAttribute("flash", FlashMessage.success("lhp.schedule.added"));
         } catch (BusinessRuleException ex) {
-            redirect.addFlashAttribute("flash", FlashMessage.danger(ex.getMessage()));
+            redirect.addFlashAttribute("flash", FlashMessage.danger(ex.getMessageKey(), ex.getArgs()));
         }
-        return buildRedirect(currentHk, viewMode, currentPhong, currentGv);
+        return buildRedirect(redirect, currentHk, viewMode, currentPhong, currentGv);
     }
 
     @PostMapping("/delete")
@@ -124,30 +129,30 @@ public class AdminXepLichController {
                                  RedirectAttributes redirect) {
         try {
             lopHocPhanService.removeSchedule(maLHP, thuTrongTuan, tietBatDau);
-            redirect.addFlashAttribute("flash", FlashMessage.success("Đã xóa tiết giảng dạy của lớp " + maLHP + " thành công!"));
-        } catch (Exception ex) {
-            redirect.addFlashAttribute("flash", FlashMessage.danger("Lỗi khi xóa tiết giảng dạy: " + ex.getMessage()));
+            redirect.addFlashAttribute("flash", FlashMessage.success("lhp.schedule.deleted"));
+        } catch (BusinessRuleException ex) {
+            redirect.addFlashAttribute("flash", FlashMessage.danger(ex.getMessageKey(), ex.getArgs()));
         }
-        return buildRedirect(currentHk, viewMode, currentPhong, currentGv);
+        return buildRedirect(redirect, currentHk, viewMode, currentPhong, currentGv);
     }
 
-    private String buildRedirect(String currentHk, String viewMode, String currentPhong, String currentGv) {
-        StringBuilder sb = new StringBuilder("redirect:/admin/xep-lich?");
+    private String buildRedirect(RedirectAttributes redirect,
+                                 String currentHk,
+                                 String viewMode,
+                                 String currentPhong,
+                                 String currentGv) {
         if (currentHk != null && !currentHk.isBlank()) {
-            sb.append("maHK=").append(currentHk).append("&");
+            redirect.addAttribute("maHK", currentHk);
         }
         if (viewMode != null && !viewMode.isBlank()) {
-            sb.append("viewMode=").append(viewMode).append("&");
+            redirect.addAttribute("viewMode", viewMode);
         }
         if (currentPhong != null && !currentPhong.isBlank()) {
-            sb.append("phongHoc=").append(currentPhong).append("&");
+            redirect.addAttribute("phongHoc", currentPhong);
         }
         if (currentGv != null && !currentGv.isBlank()) {
-            sb.append("maGV=").append(currentGv).append("&");
+            redirect.addAttribute("maGV", currentGv);
         }
-        if (sb.charAt(sb.length() - 1) == '&' || sb.charAt(sb.length() - 1) == '?') {
-            sb.deleteCharAt(sb.length() - 1);
-        }
-        return sb.toString();
+        return "redirect:/admin/xep-lich";
     }
 }

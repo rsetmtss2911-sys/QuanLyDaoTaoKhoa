@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 
 @Component
-@Profile("!prod")
+@Profile({"dev", "local"})
 @RequiredArgsConstructor
 @Slf4j
 public class DataInitializer implements CommandLineRunner {
@@ -42,13 +42,16 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seedRoles() {
-        if (vaiTroRepository.count() == 0) {
-            log.info("Chưa có danh mục VaiTro, tiến hành khởi tạo 4 vai trò chuẩn...");
-            vaiTroRepository.save(new VaiTro("ADMIN", "Quản trị viên hệ thống"));
-            vaiTroRepository.save(new VaiTro("PHONG_DAO_TAO", "Chuyên viên Phòng Đào tạo"));
-            vaiTroRepository.save(new VaiTro("GIANG_VIEN", "Giảng viên"));
-            vaiTroRepository.save(new VaiTro("SINH_VIEN", "Sinh viên"));
-            log.info("Đã khởi tạo thành công 4 vai trò: ADMIN, PHONG_DAO_TAO, GIANG_VIEN, SINH_VIEN");
+        ensureRole("ADMIN", "Quản trị viên hệ thống");
+        ensureRole("PHONG_DAO_TAO", "Chuyên viên Phòng Đào tạo");
+        ensureRole("GIANG_VIEN", "Giảng viên");
+        ensureRole("SINH_VIEN", "Sinh viên");
+    }
+
+    private void ensureRole(String maVaiTro, String tenVaiTro) {
+        if (!vaiTroRepository.existsById(maVaiTro)) {
+            vaiTroRepository.save(new VaiTro(maVaiTro, tenVaiTro));
+            log.info("Đã khởi tạo vai trò {}", maVaiTro);
         }
     }
 

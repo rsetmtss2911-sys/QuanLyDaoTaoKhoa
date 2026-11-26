@@ -102,15 +102,9 @@
                 <i class="bi bi-person-lines-fill"></i>
               </a>
               <span sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
-                <a class="btn btn-sm btn-outline-primary me-1" th:href="@{/admin/sinh-vien/{id}/edit(id=${row.maSV})}" title="Chỉnh sửa">
+                <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/sinh-vien/{id}/edit(id=${row.maSV})}" title="Chỉnh sửa">
                   <i class="bi bi-pencil"></i>
                 </a>
-                <form class="d-inline" method="post" th:action="@{/admin/sinh-vien/{id}/delete(id=${row.maSV})}"
-                      th:data-confirm="|Xóa hồ sơ sinh viên '${row.hoTen}' (MSSV: ${row.maSV})? Thao tác sẽ bị từ chối nếu sinh viên đã có lịch sử học tập.|">
-                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa hồ sơ">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </form>
               </span>
             </td>
           </tr>

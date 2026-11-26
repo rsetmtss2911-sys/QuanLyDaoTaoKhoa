@@ -11,6 +11,8 @@ import com.qldtkhoa.qldtkhoa_app.exception.BusinessRuleException;
 import com.qldtkhoa.qldtkhoa_app.exception.DuplicateResourceException;
 import com.qldtkhoa.qldtkhoa_app.exception.ResourceNotFoundException;
 import com.qldtkhoa.qldtkhoa_app.repository.*;
+import com.qldtkhoa.qldtkhoa_app.security.SessionInvalidationHelper;
+import com.qldtkhoa.qldtkhoa_app.util.LikeUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -34,29 +35,10 @@ public class NhanSuService {
     private final LopHanhChinhRepository lopHanhChinhRepository;
     private final LopHocPhanRepository lopHocPhanRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SessionInvalidationHelper sessionInvalidationHelper;
 
     public Page<NhanSuRow> search(String q, String role, Pageable pageable) {
-        Page<NhanSu> page = nhanSuRepository.search(q == null ? "" : q.trim(), role, pageable);
-        return page.map(ns -> {
-            Optional<GiangVien> gvOpt = giangVienRepository.findById(ns.getMaNS());
-            boolean isGv = gvOpt.isPresent();
-            String hocHam = isGv ? gvOpt.get().getHocHam() : null;
-            String hocVi = isGv ? gvOpt.get().getHocVi() : null;
-            String tenBoMon = isGv ? gvOpt.get().getBoMon().getTenBoMon() : null;
-
-            return new NhanSuRow(
-                    ns.getMaNS(),
-                    ns.getHoTen(),
-                    ns.getTaiKhoan().getEmail(),
-                    ns.getTaiKhoan().getVaiTro().getMaVaiTro(),
-                    ns.getTaiKhoan().getVaiTro().getTenVaiTro(),
-                    ns.getTaiKhoan().getTrangThaiKichHoat(),
-                    isGv,
-                    hocHam,
-                    hocVi,
-                    tenBoMon
-            );
-        });
+        return nhanSuRepository.searchRows(LikeUtils.escape(q), role, pageable);
     }
 
     public List<GiangVien> findAllGiangVien() {
@@ -90,6 +72,9 @@ public class NhanSuService {
         String ma = form.getMaNS().trim();
         String email = form.getEmail().trim().toLowerCase();
 
+        if ("SINH_VIEN".equalsIgnoreCase(form.getMaVaiTro())) {
+            throw new BusinessRuleException("nhansu.vaiTro.invalid");
+        }
         if (nhanSuRepository.existsById(ma)) {
             throw new DuplicateResourceException("nhansu.maNS.duplicate", ma);
         }
@@ -101,24 +86,16 @@ public class NhanSuService {
                 .orElseThrow(() -> new ResourceNotFoundException("error.notFound", form.getMaVaiTro()));
 
         if ("GIANG_VIEN".equalsIgnoreCase(form.getMaVaiTro())) {
-            if (form.getMaBoMon() == null || form.getMaBoMon().isBlank()) {
-                throw new BusinessRuleException("nhansu.boMon.required");
-            }
-            if (form.getHocVi() == null || form.getHocVi().isBlank()) {
-                throw new BusinessRuleException("nhansu.hocVi.required");
-            }
+            validateLecturerFields(form);
         }
 
-        // 1. Tạo Tài khoản
         String rawPassword = (form.getMatKhau() != null && !form.getMatKhau().isBlank()) ? form.getMatKhau().trim() : "123456";
         TaiKhoan tk = new TaiKhoan(email, passwordEncoder.encode(rawPassword), vaiTro, true);
         taiKhoanRepository.save(tk);
 
-        // 2. Tạo Nhân sự
         NhanSu ns = new NhanSu(ma, form.getHoTen().trim(), tk);
         nhanSuRepository.save(ns);
 
-        // 3. Nếu là Giảng viên -> Lưu vào bảng GiangVien
         if ("GIANG_VIEN".equalsIgnoreCase(form.getMaVaiTro())) {
             BoMon bm = boMonRepository.findById(form.getMaBoMon())
                     .orElseThrow(() -> new ResourceNotFoundException("bomon.notFound", form.getMaBoMon()));
@@ -133,12 +110,14 @@ public class NhanSuService {
         ns.setHoTen(form.getHoTen().trim());
 
         if ("GIANG_VIEN".equalsIgnoreCase(ns.getTaiKhoan().getVaiTro().getMaVaiTro())) {
+            validateLecturerFields(form);
             BoMon bm = boMonRepository.findById(form.getMaBoMon())
                     .orElseThrow(() -> new ResourceNotFoundException("bomon.notFound", form.getMaBoMon()));
 
-            GiangVien gv = giangVienRepository.findById(maNS).orElseGet(() -> new GiangVien(ns, form.getHocHam(), form.getHocVi(), bm));
+            GiangVien gv = giangVienRepository.findById(maNS)
+                    .orElseGet(() -> new GiangVien(ns, form.getHocHam(), form.getHocVi().trim(), bm));
             gv.setHocHam(form.getHocHam());
-            gv.setHocVi(form.getHocVi());
+            gv.setHocVi(form.getHocVi().trim());
             gv.setBoMon(bm);
             giangVienRepository.save(gv);
         }
@@ -146,7 +125,24 @@ public class NhanSuService {
 
     @Transactional
     public void delete(String maNS) {
+        delete(maNS, null);
+    }
+
+    @Transactional
+    public void delete(String maNS, String currentAdminEmail) {
         NhanSu ns = getOrThrow(maNS);
+        TaiKhoan tk = ns.getTaiKhoan();
+
+        if (tk != null && currentAdminEmail != null && tk.getEmail().equalsIgnoreCase(currentAdminEmail.trim())) {
+            throw new BusinessRuleException("nhansu.error.selfDelete");
+        }
+        if (tk != null
+                && tk.getVaiTro() != null
+                && "ADMIN".equalsIgnoreCase(tk.getVaiTro().getMaVaiTro())
+                && Boolean.TRUE.equals(tk.getTrangThaiKichHoat())
+                && taiKhoanRepository.countByVaiTro_MaVaiTroAndTrangThaiKichHoat("ADMIN", true) <= 1) {
+            throw new BusinessRuleException("nhansu.error.lastAdmin");
+        }
 
         if (lopHanhChinhRepository.existsByCoVan_MaNS(maNS)) {
             throw new BusinessRuleException("Nhân sự này đang được phân công làm Cố vấn học tập, không thể xóa!");
@@ -156,10 +152,21 @@ public class NhanSuService {
         }
 
         giangVienRepository.deleteById(maNS);
-        TaiKhoan tk = ns.getTaiKhoan();
         nhanSuRepository.delete(ns);
         if (tk != null) {
+            String email = tk.getEmail();
             taiKhoanRepository.delete(tk);
+            taiKhoanRepository.flush();
+            sessionInvalidationHelper.expireUserSessions(email);
+        }
+    }
+
+    private void validateLecturerFields(NhanSuForm form) {
+        if (form.getMaBoMon() == null || form.getMaBoMon().isBlank()) {
+            throw new BusinessRuleException("nhansu.boMon.required");
+        }
+        if (form.getHocVi() == null || form.getHocVi().isBlank()) {
+            throw new BusinessRuleException("nhansu.hocVi.required");
         }
     }
 }

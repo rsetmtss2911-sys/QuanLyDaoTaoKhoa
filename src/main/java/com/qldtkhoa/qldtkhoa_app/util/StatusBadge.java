@@ -27,9 +27,10 @@ public class StatusBadge {
         }
         return switch (label.trim()) {
             case "Hợp lệ", "Đang học", "Đã chốt danh sách", "Đạt" -> "success";
+            case "Đã khóa điểm" -> "primary";
             case "Chờ mở", "Bảo lưu", "Chưa có điểm" -> "warning";
             case "Cấm thi", "Đình chỉ", "Thôi học", "Đã hủy", "Học lại" -> "danger";
-            case "Đã rút lớp", "Trở lại học", "Đã tốt nghiệp" -> "info";
+            case "Đã rút lớp", "Trở lại học", "Đã tốt nghiệp", "Tốt nghiệp" -> "info";
             default -> "secondary";
         };
     }
@@ -41,13 +42,14 @@ public class StatusBadge {
         return switch (label.trim()) {
             case "Hợp lệ", "Đang học", "Đạt" -> "bi-check-circle-fill";
             case "Đã chốt danh sách" -> "bi-lock-fill";
+            case "Đã khóa điểm" -> "bi-patch-check-fill";
             case "Chờ mở" -> "bi-hourglass-split";
             case "Bảo lưu" -> "bi-pause-circle-fill";
             case "Cấm thi", "Đình chỉ" -> "bi-exclamation-triangle-fill";
             case "Thôi học", "Đã hủy", "Học lại" -> "bi-x-circle-fill";
             case "Đã rút lớp" -> "bi-arrow-return-left";
             case "Trở lại học" -> "bi-arrow-repeat";
-            case "Đã tốt nghiệp" -> "bi-mortarboard-fill";
+            case "Đã tốt nghiệp", "Tốt nghiệp" -> "bi-mortarboard-fill";
             default -> "bi-info-circle";
         };
     }

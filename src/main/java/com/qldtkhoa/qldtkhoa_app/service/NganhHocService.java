@@ -11,6 +11,7 @@ import com.qldtkhoa.qldtkhoa_app.repository.ChuongTrinhDaoTaoRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.KhoaRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.LopHanhChinhRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.NganhHocRepository;
+import com.qldtkhoa.qldtkhoa_app.util.LikeUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,7 +31,7 @@ public class NganhHocService {
     private final LopHanhChinhRepository lopHanhChinhRepository;
 
     public Page<NganhHocRow> search(String q, String maKhoa, Pageable pageable) {
-        Page<NganhHoc> page = nganhHocRepository.search(q == null ? "" : q.trim(), maKhoa, pageable);
+        Page<NganhHoc> page = nganhHocRepository.search(LikeUtils.escape(q), maKhoa, pageable);
         return page.map(n -> new NganhHocRow(
                 n.getMaNganh(),
                 n.getTenNganh(),

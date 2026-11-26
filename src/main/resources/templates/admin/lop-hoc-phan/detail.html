@@ -23,11 +23,32 @@
         <span th:replace="~{fragments/status-badge :: sectionStatus(${lop.trangThaiLop})}"></span>
       </div>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex flex-wrap gap-2">
       <a class="btn btn-outline-secondary" th:href="@{/admin/lop-hoc-phan}">
         <i class="bi bi-arrow-left me-1"></i> Danh sách
       </a>
-      <span sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
+      <a class="btn btn-outline-success" th:href="@{/admin/lop-hoc-phan/{id}/diem(id=${lop.maLHP})}">
+        <i class="bi bi-award me-1"></i> Bảng điểm lớp
+      </a>
+      <span sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')" class="d-inline-flex flex-wrap gap-2">
+        <form th:if="${lop.trangThaiLop.name() == 'CHO_MO'}" method="post"
+              th:action="@{/admin/lop-hoc-phan/{id}/lock-enrollment(id=${lop.maLHP})}"
+              th:data-confirm="|Chốt danh sách lớp '${lop.maLHP}'? Sinh viên sẽ không thể đăng ký/rút thêm.|">
+          <button type="submit" class="btn btn-success">
+            <i class="bi bi-lock me-1"></i> Chốt danh sách
+          </button>
+        </form>
+        <form th:if="${lop.trangThaiLop.name() == 'DA_CHOT_DANH_SACH'}" method="post"
+              th:action="@{/admin/lop-hoc-phan/{id}/lock-grades(id=${lop.maLHP})}"
+              th:data-confirm="|Khóa bảng điểm lớp '${lop.maLHP}'? Sau khi khóa, Giảng viên không thể tự sửa điểm.|">
+          <button type="submit" class="btn btn-warning text-dark">
+            <i class="bi bi-patch-check me-1"></i> Khóa điểm
+          </button>
+        </form>
+        <button th:if="${lop.trangThaiLop.name() == 'CHO_MO' or lop.trangThaiLop.name() == 'DA_CHOT_DANH_SACH'}"
+                type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelSectionModal">
+          <i class="bi bi-x-circle me-1"></i> Hủy lớp
+        </button>
         <a class="btn btn-primary" th:href="@{/admin/lop-hoc-phan/{id}/edit(id=${lop.maLHP})}">
           <i class="bi bi-pencil me-1"></i> Chỉnh sửa
         </a>
@@ -62,9 +83,9 @@
     <div class="col-md-3">
       <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
         <div class="text-muted small mb-1">Sĩ số đăng ký / Tối đa</div>
-        <div class="d-flex align-items-baseline gap-2">
-          <span class="h4 fw-bold mb-0" th:classappend="${registrations.size() >= lop.siSoToiDa ? 'text-danger' : 'text-success'}"
-                th:text="${registrations.size()}">45</span>
+        <div class="d-flex align-items-baseline gap-2" th:with="enr=${activeCount != null ? activeCount : registrations.size()}">
+          <span class="h4 fw-bold mb-0" th:classappend="${enr >= lop.siSoToiDa ? 'text-danger' : 'text-success'}"
+                th:text="${enr}">45</span>
           <span class="text-muted" th:text="${'/ ' + lop.siSoToiDa + ' sinh viên'}">/ 50 sinh viên</span>
         </div>
       </div>
@@ -163,7 +184,8 @@
       <div class="qd-panel h-100">
         <div class="qd-panel-header d-flex justify-content-between align-items-center">
           <h2 class="qd-panel-title mb-0">Danh sách sinh viên trong lớp</h2>
-          <span class="badge bg-primary bg-opacity-10 text-primary fw-bold" th:text="${registrations.size() + ' sinh viên'}">45 SV</span>
+          <span class="badge bg-primary bg-opacity-10 text-primary fw-bold"
+                th:text="${(activeCount != null ? activeCount : registrations.size()) + ' SV hợp lệ'}">45 SV</span>
         </div>
 
         <div class="table-responsive">
@@ -202,6 +224,35 @@
             </tbody>
           </table>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Hủy lớp học phần -->
+  <div class="modal fade" id="cancelSectionModal" tabindex="-1" aria-labelledby="cancelSectionModalLabel" aria-hidden="true"
+       sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form method="post" th:action="@{/admin/lop-hoc-phan/{id}/cancel(id=${lop.maLHP})}">
+          <div class="modal-header">
+            <h5 class="modal-title text-danger fw-bold" id="cancelSectionModalLabel">Xác nhận hủy lớp học phần</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+          </div>
+          <div class="modal-body">
+            <p class="small text-muted">
+              Hủy lớp <strong th:text="${lop.maLHP}">INT2204_1</strong> sẽ tự động chuyển toàn bộ đăng ký hiện tại sang trạng thái <strong>Đã rút lớp</strong>.
+            </p>
+            <div class="mb-2">
+              <label for="cancelLyDo" class="form-label qd-required">Lý do hủy lớp</label>
+              <textarea id="cancelLyDo" name="lyDo" class="form-control" rows="3" required maxlength="255"
+                        placeholder="VD: Sĩ số đăng ký không đạt mức tối thiểu..."></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+            <button type="submit" class="btn btn-danger" data-submit-once>Xác nhận hủy lớp</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

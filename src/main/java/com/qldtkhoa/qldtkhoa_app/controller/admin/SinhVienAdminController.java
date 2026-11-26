@@ -21,6 +21,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -46,6 +47,11 @@ public class SinhVienAdminController {
         this.quyetDinhHocVuService = quyetDinhHocVuService;
         this.dangKyHocPhanService = dangKyHocPhanService;
         this.diemService = diemService;
+    }
+
+    @InitBinder("form")
+    public void initFormBinder(WebDataBinder binder) {
+        binder.setAllowedFields("maSV", "hoTen", "ngaySinh", "gioiTinh", "maLopHC", "email", "matKhau");
     }
 
     @ModelAttribute("gioiTinhs")
@@ -149,20 +155,23 @@ public class SinhVienAdminController {
             model.addAttribute("isEdit", true);
             return "admin/sinh-vien/form";
         }
-        sinhVienService.update(maSV, form);
-        redirect.addFlashAttribute("flash", FlashMessage.success("sinhvien.updated", form.getHoTen()));
-        return "redirect:/admin/sinh-vien";
+        try {
+            sinhVienService.update(maSV, form);
+            redirect.addFlashAttribute("flash", FlashMessage.success("sinhvien.updated", form.getHoTen()));
+            return "redirect:/admin/sinh-vien";
+        } catch (BusinessRuleException ex) {
+            result.reject(ex.getMessageKey(), ex.getArgs(), ex.getMessageKey());
+            form.setMaSV(maSV);
+            populateFormAttributes(model);
+            model.addAttribute("isEdit", true);
+            return "admin/sinh-vien/form";
+        }
     }
 
     @PostMapping("/{maSV}/delete")
     @PreAuthorize("hasAnyRole('ADMIN','PHONG_DAO_TAO')")
     public String delete(@PathVariable String maSV, RedirectAttributes redirect) {
-        try {
-            sinhVienService.delete(maSV);
-            redirect.addFlashAttribute("flash", FlashMessage.success("sinhvien.deleted", maSV));
-        } catch (BusinessRuleException ex) {
-            redirect.addFlashAttribute("flash", FlashMessage.danger(ex.getMessageKey(), ex.getArgs()));
-        }
+        redirect.addFlashAttribute("flash", FlashMessage.danger("sinhvien.delete.forbidden"));
         return "redirect:/admin/sinh-vien";
     }
 }
