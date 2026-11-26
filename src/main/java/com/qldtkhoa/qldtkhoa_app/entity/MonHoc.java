@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "MonHoc")
@@ -17,6 +19,7 @@ public class MonHoc extends AssignedIdEntity<String> {
 
     @Id
     @Setter(AccessLevel.NONE)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "MaMon", length = 20, nullable = false)
     private String maMon;
 
@@ -41,12 +44,20 @@ public class MonHoc extends AssignedIdEntity<String> {
     @Column(name = "TrongSoCK")
     private Double trongSoCK = 0.5;
 
+    @Column(name = "TinhVaoGPA", nullable = false)
+    private Boolean tinhVaoGPA = true;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "MaBoMon", nullable = false)
     private BoMon boMon;
 
     public MonHoc(String maMon, String tenMon, Integer soTinChi, Integer tinChiLT, Integer tinChiTH,
                   Double trongSoQT, Double trongSoGK, Double trongSoCK, BoMon boMon) {
+        this(maMon, tenMon, soTinChi, tinChiLT, tinChiTH, trongSoQT, trongSoGK, trongSoCK, true, boMon);
+    }
+
+    public MonHoc(String maMon, String tenMon, Integer soTinChi, Integer tinChiLT, Integer tinChiTH,
+                  Double trongSoQT, Double trongSoGK, Double trongSoCK, Boolean tinhVaoGPA, BoMon boMon) {
         this.maMon = maMon;
         this.tenMon = tenMon;
         this.soTinChi = soTinChi;
@@ -55,6 +66,7 @@ public class MonHoc extends AssignedIdEntity<String> {
         this.trongSoQT = trongSoQT != null ? trongSoQT : 0.2;
         this.trongSoGK = trongSoGK != null ? trongSoGK : 0.3;
         this.trongSoCK = trongSoCK != null ? trongSoCK : 0.5;
+        this.tinhVaoGPA = tinhVaoGPA != null ? tinhVaoGPA : true;
         this.boMon = boMon;
     }
 

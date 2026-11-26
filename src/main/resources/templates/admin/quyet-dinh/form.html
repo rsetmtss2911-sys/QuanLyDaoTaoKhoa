@@ -63,15 +63,16 @@
                 <input type="date" id="ngayHieuLuc" th:field="*{ngayHieuLuc}"
                        class="form-control"
                        th:classappend="${#fields.hasErrors('ngayHieuLuc')} ? 'is-invalid'" required>
+                <div class="form-text small">Ngày &le; hôm nay: hiệu lực ngay. Ngày tương lai (tối đa +1 năm): lưu ở trạng thái Chờ hiệu lực.</div>
                 <div class="invalid-feedback" th:errors="*{ngayHieuLuc}">Vui lòng chọn ngày hiệu lực</div>
               </div>
 
               <div class="col-12">
-                <label for="lyDo" class="form-label">Lý do ban hành / Nội dung chi tiết</label>
+                <label for="lyDo" class="form-label qd-required">Lý do ban hành / Nội dung chi tiết</label>
                 <textarea id="lyDo" th:field="*{lyDo}" rows="3"
                           class="form-control"
                           th:classappend="${#fields.hasErrors('lyDo')} ? 'is-invalid'"
-                          placeholder="Ghi rõ lý do hoặc căn cứ của quyết định..."></textarea>
+                          placeholder="Ghi rõ lý do hoặc căn cứ của quyết định..." required></textarea>
                 <div class="invalid-feedback" th:errors="*{lyDo}">Lý do không hợp lệ</div>
               </div>
             </div>

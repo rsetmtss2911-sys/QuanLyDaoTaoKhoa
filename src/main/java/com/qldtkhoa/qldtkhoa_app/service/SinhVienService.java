@@ -6,16 +6,16 @@ import com.qldtkhoa.qldtkhoa_app.entity.LopHanhChinh;
 import com.qldtkhoa.qldtkhoa_app.entity.SinhVien;
 import com.qldtkhoa.qldtkhoa_app.entity.TaiKhoan;
 import com.qldtkhoa.qldtkhoa_app.entity.VaiTro;
+import com.qldtkhoa.qldtkhoa_app.entity.enums.GioiTinh;
 import com.qldtkhoa.qldtkhoa_app.entity.enums.TrangThaiSinhVien;
 import com.qldtkhoa.qldtkhoa_app.exception.BusinessRuleException;
 import com.qldtkhoa.qldtkhoa_app.exception.DuplicateResourceException;
 import com.qldtkhoa.qldtkhoa_app.exception.ResourceNotFoundException;
-import com.qldtkhoa.qldtkhoa_app.repository.DangKyHocPhanRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.LopHanhChinhRepository;
-import com.qldtkhoa.qldtkhoa_app.repository.QuyetDinhHocVuRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.SinhVienRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.TaiKhoanRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.VaiTroRepository;
+import com.qldtkhoa.qldtkhoa_app.util.LikeUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +23,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -34,12 +36,11 @@ public class SinhVienService {
     private final LopHanhChinhRepository lopHanhChinhRepository;
     private final TaiKhoanRepository taiKhoanRepository;
     private final VaiTroRepository vaiTroRepository;
-    private final DangKyHocPhanRepository dangKyHocPhanRepository;
-    private final QuyetDinhHocVuRepository quyetDinhHocVuRepository;
     private final PasswordEncoder passwordEncoder;
+    private final Clock clock;
 
     public Page<SinhVienRow> search(String q, String maLopHC, TrangThaiSinhVien status, Pageable pageable) {
-        return sinhVienRepository.search(q == null ? "" : q.trim(), maLopHC, status, pageable)
+        return sinhVienRepository.search(LikeUtils.escape(q), maLopHC, status, pageable)
                 .map(this::toRow);
     }
 
@@ -71,10 +72,9 @@ public class SinhVienService {
         form.setMaSV(sv.getMaSV());
         form.setHoTen(sv.getHoTen());
         form.setNgaySinh(sv.getNgaySinh());
-        form.setGioiTinh(sv.getGioiTinh() != null ? sv.getGioiTinh() : com.qldtkhoa.qldtkhoa_app.entity.enums.GioiTinh.NAM);
+        form.setGioiTinh(sv.getGioiTinh() != null ? sv.getGioiTinh() : GioiTinh.NAM);
         form.setMaLopHC(sv.getLopHanhChinh() != null ? sv.getLopHanhChinh().getMaLopHC() : "");
         form.setEmail(sv.getTaiKhoan() != null ? sv.getTaiKhoan().getEmail() : "");
-        form.setTrangThaiHienTai(sv.getTrangThaiHienTai() != null ? sv.getTrangThaiHienTai() : TrangThaiSinhVien.DANG_HOC);
         return form;
     }
 
@@ -89,6 +89,7 @@ public class SinhVienService {
         if (taiKhoanRepository.existsById(email)) {
             throw new DuplicateResourceException("sinhvien.email.duplicate", email);
         }
+        validateAge(form.getNgaySinh());
 
         LopHanhChinh lhc = lopHanhChinhRepository.findById(form.getMaLopHC())
                 .orElseThrow(() -> new ResourceNotFoundException("lophc.notFound", form.getMaLopHC()));
@@ -109,7 +110,7 @@ public class SinhVienService {
                 form.getNgaySinh(),
                 form.getGioiTinh(),
                 tk,
-                form.getTrangThaiHienTai() != null ? form.getTrangThaiHienTai() : TrangThaiSinhVien.DANG_HOC,
+                TrangThaiSinhVien.DANG_HOC,
                 lhc
         );
         sinhVienRepository.save(sv);
@@ -118,6 +119,7 @@ public class SinhVienService {
     @Transactional
     public void update(String maSV, SinhVienForm form) {
         SinhVien sv = getOrThrow(maSV);
+        validateAge(form.getNgaySinh());
         sv.setHoTen(form.getHoTen().trim());
         sv.setNgaySinh(form.getNgaySinh());
         sv.setGioiTinh(form.getGioiTinh());
@@ -129,18 +131,16 @@ public class SinhVienService {
 
     @Transactional
     public void delete(String maSV) {
-        SinhVien sv = getOrThrow(maSV);
-        if (dangKyHocPhanRepository.existsBySinhVien_MaSV(maSV)) {
-            throw new BusinessRuleException("sinhvien.delete.hasRegistrations", "Sinh viên đã có dữ liệu đăng ký môn học, không thể xóa!");
-        }
-        if (quyetDinhHocVuRepository.existsBySinhVien_MaSV(maSV)) {
-            throw new BusinessRuleException("sinhvien.delete.hasDecisions", "Sinh viên đã có quyết định học vụ, không thể xóa!");
-        }
+        getOrThrow(maSV);
+        throw new BusinessRuleException("sinhvien.delete.forbidden");
+    }
 
-        TaiKhoan tk = sv.getTaiKhoan();
-        sinhVienRepository.delete(sv);
-        if (tk != null) {
-            taiKhoanRepository.delete(tk);
+    private void validateAge(LocalDate ngaySinh) {
+        if (ngaySinh != null) {
+            LocalDate today = clock != null ? LocalDate.now(clock) : LocalDate.now();
+            if (ngaySinh.isAfter(today.minusYears(17))) {
+                throw new BusinessRuleException("sinhvien.ngaySinh.age");
+            }
         }
     }
 

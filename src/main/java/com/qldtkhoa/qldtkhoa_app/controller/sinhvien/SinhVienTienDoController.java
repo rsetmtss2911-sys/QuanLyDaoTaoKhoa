@@ -31,8 +31,9 @@ public class SinhVienTienDoController {
         model.addAttribute("totalCurriculumCredits", tienDo.totalCurriculumCredits());
         model.addAttribute("completedCredits", tienDo.completedCredits());
         model.addAttribute("progressPercent", tienDo.progressPercent());
+        model.addAttribute("blockProgress", tienDo.blockProgress());
+        model.addAttribute("courseStatuses", tienDo.courseStatuses());
 
         return "sinhvien/tien-do-ctdt";
     }
 }
-

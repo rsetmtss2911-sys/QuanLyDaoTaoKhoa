@@ -9,7 +9,6 @@ import com.qldtkhoa.qldtkhoa_app.entity.view.BangDiemSinhVienView;
 import com.qldtkhoa.qldtkhoa_app.entity.view.ThongKeLopHocPhanView;
 import com.qldtkhoa.qldtkhoa_app.exception.ResourceNotFoundException;
 import com.qldtkhoa.qldtkhoa_app.repository.*;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +32,7 @@ public class DashboardService {
     private final LichGiangDayRepository lichGiangDayRepository;
     private final BangDiemSinhVienViewRepository bangDiemViewRepository;
     private final AcademicPolicy academicPolicy;
+    private final HocLucService hocLucService;
 
     public DashboardService(
             SinhVienRepository sinhVienRepository,
@@ -48,7 +48,8 @@ public class DashboardService {
             DangKyHocPhanService dangKyHocPhanService,
             LichGiangDayRepository lichGiangDayRepository,
             BangDiemSinhVienViewRepository bangDiemViewRepository,
-            AcademicPolicy academicPolicy) {
+            AcademicPolicy academicPolicy,
+            HocLucService hocLucService) {
         this.sinhVienRepository = sinhVienRepository;
         this.giangVienRepository = giangVienRepository;
         this.lopHocPhanRepository = lopHocPhanRepository;
@@ -63,6 +64,7 @@ public class DashboardService {
         this.lichGiangDayRepository = lichGiangDayRepository;
         this.bangDiemViewRepository = bangDiemViewRepository;
         this.academicPolicy = academicPolicy;
+        this.hocLucService = hocLucService;
     }
 
     public AdminDashboardView getAdminDashboard(String maHK) {
@@ -85,21 +87,36 @@ public class DashboardService {
         long totalCourses = monHocRepository.count();
         long totalAdminClasses = lopHanhChinhRepository.count();
 
-        List<LopHocPhan> termSections = (termCode.isEmpty())
+        List<ThongKeLopHocPhanView> termViewList = termCode.isEmpty()
                 ? List.of()
-                : lopHocPhanRepository.findByHocKy_MaHKAndTrangThaiLop(termCode, TrangThaiLop.CHO_MO);
+                : thongKeLopHocPhanViewRepository.findByMaHKOrderByTenMonAsc(termCode);
 
         long totalSectionsCurrentTerm = 0;
         long totalOpenSections = 0;
         if (!termCode.isEmpty()) {
-            var allTermSections = lopHocPhanRepository.search("", termCode, null, null, null, Pageable.unpaged());
-            totalSectionsCurrentTerm = allTermSections.getTotalElements();
-            totalOpenSections = termSections.size();
+            totalSectionsCurrentTerm = termViewList.isEmpty()
+                    ? lopHocPhanRepository.countByHocKy_MaHK(termCode)
+                    : termViewList.size();
+            totalOpenSections = termViewList.stream()
+                    .filter(v -> v.getTrangThaiLop() == TrangThaiLop.CHO_MO)
+                    .count();
         }
 
-        List<LopHocPhanRow> pendingSections = termSections.stream()
+        List<LopHocPhanRow> pendingSections = termViewList.stream()
+                .filter(v -> v.getTrangThaiLop() == TrangThaiLop.CHO_MO)
                 .limit(8)
-                .map(lopHocPhanService::toRow)
+                .map(v -> new LopHocPhanRow(
+                        v.getMaLHP(),
+                        v.getMaMon(),
+                        v.getTenMon(),
+                        v.getSoTinChi(),
+                        v.getMaGV(),
+                        v.getTenGiangVien() != null ? v.getTenGiangVien() : "Chưa phân công",
+                        v.getMaHK(),
+                        v.getSiSoToiDa(),
+                        v.getSiSoHienTai() != null ? v.getSiSoHienTai().longValue() : 0L,
+                        v.getTrangThaiLop()
+                ))
                 .toList();
 
         List<QuyetDinhRow> recentDecisions = quyetDinhHocVuRepository.findTop5ByOrderByNgayHieuLucDesc().stream()
@@ -113,12 +130,12 @@ public class DashboardService {
                         qd.getLyDo()
                 )).toList();
 
-        List<ThongKeLopHocPhanView> crowded = (termCode.isEmpty())
-                ? List.of()
-                : thongKeLopHocPhanViewRepository.findByMaHKOrderByTenMonAsc(termCode).stream()
-                        .filter(v -> v.getSoChoConTrong() != null && v.getSoChoConTrong() <= 5)
-                        .limit(6)
-                        .toList();
+        List<ThongKeLopHocPhanView> crowded = termViewList.stream()
+                .filter(v -> v.getTrangThaiLop() == TrangThaiLop.CHO_MO
+                        && v.getSoChoConTrong() != null
+                        && v.getSoChoConTrong() <= 5)
+                .limit(6)
+                .toList();
 
         return new AdminDashboardView(
                 totalStudentsActive,
@@ -154,13 +171,11 @@ public class DashboardService {
         String termCode = currentTerm != null ? currentTerm.getMaHK() : "";
         String termName = currentTerm != null ? currentTerm.getTenHK() + " (" + currentTerm.getNamHoc() + ")" : "";
 
-        List<LopHocPhan> sections = termCode.isEmpty()
+        List<LopHocPhanRow> sectionRows = termCode.isEmpty()
                 ? List.of()
-                : lopHocPhanRepository.findByHocKy_MaHKAndGiangVien_MaNS(termCode, maNS);
-
-        List<LopHocPhanRow> sectionRows = sections.stream()
-                .map(lopHocPhanService::toRow)
-                .toList();
+                : lopHocPhanService.findByLecturerAndTerm(maNS, termCode).stream()
+                        .filter(r -> r.trangThaiLop() != TrangThaiLop.DA_HUY)
+                        .toList();
 
         long totalAssignedSections = sectionRows.size();
         long totalStudentsTeaching = sectionRows.stream().mapToLong(r -> r.siSoHienTai()).sum();
@@ -231,27 +246,10 @@ public class DashboardService {
                 .sum();
 
         List<BangDiemSinhVienView> transcript = bangDiemViewRepository.findById_MaSVOrderByNamHocDescMaHKAscTenMonAsc(maSV);
-        int totalCumulativeCredits = 0;
-        double totalWeightedScore = 0.0;
-        double passScore = academicPolicy.passScore();
-        for (BangDiemSinhVienView v : transcript) {
-            if (v.getDiemTong() != null && v.getDiemTong() >= passScore && v.getDiemHe4() != null) {
-                totalCumulativeCredits += v.getSoTinChi();
-                totalWeightedScore += (v.getDiemHe4() * v.getSoTinChi());
-            }
-        }
-        Double cumulativeGpa = totalCumulativeCredits > 0
-                ? Math.round((totalWeightedScore / totalCumulativeCredits) * 100.0) / 100.0
-                : null;
-
-        String academicStanding = "—";
-        if (cumulativeGpa != null) {
-            if (cumulativeGpa >= 3.6) academicStanding = "Xuất sắc";
-            else if (cumulativeGpa >= 3.2) academicStanding = "Giỏi";
-            else if (cumulativeGpa >= 2.5) academicStanding = "Khá";
-            else if (cumulativeGpa >= 2.0) academicStanding = "Trung bình";
-            else academicStanding = "Yếu";
-        }
+        HocLucSummary summary = hocLucService.evaluateSummary(transcript);
+        int totalCumulativeCredits = summary.tongTCTichLuy();
+        Double cumulativeGpa = summary.cpa4();
+        String academicStanding = summary.xepLoai();
 
         List<LichGiangDay> schedules = termCode.isEmpty()
                 ? List.of()

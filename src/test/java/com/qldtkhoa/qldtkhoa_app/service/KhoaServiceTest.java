@@ -45,12 +45,10 @@ class KhoaServiceTest {
     @DisplayName("search: Sử dụng countByKhoa_MaKhoa thay vì load entities, trả về Page<KhoaRow> chính xác")
     void search_usesCountQueries_returnsCorrectPage() {
         Pageable pageable = PageRequest.of(0, 10);
-        Khoa k1 = new Khoa("CNTT", "Công nghệ Thông tin", 1995);
-        Page<Khoa> page = new PageImpl<>(List.of(k1), pageable, 1);
+        KhoaRow rowExpected = new KhoaRow("CNTT", "Công nghệ Thông tin", 1995, 4L, 2L);
+        Page<KhoaRow> page = new PageImpl<>(List.of(rowExpected), pageable, 1);
 
-        when(khoaRepository.search("CNTT", pageable)).thenReturn(page);
-        when(boMonRepository.countByKhoa_MaKhoa("CNTT")).thenReturn(4L);
-        when(nganhHocRepository.countByKhoa_MaKhoa("CNTT")).thenReturn(2L);
+        when(khoaRepository.searchRows("CNTT", pageable)).thenReturn(page);
 
         Page<KhoaRow> result = khoaService.search("CNTT", pageable);
 
@@ -61,8 +59,8 @@ class KhoaServiceTest {
         assertThat(row.soBoMon()).isEqualTo(4L);
         assertThat(row.soNganh()).isEqualTo(2L);
 
-        verify(boMonRepository).countByKhoa_MaKhoa("CNTT");
-        verify(nganhHocRepository).countByKhoa_MaKhoa("CNTT");
+        verify(khoaRepository).searchRows("CNTT", pageable);
+        verifyNoInteractions(boMonRepository, nganhHocRepository);
     }
 
     @Test

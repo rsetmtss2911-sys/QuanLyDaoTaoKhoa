@@ -6,6 +6,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "LichGiangDay")
@@ -26,6 +28,7 @@ public class LichGiangDay extends AssignedIdEntity<LichGiangDayId> {
     @Column(name = "TietKetThuc", nullable = false)
     private Integer tietKetThuc;
 
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "PhongHoc", length = 50, nullable = false)
     private String phongHoc;
 

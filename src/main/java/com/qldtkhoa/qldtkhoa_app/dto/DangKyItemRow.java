@@ -13,6 +13,25 @@ public record DangKyItemRow(
         String lichHoc,
         TrangThaiLop trangThaiLop,
         boolean daDangKy,
-        boolean daDangKyMonKhac
+        boolean daDangKyMonKhac,
+        boolean eligible,
+        String blockReason,
+        String warningNote
 ) {
+    public DangKyItemRow(
+            String maLHP,
+            String maMon,
+            String tenMon,
+            Integer soTinChi,
+            String tenGV,
+            long siSoHienTai,
+            Integer siSoToiDa,
+            String lichHoc,
+            TrangThaiLop trangThaiLop,
+            boolean daDangKy,
+            boolean daDangKyMonKhac
+    ) {
+        this(maLHP, maMon, tenMon, soTinChi, tenGV, siSoHienTai, siSoToiDa, lichHoc,
+                trangThaiLop, daDangKy, daDangKyMonKhac, !daDangKy && !daDangKyMonKhac, null, null);
+    }
 }

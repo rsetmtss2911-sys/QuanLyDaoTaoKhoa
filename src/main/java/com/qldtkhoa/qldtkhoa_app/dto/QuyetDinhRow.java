@@ -11,6 +11,18 @@ public record QuyetDinhRow(
         String maLopHC,
         LoaiQuyetDinh loaiQuyetDinh,
         LocalDate ngayHieuLuc,
-        String lyDo
+        String lyDo,
+        boolean pendingEffective
 ) {
+    public QuyetDinhRow(
+            String maQuyetDinh,
+            String maSV,
+            String hoTenSV,
+            String maLopHC,
+            LoaiQuyetDinh loaiQuyetDinh,
+            LocalDate ngayHieuLuc,
+            String lyDo
+    ) {
+        this(maQuyetDinh, maSV, hoTenSV, maLopHC, loaiQuyetDinh, ngayHieuLuc, lyDo, false);
+    }
 }

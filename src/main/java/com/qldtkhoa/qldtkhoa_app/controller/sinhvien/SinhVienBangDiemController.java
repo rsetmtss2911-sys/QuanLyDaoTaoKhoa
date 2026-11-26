@@ -26,6 +26,9 @@ public class SinhVienBangDiemController {
         model.addAttribute("tongTCTichLuy", res.tongTCTichLuy());
         model.addAttribute("cpa4", res.cpa4());
         model.addAttribute("xepLoai", res.xepLoai());
+        model.addAttribute("termSummaries", res.termSummaries());
+        model.addAttribute("canhBaoHocVu", res.canhBaoHocVu());
+        model.addAttribute("lyDoCanhBao", res.lyDoCanhBao());
         return "sinhvien/bang-diem";
     }
 }

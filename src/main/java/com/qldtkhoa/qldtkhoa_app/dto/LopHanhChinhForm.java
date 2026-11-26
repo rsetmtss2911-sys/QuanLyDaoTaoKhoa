@@ -1,6 +1,7 @@
 package com.qldtkhoa.qldtkhoa_app.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,6 +12,7 @@ public class LopHanhChinhForm {
 
     @NotBlank(message = "{lophc.maLopHC.required}")
     @Size(max = 20, message = "{lophc.maLopHC.size}")
+    @Pattern(regexp = "^[A-Za-z0-9_.-]+$", message = "{common.code.pattern}")
     private String maLopHC;
 
     @NotBlank(message = "{lophc.tenLopHC.required}")
@@ -23,5 +25,6 @@ public class LopHanhChinhForm {
     @NotBlank(message = "{lophc.nganhHoc.required}")
     private String maNganh;
 
-    private String maCoVan; // Mã nhân sự của giảng viên cố vấn (nullable)
+    @NotBlank(message = "{lophc.covan.required}")
+    private String maCoVan;
 }

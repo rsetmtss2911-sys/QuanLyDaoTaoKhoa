@@ -5,6 +5,8 @@ import jakarta.persistence.Embeddable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.io.Serializable;
 
@@ -14,6 +16,7 @@ import java.io.Serializable;
 @EqualsAndHashCode
 public class LichGiangDayId implements Serializable {
 
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "MaLHP", length = 20, nullable = false)
     private String maLHP;
 

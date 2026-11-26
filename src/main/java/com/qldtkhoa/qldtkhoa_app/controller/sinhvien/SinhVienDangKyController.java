@@ -80,7 +80,8 @@ public class SinhVienDangKyController {
         } catch (BusinessRuleException ex) {
             redirect.addFlashAttribute("flash", FlashMessage.danger(ex.getMessageKey(), ex.getArgs()));
         }
-        return "redirect:/sinh-vien/dang-ky-hoc-phan?maHK=" + maHK;
+        redirect.addAttribute("maHK", maHK);
+        return "redirect:/sinh-vien/dang-ky-hoc-phan";
     }
 
     @PostMapping("/withdraw")
@@ -94,6 +95,7 @@ public class SinhVienDangKyController {
         } catch (BusinessRuleException ex) {
             redirect.addFlashAttribute("flash", FlashMessage.danger(ex.getMessageKey(), ex.getArgs()));
         }
-        return "redirect:/sinh-vien/dang-ky-hoc-phan?maHK=" + maHK;
+        redirect.addAttribute("maHK", maHK);
+        return "redirect:/sinh-vien/dang-ky-hoc-phan";
     }
 }

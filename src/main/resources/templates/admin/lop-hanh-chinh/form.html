@@ -83,13 +83,15 @@
               </div>
 
               <div class="col-md-12">
-                <label for="maCoVan" class="form-label">Giảng viên Cố vấn học tập (CVHT)</label>
-                <select id="maCoVan" th:field="*{maCoVan}" class="form-select">
-                  <option value="">-- Chưa phân công giảng viên cố vấn --</option>
+                <label for="maCoVan" class="form-label qd-required">Giảng viên Cố vấn học tập (CVHT)</label>
+                <select id="maCoVan" th:field="*{maCoVan}" class="form-select"
+                        th:classappend="${#fields.hasErrors('maCoVan')} ? 'is-invalid'" required>
+                  <option value="">-- Chọn giảng viên cố vấn --</option>
                   <option th:each="gv : ${giangViens}"
                           th:value="${gv.maNS}"
                           th:text="${gv.nhanSu.hoTen + ' (' + (gv.hocHam != null ? gv.hocHam + ', ' : '') + gv.hocVi + ' - ' + gv.boMon.tenBoMon + ')'}">TS. Nguyễn Văn A</option>
                 </select>
+                <div class="invalid-feedback" th:errors="*{maCoVan}">Vui lòng phân công giảng viên cố vấn</div>
                 <div class="form-text">Cố vấn học tập có quyền theo dõi tiến độ và xem bảng điểm của sinh viên trong lớp.</div>
               </div>
             </div>

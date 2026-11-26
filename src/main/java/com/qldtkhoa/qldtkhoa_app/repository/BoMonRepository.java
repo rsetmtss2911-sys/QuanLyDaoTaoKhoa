@@ -23,8 +23,8 @@ public interface BoMonRepository extends JpaRepository<BoMon, String> {
     @Query("""
            select bm from BoMon bm
            where (:maKhoa is null or :maKhoa = '' or bm.khoa.maKhoa = :maKhoa)
-             and (:q = '' or lower(bm.maBoMon) like lower(concat('%', :q, '%'))
-                         or lower(bm.tenBoMon) like lower(concat('%', :q, '%')))
+             and (:q = '' or lower(bm.maBoMon) like lower(concat('%', :q, '%')) escape '\\'
+                         or lower(bm.tenBoMon) like lower(concat('%', :q, '%')) escape '\\')
            """)
     Page<BoMon> search(@Param("q") String q, @Param("maKhoa") String maKhoa, Pageable pageable);
 

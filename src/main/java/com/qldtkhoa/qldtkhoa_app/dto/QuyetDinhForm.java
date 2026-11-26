@@ -26,8 +26,9 @@ public class QuyetDinhForm {
 
     @NotNull(message = "{quyetdinh.ngayHieuLuc.required}")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    private LocalDate ngayHieuLuc = LocalDate.now();
+    private LocalDate ngayHieuLuc;
 
+    @NotBlank(message = "{quyetdinh.lyDo.required}")
     @Size(max = 255, message = "{quyetdinh.lyDo.size}")
     private String lyDo;
 }

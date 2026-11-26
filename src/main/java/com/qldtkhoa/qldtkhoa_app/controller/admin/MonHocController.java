@@ -138,7 +138,8 @@ public class MonHocController {
         } catch (BusinessRuleException ex) {
             redirect.addFlashAttribute("flash", FlashMessage.danger(ex.getMessageKey(), ex.getArgs()));
         }
-        return "redirect:/admin/mon-hoc/" + maMon;
+        redirect.addAttribute("maMon", maMon);
+        return "redirect:/admin/mon-hoc/{maMon}";
     }
 
     @PostMapping("/{maMon}/prerequisites/{maMonTienQuyet}/delete")
@@ -148,6 +149,7 @@ public class MonHocController {
                                      RedirectAttributes redirect) {
         monHocService.removePrerequisite(maMon, maMonTienQuyet);
         redirect.addFlashAttribute("flash", FlashMessage.success("monhoc.tienQuyet.removed", maMonTienQuyet, maMon));
-        return "redirect:/admin/mon-hoc/" + maMon;
+        redirect.addAttribute("maMon", maMon);
+        return "redirect:/admin/mon-hoc/{maMon}";
     }
 }

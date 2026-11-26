@@ -54,6 +54,36 @@
       "type": "java.lang.Integer",
       "description": "Số ngày tối đa cho phép rút học phần tính từ ngày bắt đầu học kỳ.",
       "defaultValue": 21
+    },
+    {
+      "name": "app.academic.gpa-repeat-policy",
+      "type": "com.qldtkhoa.qldtkhoa_app.entity.enums.GpaRepeatPolicy",
+      "description": "Quy tắc chọn điểm khi sinh viên học lại hoặc học cải thiện (HIGHEST: điểm cao nhất, LATEST: lần học gần nhất).",
+      "defaultValue": "HIGHEST"
+    },
+    {
+      "name": "app.academic.min-section-students",
+      "type": "java.lang.Integer",
+      "description": "Sĩ số sinh viên tối thiểu để xem xét mở lớp học phần.",
+      "defaultValue": 5
+    },
+    {
+      "name": "app.academic.decision-sync-cron",
+      "type": "java.lang.String",
+      "description": "Biểu thức cron chạy lịch tự động đồng bộ các quyết định học vụ đến ngày hiệu lực.",
+      "defaultValue": "0 5 0 * * *"
+    },
+    {
+      "name": "app.academic.timezone",
+      "type": "java.lang.String",
+      "description": "Múi giờ chuẩn dùng cho Clock và lịch chạy tự động của hệ thống.",
+      "defaultValue": "Asia/Ho_Chi_Minh"
+    },
+    {
+      "name": "app.scheduling.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Bật hoặc tắt các tác vụ chạy định kỳ (@Scheduled) của ứng dụng.",
+      "defaultValue": true
     }
   ]
 }

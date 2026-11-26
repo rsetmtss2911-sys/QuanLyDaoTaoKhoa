@@ -14,7 +14,8 @@ public interface KhoaNhapHocRepository extends JpaRepository<KhoaNhapHoc, String
     @Query("""
            select knh from KhoaNhapHoc knh
            where :q = ''
-              or lower(knh.maKhoaHoc) like lower(concat('%', :q, '%'))
+              or lower(knh.maKhoaHoc) like lower(concat('%', :q, '%')) escape '\\'
+              or str(knh.namBatDau) like concat('%', :q, '%') escape '\\'
            """)
     Page<KhoaNhapHoc> search(@Param("q") String q, Pageable pageable);
 

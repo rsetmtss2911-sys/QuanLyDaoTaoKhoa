@@ -117,6 +117,9 @@
               <a class="btn btn-sm btn-outline-info me-1" th:href="@{/admin/lop-hoc-phan/{id}(id=${row.maLHP})}" title="Xem lịch & SV">
                 <i class="bi bi-calendar3"></i>
               </a>
+              <a class="btn btn-sm btn-outline-success me-1" th:href="@{/admin/lop-hoc-phan/{id}/diem(id=${row.maLHP})}" title="Bảng điểm lớp">
+                <i class="bi bi-award"></i>
+              </a>
               <span sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
                 <a class="btn btn-sm btn-outline-primary me-1" th:href="@{/admin/lop-hoc-phan/{id}/edit(id=${row.maLHP})}" title="Chỉnh sửa">
                   <i class="bi bi-pencil"></i>

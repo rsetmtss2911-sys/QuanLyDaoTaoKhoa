@@ -13,7 +13,7 @@
   </div>
   <h1 class="qd-h1 mb-3">409 - Xung đột toàn vẹn dữ liệu</h1>
   <p class="text-muted mx-auto mb-4" style="max-width: 500px;"
-     th:text="${messageKey != null} ? ${#messages.msg(messageKey)} : 'Thao tác không thể hoàn tất do vi phạm ràng buộc dữ liệu hoặc bản ghi đang được sử dụng ở phân hệ khác.'">
+     th:text="${errorMessage != null and !#strings.isEmpty(errorMessage)} ? ${errorMessage} : 'Thao tác không thể hoàn tất do vi phạm ràng buộc dữ liệu hoặc bản ghi đang được sử dụng ở phân hệ khác.'">
     Xung đột dữ liệu.
   </p>
   <div>

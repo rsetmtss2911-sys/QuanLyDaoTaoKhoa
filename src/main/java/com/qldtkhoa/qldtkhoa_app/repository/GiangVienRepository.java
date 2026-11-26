@@ -29,8 +29,8 @@ public interface GiangVienRepository extends JpaRepository<GiangVien, String> {
     @Query("""
            select gv from GiangVien gv
            where (:maBoMon is null or :maBoMon = '' or gv.boMon.maBoMon = :maBoMon)
-             and (:q = '' or lower(gv.maNS) like lower(concat('%', :q, '%'))
-                         or lower(gv.nhanSu.hoTen) like lower(concat('%', :q, '%')))
+             and (:q = '' or lower(gv.maNS) like lower(concat('%', :q, '%')) escape '\\'
+                         or lower(gv.nhanSu.hoTen) like lower(concat('%', :q, '%')) escape '\\')
            """)
     Page<GiangVien> search(@Param("q") String q, @Param("maBoMon") String maBoMon, Pageable pageable);
 

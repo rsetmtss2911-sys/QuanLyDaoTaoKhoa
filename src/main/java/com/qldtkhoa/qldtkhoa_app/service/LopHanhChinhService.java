@@ -14,13 +14,16 @@ import com.qldtkhoa.qldtkhoa_app.repository.KhoaNhapHocRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.LopHanhChinhRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.NganhHocRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.SinhVienRepository;
+import com.qldtkhoa.qldtkhoa_app.util.LikeUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -34,8 +37,9 @@ public class LopHanhChinhService {
     private final SinhVienRepository sinhVienRepository;
 
     public Page<LopHanhChinhRow> search(String q, String maNganh, String maKhoaHoc, Pageable pageable) {
-        return lopHanhChinhRepository.search(q == null ? "" : q.trim(), maNganh, maKhoaHoc, pageable)
-                .map(this::toRow);
+        Page<LopHanhChinh> page = lopHanhChinhRepository.search(LikeUtils.escape(q), maNganh, maKhoaHoc, pageable);
+        Map<String, Long> countMap = loadStudentCountMap(page.getContent());
+        return page.map(lhc -> toRow(lhc, countMap.getOrDefault(lhc.getMaLopHC(), 0L)));
     }
 
     public List<LopHanhChinh> findAll() {
@@ -43,9 +47,10 @@ public class LopHanhChinhService {
     }
 
     public List<LopHanhChinhRow> findByCoVan(String maNS) {
-        return lopHanhChinhRepository.findByCoVan_MaNS(maNS)
-                .stream()
-                .map(this::toRow)
+        List<LopHanhChinh> list = lopHanhChinhRepository.findByCoVan_MaNS(maNS);
+        Map<String, Long> countMap = loadStudentCountMap(list);
+        return list.stream()
+                .map(lhc -> toRow(lhc, countMap.getOrDefault(lhc.getMaLopHC(), 0L)))
                 .toList();
     }
 
@@ -83,11 +88,11 @@ public class LopHanhChinhService {
         NganhHoc nganh = nganhHocRepository.findById(form.getMaNganh())
                 .orElseThrow(() -> new ResourceNotFoundException("nganhhoc.notFound", form.getMaNganh()));
 
-        GiangVien coVan = null;
-        if (form.getMaCoVan() != null && !form.getMaCoVan().isBlank()) {
-            coVan = giangVienRepository.findById(form.getMaCoVan())
-                    .orElseThrow(() -> new ResourceNotFoundException("nhansu.notFound", form.getMaCoVan()));
+        if (form.getMaCoVan() == null || form.getMaCoVan().isBlank()) {
+            throw new BusinessRuleException("lophc.covan.required");
         }
+        GiangVien coVan = giangVienRepository.findById(form.getMaCoVan())
+                .orElseThrow(() -> new ResourceNotFoundException("nhansu.notFound", form.getMaCoVan()));
 
         LopHanhChinh lhc = new LopHanhChinh(ma, form.getTenLopHC().trim(), nganh, knh, coVan);
         lopHanhChinhRepository.save(lhc);
@@ -106,13 +111,12 @@ public class LopHanhChinhService {
                 .orElseThrow(() -> new ResourceNotFoundException("nganhhoc.notFound", form.getMaNganh()));
         lhc.setNganhHoc(nganh);
 
-        if (form.getMaCoVan() != null && !form.getMaCoVan().isBlank()) {
-            GiangVien coVan = giangVienRepository.findById(form.getMaCoVan())
-                    .orElseThrow(() -> new ResourceNotFoundException("nhansu.notFound", form.getMaCoVan()));
-            lhc.setCoVan(coVan);
-        } else {
-            lhc.setCoVan(null);
+        if (form.getMaCoVan() == null || form.getMaCoVan().isBlank()) {
+            throw new BusinessRuleException("lophc.covan.required");
         }
+        GiangVien coVan = giangVienRepository.findById(form.getMaCoVan())
+                .orElseThrow(() -> new ResourceNotFoundException("nhansu.notFound", form.getMaCoVan()));
+        lhc.setCoVan(coVan);
     }
 
     @Transactional
@@ -124,8 +128,25 @@ public class LopHanhChinhService {
         lopHanhChinhRepository.deleteById(maLopHC);
     }
 
+    private Map<String, Long> loadStudentCountMap(List<LopHanhChinh> classes) {
+        if (classes == null || classes.isEmpty()) {
+            return Map.of();
+        }
+        List<String> ids = classes.stream().map(lhc -> lhc.getMaLopHC()).toList();
+        List<Object[]> counts = sinhVienRepository.countByLopHanhChinhIn(ids);
+        Map<String, Long> map = new HashMap<>();
+        for (Object[] row : counts) {
+            map.put((String) row[0], ((Number) row[1]).longValue());
+        }
+        return map;
+    }
+
     public LopHanhChinhRow toRow(LopHanhChinh lhc) {
         long siSo = sinhVienRepository.countByLopHanhChinh_MaLopHC(lhc.getMaLopHC());
+        return toRow(lhc, siSo);
+    }
+
+    private LopHanhChinhRow toRow(LopHanhChinh lhc, long siSo) {
         String coVanName = (lhc.getCoVan() != null && lhc.getCoVan().getNhanSu() != null)
                 ? lhc.getCoVan().getNhanSu().getHoTen()
                 : null;

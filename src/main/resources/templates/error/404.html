@@ -13,7 +13,7 @@
   </div>
   <h1 class="qd-h1 mb-3">404 - Không tìm thấy dữ liệu</h1>
   <p class="text-muted mx-auto mb-4" style="max-width: 500px;"
-     th:text="${messageKey != null} ? ${#messages.msgWithParams(messageKey, messageArgs)} : 'Đường dẫn bạn yêu cầu không tồn tại hoặc bản ghi đã bị thay đổi, gỡ bỏ khỏi hệ thống.'">
+     th:text="${errorMessage != null and !#strings.isEmpty(errorMessage)} ? ${errorMessage} : 'Đường dẫn bạn yêu cầu không tồn tại hoặc bản ghi đã bị thay đổi, gỡ bỏ khỏi hệ thống.'">
     Không tìm thấy dữ liệu.
   </p>
   <div>

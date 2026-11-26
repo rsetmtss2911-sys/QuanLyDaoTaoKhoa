@@ -9,6 +9,7 @@ import com.qldtkhoa.qldtkhoa_app.exception.ResourceNotFoundException;
 import com.qldtkhoa.qldtkhoa_app.repository.BoMonRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.KhoaRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.NganhHocRepository;
+import com.qldtkhoa.qldtkhoa_app.util.LikeUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,14 +28,7 @@ public class KhoaService {
     private final NganhHocRepository nganhHocRepository;
 
     public Page<KhoaRow> search(String q, Pageable pageable) {
-        Page<Khoa> page = khoaRepository.search(q == null ? "" : q.trim(), pageable);
-        return page.map(k -> new KhoaRow(
-                k.getMaKhoa(),
-                k.getTenKhoa(),
-                k.getNamThanhLap(),
-                boMonRepository.countByKhoa_MaKhoa(k.getMaKhoa()),
-                nganhHocRepository.countByKhoa_MaKhoa(k.getMaKhoa())
-        ));
+        return khoaRepository.searchRows(LikeUtils.escape(q), pageable);
     }
 
     public List<Khoa> findAll() {

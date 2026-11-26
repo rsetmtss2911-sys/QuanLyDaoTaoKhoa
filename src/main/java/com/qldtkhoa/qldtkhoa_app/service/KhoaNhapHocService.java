@@ -9,6 +9,7 @@ import com.qldtkhoa.qldtkhoa_app.exception.ResourceNotFoundException;
 import com.qldtkhoa.qldtkhoa_app.repository.ChuongTrinhDaoTaoRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.KhoaNhapHocRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.LopHanhChinhRepository;
+import com.qldtkhoa.qldtkhoa_app.util.LikeUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,7 +28,7 @@ public class KhoaNhapHocService {
     private final ChuongTrinhDaoTaoRepository ctdtRepository;
 
     public Page<KhoaNhapHocRow> search(String q, Pageable pageable) {
-        Page<KhoaNhapHoc> page = khoaNhapHocRepository.search(q == null ? "" : q.trim(), pageable);
+        Page<KhoaNhapHoc> page = khoaNhapHocRepository.search(LikeUtils.escape(q), pageable);
         return page.map(k -> new KhoaNhapHocRow(k.getMaKhoaHoc(), k.getNamBatDau()));
     }
 

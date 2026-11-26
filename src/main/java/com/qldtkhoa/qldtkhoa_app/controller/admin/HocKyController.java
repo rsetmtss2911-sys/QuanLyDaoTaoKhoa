@@ -14,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -24,6 +25,14 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class HocKyController {
 
     private final HocKyService hocKyService;
+
+    @InitBinder("form")
+    public void initFormBinder(WebDataBinder binder) {
+        binder.setAllowedFields(
+                "maHK", "tenHK", "namHoc", "ngayBatDau", "ngayKetThuc",
+                "ngayMoDangKy", "ngayDongDangKy", "hanRutHocPhan", "hanKhoaDiem"
+        );
+    }
 
     @GetMapping
     public String list(@RequestParam(defaultValue = "") String q,

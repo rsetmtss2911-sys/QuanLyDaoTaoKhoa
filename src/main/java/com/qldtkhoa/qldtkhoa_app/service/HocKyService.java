@@ -8,12 +8,15 @@ import com.qldtkhoa.qldtkhoa_app.exception.DuplicateResourceException;
 import com.qldtkhoa.qldtkhoa_app.exception.ResourceNotFoundException;
 import com.qldtkhoa.qldtkhoa_app.repository.HocKyNamHocRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.LopHocPhanRepository;
+import com.qldtkhoa.qldtkhoa_app.util.LikeUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -23,9 +26,10 @@ public class HocKyService {
 
     private final HocKyNamHocRepository hocKyNamHocRepository;
     private final LopHocPhanRepository lopHocPhanRepository;
+    private final Clock clock;
 
     public Page<HocKyRow> search(String q, Pageable pageable) {
-        Page<HocKyNamHoc> page = hocKyNamHocRepository.search(q == null ? "" : q.trim(), pageable);
+        Page<HocKyNamHoc> page = hocKyNamHocRepository.search(LikeUtils.escape(q), pageable);
         return page.map(hk -> new HocKyRow(
                 hk.getMaHK(),
                 hk.getTenHK(),
@@ -40,8 +44,16 @@ public class HocKyService {
     }
 
     public HocKyNamHoc getCurrentTerm() {
-        return hocKyNamHocRepository.findTopByOrderByNamHocDescMaHKDesc()
-                .orElse(null);
+        LocalDate today = clock != null ? LocalDate.now(clock) : LocalDate.now();
+        List<HocKyNamHoc> covering = hocKyNamHocRepository.findCoveringTerms(today);
+        if (!covering.isEmpty()) {
+            return covering.get(0);
+        }
+        List<HocKyNamHoc> started = hocKyNamHocRepository.findStartedBeforeOrOn(today);
+        if (!started.isEmpty()) {
+            return started.get(0);
+        }
+        return hocKyNamHocRepository.findTopByOrderByNamHocDescMaHKDesc().orElse(null);
     }
 
     public HocKyNamHoc getOrThrow(String maHK) {
@@ -57,6 +69,10 @@ public class HocKyService {
         form.setNamHoc(hk.getNamHoc());
         form.setNgayBatDau(hk.getNgayBatDau());
         form.setNgayKetThuc(hk.getNgayKetThuc());
+        form.setNgayMoDangKy(hk.getNgayMoDangKy());
+        form.setNgayDongDangKy(hk.getNgayDongDangKy());
+        form.setHanRutHocPhan(hk.getHanRutHocPhan());
+        form.setHanKhoaDiem(hk.getHanKhoaDiem());
         return form;
     }
 
@@ -66,20 +82,23 @@ public class HocKyService {
         if (hocKyNamHocRepository.existsById(ma)) {
             throw new DuplicateResourceException("hocky.maHK.duplicate", ma);
         }
-        validateDates(form);
-        hocKyNamHocRepository.save(new HocKyNamHoc(
+        validateDates(null, form);
+        HocKyNamHoc hk = new HocKyNamHoc(
                 ma, form.getTenHK().trim(), form.getNamHoc(), form.getNgayBatDau(), form.getNgayKetThuc()
-        ));
+        );
+        applyMilestones(hk, form);
+        hocKyNamHocRepository.save(hk);
     }
 
     @Transactional
     public void update(String maHK, HocKyForm form) {
         HocKyNamHoc hk = getOrThrow(maHK);
-        validateDates(form);
+        validateDates(maHK, form);
         hk.setTenHK(form.getTenHK().trim());
         hk.setNamHoc(form.getNamHoc());
         hk.setNgayBatDau(form.getNgayBatDau());
         hk.setNgayKetThuc(form.getNgayKetThuc());
+        applyMilestones(hk, form);
     }
 
     @Transactional
@@ -91,11 +110,41 @@ public class HocKyService {
         hocKyNamHocRepository.delete(hk);
     }
 
-    private void validateDates(HocKyForm form) {
-        if (form.getNgayBatDau() != null && form.getNgayKetThuc() != null) {
-            if (!form.getNgayKetThuc().isAfter(form.getNgayBatDau())) {
-                throw new BusinessRuleException("hocky.dateOrder");
-            }
+    private void applyMilestones(HocKyNamHoc hk, HocKyForm form) {
+        hk.setNgayMoDangKy(form.getNgayMoDangKy());
+        hk.setNgayDongDangKy(form.getNgayDongDangKy());
+        hk.setHanRutHocPhan(form.getHanRutHocPhan());
+        hk.setHanKhoaDiem(form.getHanKhoaDiem());
+    }
+
+    private void validateDates(String excludeMaHK, HocKyForm form) {
+        LocalDate start = form.getNgayBatDau();
+        LocalDate end = form.getNgayKetThuc();
+        if (start == null || end == null) {
+            throw new BusinessRuleException("hocky.dateRequired");
+        }
+        if (!end.isAfter(start)) {
+            throw new BusinessRuleException("hocky.dateOrder");
+        }
+        if (hocKyNamHocRepository.existsOverlappingTerm(excludeMaHK, start, end)) {
+            throw new BusinessRuleException("hocky.dateOverlap");
+        }
+        LocalDate regOpen = form.getNgayMoDangKy();
+        LocalDate regClose = form.getNgayDongDangKy();
+        LocalDate withdrawDeadline = form.getHanRutHocPhan();
+        LocalDate gradeLock = form.getHanKhoaDiem();
+
+        if (regOpen != null && regClose != null && regClose.isBefore(regOpen)) {
+            throw new BusinessRuleException("hocky.milestoneOrder");
+        }
+        if (regOpen != null && withdrawDeadline != null && withdrawDeadline.isBefore(regOpen)) {
+            throw new BusinessRuleException("hocky.milestoneOrder");
+        }
+        if (regClose != null && withdrawDeadline != null && withdrawDeadline.isBefore(regClose)) {
+            throw new BusinessRuleException("hocky.milestoneOrder");
+        }
+        if (gradeLock != null && gradeLock.isBefore(start)) {
+            throw new BusinessRuleException("hocky.gradeLockBeforeStart");
         }
     }
 }

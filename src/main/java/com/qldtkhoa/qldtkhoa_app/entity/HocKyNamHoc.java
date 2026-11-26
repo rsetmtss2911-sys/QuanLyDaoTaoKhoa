@@ -8,6 +8,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
 
@@ -20,6 +22,7 @@ public class HocKyNamHoc extends AssignedIdEntity<String> {
 
     @Id
     @Setter(AccessLevel.NONE)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "MaHK", length = 20, nullable = false)
     private String maHK;
 
@@ -38,6 +41,18 @@ public class HocKyNamHoc extends AssignedIdEntity<String> {
 
     @Column(name = "NgayKetThuc")
     private LocalDate ngayKetThuc;
+
+    @Column(name = "NgayMoDangKy")
+    private LocalDate ngayMoDangKy;
+
+    @Column(name = "NgayDongDangKy")
+    private LocalDate ngayDongDangKy;
+
+    @Column(name = "HanRutHocPhan")
+    private LocalDate hanRutHocPhan;
+
+    @Column(name = "HanKhoaDiem")
+    private LocalDate hanKhoaDiem;
 
     public HocKyNamHoc(String maHK, String tenHK, Integer namHoc, LocalDate ngayBatDau, LocalDate ngayKetThuc) {
         this.maHK = maHK;

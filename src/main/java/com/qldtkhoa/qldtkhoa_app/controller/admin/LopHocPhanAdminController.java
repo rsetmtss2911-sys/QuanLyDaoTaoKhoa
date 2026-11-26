@@ -1,11 +1,17 @@
 package com.qldtkhoa.qldtkhoa_app.controller.admin;
 
+import com.qldtkhoa.qldtkhoa_app.dto.BangDiemLopForm;
+import com.qldtkhoa.qldtkhoa_app.dto.DiemEntryForm;
+import com.qldtkhoa.qldtkhoa_app.dto.DiemRow;
 import com.qldtkhoa.qldtkhoa_app.dto.LichGiangDayForm;
 import com.qldtkhoa.qldtkhoa_app.dto.LopHocPhanForm;
 import com.qldtkhoa.qldtkhoa_app.entity.LopHocPhan;
+import com.qldtkhoa.qldtkhoa_app.entity.enums.TrangThaiDangKy;
 import com.qldtkhoa.qldtkhoa_app.entity.enums.TrangThaiLop;
 import com.qldtkhoa.qldtkhoa_app.exception.BusinessRuleException;
 import com.qldtkhoa.qldtkhoa_app.exception.DuplicateResourceException;
+import com.qldtkhoa.qldtkhoa_app.security.AppUserPrincipal;
+import com.qldtkhoa.qldtkhoa_app.service.DiemService;
 import com.qldtkhoa.qldtkhoa_app.service.HocKyService;
 import com.qldtkhoa.qldtkhoa_app.service.LopHocPhanService;
 import com.qldtkhoa.qldtkhoa_app.service.MonHocService;
@@ -17,11 +23,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/admin/lop-hoc-phan")
@@ -33,6 +45,17 @@ public class LopHocPhanAdminController {
     private final MonHocService monHocService;
     private final HocKyService hocKyService;
     private final NhanSuService nhanSuService;
+    private final DiemService diemService;
+
+    @InitBinder("form")
+    public void initFormBinder(WebDataBinder binder) {
+        binder.setAllowedFields("maLHP", "maMon", "maGV", "maHK", "siSoToiDa", "trangThaiLop");
+    }
+
+    @InitBinder("gradeForm")
+    public void initGradeFormBinder(WebDataBinder binder) {
+        binder.setAllowedFields("entries*", "lyDoChinhSua");
+    }
 
     @GetMapping
     public String list(@RequestParam(defaultValue = "") String q,
@@ -85,6 +108,7 @@ public class LopHocPhanAdminController {
         model.addAttribute("lop", lhp);
         model.addAttribute("schedules", lopHocPhanService.findSchedules(maLHP));
         model.addAttribute("registrations", lopHocPhanService.findRegistrations(maLHP));
+        model.addAttribute("activeCount", lopHocPhanService.countActiveRegistrations(maLHP));
         model.addAttribute("scheduleForm", new LichGiangDayForm());
         return "admin/lop-hoc-phan/detail";
     }
@@ -103,15 +127,96 @@ public class LopHocPhanAdminController {
                          BindingResult result,
                          Model model,
                          RedirectAttributes redirect) {
-        if (result.hasErrors()) {
-            form.setMaLHP(maLHP);
-            populateSelects(model);
-            model.addAttribute("isEdit", true);
-            return "admin/lop-hoc-phan/form";
+        if (!result.hasErrors()) {
+            try {
+                lopHocPhanService.update(maLHP, form);
+                redirect.addFlashAttribute("flash", FlashMessage.success("lophocphan.updated", maLHP));
+                return "redirect:/admin/lop-hoc-phan";
+            } catch (BusinessRuleException ex) {
+                result.reject(ex.getMessageKey(), ex.getArgs(), ex.getMessageKey());
+            }
         }
-        lopHocPhanService.update(maLHP, form);
-        redirect.addFlashAttribute("flash", FlashMessage.success("lophocphan.updated", maLHP));
-        return "redirect:/admin/lop-hoc-phan";
+        form.setMaLHP(maLHP);
+        populateSelects(model);
+        model.addAttribute("isEdit", true);
+        return "admin/lop-hoc-phan/form";
+    }
+
+    @PostMapping("/{maLHP}/lock-enrollment")
+    public String lockEnrollment(@PathVariable String maLHP,
+                                 @AuthenticationPrincipal AppUserPrincipal principal,
+                                 RedirectAttributes redirect) {
+        try {
+            lopHocPhanService.lockEnrollment(maLHP, principal != null ? principal.getEmail() : "SYSTEM");
+            redirect.addFlashAttribute("flash", FlashMessage.success("lophp.lock.success", maLHP));
+        } catch (BusinessRuleException ex) {
+            redirect.addFlashAttribute("flash", FlashMessage.danger(ex.getMessageKey(), ex.getArgs()));
+        }
+        redirect.addAttribute("maLHP", maLHP);
+        return "redirect:/admin/lop-hoc-phan/{maLHP}";
+    }
+
+    @PostMapping("/{maLHP}/lock-grades")
+    public String lockGrades(@PathVariable String maLHP,
+                             @AuthenticationPrincipal AppUserPrincipal principal,
+                             RedirectAttributes redirect) {
+        try {
+            lopHocPhanService.lockGrades(maLHP, principal != null ? principal.getEmail() : "SYSTEM");
+            redirect.addFlashAttribute("flash", FlashMessage.success("lophp.lockGrades.success", maLHP));
+        } catch (BusinessRuleException ex) {
+            redirect.addFlashAttribute("flash", FlashMessage.danger(ex.getMessageKey(), ex.getArgs()));
+        }
+        redirect.addAttribute("maLHP", maLHP);
+        return "redirect:/admin/lop-hoc-phan/{maLHP}";
+    }
+
+    @PostMapping("/{maLHP}/cancel")
+    public String cancelSection(@PathVariable String maLHP,
+                                @RequestParam(defaultValue = "") String lyDo,
+                                @AuthenticationPrincipal AppUserPrincipal principal,
+                                RedirectAttributes redirect) {
+        try {
+            int withdrawn = lopHocPhanService.cancelSection(
+                    maLHP, lyDo, principal != null ? principal.getEmail() : "SYSTEM");
+            redirect.addFlashAttribute("flash", FlashMessage.success("lophp.cancel.success", maLHP, withdrawn));
+        } catch (BusinessRuleException ex) {
+            redirect.addFlashAttribute("flash", FlashMessage.danger(ex.getMessageKey(), ex.getArgs()));
+        }
+        redirect.addAttribute("maLHP", maLHP);
+        return "redirect:/admin/lop-hoc-phan/{maLHP}";
+    }
+
+    @GetMapping("/{maLHP}/diem")
+    public String gradeSheet(@PathVariable String maLHP, Model model) {
+        LopHocPhan lhp = lopHocPhanService.getWithDetailsOrThrow(maLHP);
+        model.addAttribute("lop", lhp);
+        model.addAttribute("rows", diemService.getGradeSheet(maLHP));
+        model.addAttribute("form", new BangDiemLopForm());
+        return "admin/lop-hoc-phan/diem";
+    }
+
+    @PostMapping("/{maLHP}/diem")
+    @PreAuthorize("hasRole('PHONG_DAO_TAO')")
+    public String saveGrades(@PathVariable String maLHP,
+                             @Valid @ModelAttribute("gradeForm") BangDiemLopForm form,
+                             BindingResult bindingResult,
+                             @AuthenticationPrincipal AppUserPrincipal principal,
+                             Model model,
+                             RedirectAttributes redirect) {
+        if (bindingResult.hasErrors()) {
+            populateGradeSheetModelForError(maLHP, form, model, FlashMessage.danger("grade.scoreRange"));
+            return "admin/lop-hoc-phan/diem";
+        }
+        try {
+            String actor = principal != null ? principal.getEmail() : "PHONG_DAO_TAO";
+            diemService.saveGradeSheet(maLHP, form, actor, true);
+            redirect.addFlashAttribute("flash", FlashMessage.success("grade.saved", maLHP));
+            redirect.addAttribute("maLHP", maLHP);
+            return "redirect:/admin/lop-hoc-phan/{maLHP}/diem";
+        } catch (BusinessRuleException ex) {
+            populateGradeSheetModelForError(maLHP, form, model, FlashMessage.danger(ex.getMessageKey(), ex.getArgs()));
+            return "admin/lop-hoc-phan/diem";
+        }
     }
 
     @PostMapping("/{maLHP}/delete")
@@ -135,17 +240,20 @@ public class LopHocPhanAdminController {
             model.addAttribute("lop", lopHocPhanService.getWithDetailsOrThrow(maLHP));
             model.addAttribute("schedules", lopHocPhanService.findSchedules(maLHP));
             model.addAttribute("registrations", lopHocPhanService.findRegistrations(maLHP));
+            model.addAttribute("activeCount", lopHocPhanService.countActiveRegistrations(maLHP));
             return "admin/lop-hoc-phan/detail";
         }
         try {
             lopHocPhanService.addSchedule(maLHP, form);
             redirect.addFlashAttribute("flash", FlashMessage.success("lhp.schedule.added"));
-            return "redirect:/admin/lop-hoc-phan/" + maLHP;
+            redirect.addAttribute("maLHP", maLHP);
+            return "redirect:/admin/lop-hoc-phan/{maLHP}";
         } catch (BusinessRuleException ex) {
-            bindingResult.reject(ex.getMessageKey(), ex.getMessage());
+            bindingResult.reject(ex.getMessageKey(), ex.getArgs(), ex.getMessageKey());
             model.addAttribute("lop", lopHocPhanService.getWithDetailsOrThrow(maLHP));
             model.addAttribute("schedules", lopHocPhanService.findSchedules(maLHP));
             model.addAttribute("registrations", lopHocPhanService.findRegistrations(maLHP));
+            model.addAttribute("activeCount", lopHocPhanService.countActiveRegistrations(maLHP));
             return "admin/lop-hoc-phan/detail";
         }
     }
@@ -155,9 +263,45 @@ public class LopHocPhanAdminController {
                                  @RequestParam Integer thuTrongTuan,
                                  @RequestParam Integer tietBatDau,
                                  RedirectAttributes redirect) {
-        lopHocPhanService.removeSchedule(maLHP, thuTrongTuan, tietBatDau);
-        redirect.addFlashAttribute("flash", FlashMessage.success("lhp.schedule.deleted"));
-        return "redirect:/admin/lop-hoc-phan/" + maLHP;
+        try {
+            lopHocPhanService.removeSchedule(maLHP, thuTrongTuan, tietBatDau);
+            redirect.addFlashAttribute("flash", FlashMessage.success("lhp.schedule.deleted"));
+        } catch (BusinessRuleException ex) {
+            redirect.addFlashAttribute("flash", FlashMessage.danger(ex.getMessageKey(), ex.getArgs()));
+        }
+        redirect.addAttribute("maLHP", maLHP);
+        return "redirect:/admin/lop-hoc-phan/{maLHP}";
+    }
+
+    private void populateGradeSheetModelForError(String maLHP, BangDiemLopForm form, Model model, FlashMessage flash) {
+        LopHocPhan lhp = lopHocPhanService.getWithDetailsOrThrow(maLHP);
+        Map<String, DiemEntryForm> submittedBySv = new HashMap<>();
+        if (form.getEntries() != null) {
+            for (DiemEntryForm entry : form.getEntries()) {
+                if (entry != null && entry.getMaSV() != null) {
+                    submittedBySv.put(entry.getMaSV(), entry);
+                }
+            }
+        }
+        List<DiemRow> mergedRows = diemService.getGradeSheet(maLHP).stream()
+                .map(row -> {
+                    DiemEntryForm submitted = submittedBySv.get(row.maSV());
+                    if (submitted == null) {
+                        return row;
+                    }
+                    boolean camThi = submitted.isCamThi();
+                    return new DiemRow(
+                            row.maSV(), row.hoTen(), row.maLopHC(),
+                            camThi ? TrangThaiDangKy.CAM_THI : TrangThaiDangKy.HOP_LE,
+                            submitted.getDiemQuaTrinh(), submitted.getDiemGiuaKy(),
+                            camThi ? null : submitted.getDiemCuoiKy(),
+                            row.diemTong(), row.diemHe4(), row.diemChu(), camThi, submitted.getLyDoCamThi()
+                    );
+                }).toList();
+        model.addAttribute("lop", lhp);
+        model.addAttribute("rows", mergedRows);
+        model.addAttribute("form", form);
+        model.addAttribute("flash", flash);
     }
 
     private void populateSelects(Model model) {

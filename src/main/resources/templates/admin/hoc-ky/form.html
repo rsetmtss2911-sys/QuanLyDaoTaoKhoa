@@ -53,16 +53,39 @@
             <div class="invalid-feedback" th:errors="*{namHoc}">Lỗi năm học</div>
           </div>
 
-          <div class="row g-3 mb-4">
+          <div class="row g-3 mb-3">
             <div class="col-sm-6">
-              <label for="ngayBatDau" class="form-label">Ngày bắt đầu học kỳ</label>
-              <input id="ngayBatDau" type="date" class="form-control" th:field="*{ngayBatDau}" th:errorclass="is-invalid">
+              <label for="ngayBatDau" class="form-label">Ngày bắt đầu học kỳ <span class="text-danger">*</span></label>
+              <input id="ngayBatDau" type="date" class="form-control" th:field="*{ngayBatDau}" th:errorclass="is-invalid" required>
               <div class="invalid-feedback" th:errors="*{ngayBatDau}">Lỗi ngày bắt đầu</div>
             </div>
             <div class="col-sm-6">
-              <label for="ngayKetThuc" class="form-label">Ngày kết thúc học kỳ</label>
-              <input id="ngayKetThuc" type="date" class="form-control" th:field="*{ngayKetThuc}" th:errorclass="is-invalid">
+              <label for="ngayKetThuc" class="form-label">Ngày kết thúc học kỳ <span class="text-danger">*</span></label>
+              <input id="ngayKetThuc" type="date" class="form-control" th:field="*{ngayKetThuc}" th:errorclass="is-invalid" required>
               <div class="invalid-feedback" th:errors="*{ngayKetThuc}">Lỗi ngày kết thúc</div>
+            </div>
+          </div>
+
+          <div class="border rounded-3 p-3 mb-4 bg-light">
+            <div class="fw-semibold small text-dark mb-1">Mốc thời gian học vụ riêng của học kỳ (tùy chọn)</div>
+            <p class="text-muted small mb-3">Nếu để trống, hệ thống sẽ tự áp dụng cấu hình mặc định từ Quy chế đào tạo.</p>
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <label for="ngayMoDangKy" class="form-label small">Ngày mở đăng ký</label>
+                <input id="ngayMoDangKy" type="date" class="form-control form-control-sm" th:field="*{ngayMoDangKy}">
+              </div>
+              <div class="col-sm-6">
+                <label for="ngayDongDangKy" class="form-label small">Ngày đóng đăng ký</label>
+                <input id="ngayDongDangKy" type="date" class="form-control form-control-sm" th:field="*{ngayDongDangKy}">
+              </div>
+              <div class="col-sm-6">
+                <label for="hanRutHocPhan" class="form-label small">Hạn cuối rút học phần</label>
+                <input id="hanRutHocPhan" type="date" class="form-control form-control-sm" th:field="*{hanRutHocPhan}">
+              </div>
+              <div class="col-sm-6">
+                <label for="hanKhoaDiem" class="form-label small">Hạn cuối khóa điểm</label>
+                <input id="hanKhoaDiem" type="date" class="form-control form-control-sm" th:field="*{hanKhoaDiem}">
+              </div>
             </div>
           </div>
 

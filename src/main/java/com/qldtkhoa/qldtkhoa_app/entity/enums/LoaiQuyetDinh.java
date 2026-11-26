@@ -10,7 +10,8 @@ public enum LoaiQuyetDinh implements DbLabeled {
     BAO_LUU("Bảo lưu"),
     THOI_HOC("Thôi học"),
     DINH_CHI("Đình chỉ"),
-    TRO_LAI_HOC("Trở lại học");
+    TRO_LAI_HOC("Trở lại học"),
+    TOT_NGHIEP("Tốt nghiệp");
 
     private final String label;
 }

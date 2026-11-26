@@ -5,6 +5,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "GiangVien")
@@ -14,6 +16,7 @@ import lombok.Setter;
 public class GiangVien extends AssignedIdEntity<String> {
 
     @Id
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "MaNS", length = 20)
     @Setter(AccessLevel.NONE)
     private String maNS;

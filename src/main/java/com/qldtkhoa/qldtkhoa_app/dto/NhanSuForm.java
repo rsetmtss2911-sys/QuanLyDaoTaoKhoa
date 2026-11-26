@@ -2,6 +2,7 @@ package com.qldtkhoa.qldtkhoa_app.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +13,7 @@ public class NhanSuForm {
 
     @NotBlank(message = "{nhansu.maNS.required}")
     @Size(max = 20)
+    @Pattern(regexp = "^[A-Za-z0-9_.-]+$", message = "{common.code.pattern}")
     private String maNS;
 
     @NotBlank(message = "{nhansu.hoTen.required}")

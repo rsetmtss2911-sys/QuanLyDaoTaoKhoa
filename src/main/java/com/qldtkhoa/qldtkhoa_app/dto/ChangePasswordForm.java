@@ -13,7 +13,7 @@ public class ChangePasswordForm {
     private String matKhauCu;
 
     @NotBlank(message = "Vui lòng nhập mật khẩu mới.")
-    @Size(min = 6, message = "Mật khẩu mới phải có tối thiểu 6 ký tự.")
+    @Size(min = 8, max = 72, message = "{auth.password.size}")
     private String matKhauMoi;
 
     @NotBlank(message = "Vui lòng xác nhận mật khẩu mới.")

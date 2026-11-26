@@ -103,8 +103,8 @@
       </button>
     </form>
 
-    <!-- Tài khoản mẫu để kiểm thử -->
-    <div class="mt-4 pt-3 border-top">
+    <!-- Tài khoản mẫu để kiểm thử (chỉ hiển thị ở profile dev/local) -->
+    <div class="mt-4 pt-3 border-top" th:if="${showDemoCredentials}">
       <div class="d-flex justify-content-between align-items-center mb-2">
         <span class="small fw-bold text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.05em;">
           Tài khoản kiểm thử (Mật khẩu: 123456)

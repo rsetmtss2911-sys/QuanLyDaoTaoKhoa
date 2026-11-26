@@ -29,5 +29,5 @@ public class LichGiangDayForm {
 
     @NotBlank(message = "{lich.phongHoc.required}")
     @Size(max = 50, message = "{lich.phongHoc.size}")
-    private String phongHoc = "P301-G2";
+    private String phongHoc = "301-G2";
 }

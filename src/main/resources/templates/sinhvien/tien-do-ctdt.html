@@ -35,6 +35,7 @@
         <div class="progress" style="height: 12px;">
           <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated" role="progressbar"
                th:style="'width: ' + ${progressPercent} + '%;'"
+               th:attr="aria-valuenow=${progressPercent},aria-valuemin=0,aria-valuemax=100"
                th:text="${progressPercent + '%'}">33%</div>
         </div>
       </div>
@@ -45,13 +46,38 @@
     </div>
   </div>
 
+  <!-- Tiến độ theo từng Khối kiến thức (DinhMucCTDT) -->
+  <div th:if="${blockProgress != null and !blockProgress.isEmpty()}" class="row g-3 mb-4">
+    <div th:each="bp : ${blockProgress}" class="col-md-4">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="fw-bold text-dark" th:text="${bp.khoiKienThuc.label}">Cơ sở ngành</span>
+          <span class="badge bg-primary bg-opacity-10 text-primary fw-bold" th:text="${bp.progressPercent + '%'}">50%</span>
+        </div>
+        <div class="progress mb-2" style="height: 8px;">
+          <div class="progress-bar bg-success" role="progressbar"
+               th:style="'width: ' + ${bp.progressPercent} + '%;'"
+               th:attr="aria-valuenow=${bp.progressPercent},aria-valuemin=0,aria-valuemax=100"></div>
+        </div>
+        <div class="small text-muted d-flex justify-content-between">
+          <span>Bắt buộc: <strong th:text="${bp.earnedMandatoryCredits + '/' + bp.requiredMandatoryCredits}">12/15</strong> TC</span>
+          <span>Tự chọn: <strong th:text="${bp.earnedElectiveCredits + '/' + bp.minElectiveCredits}">3/6</strong> TC</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Danh sách các môn học theo khung -->
   <div class="qd-panel">
     <div class="qd-panel-header">
       <h2 class="qd-panel-title mb-0">Chi tiết danh mục môn học trong khung chương trình</h2>
     </div>
 
-    <div class="table-responsive">
+    <div th:if="${curriculum == null or curriculum.isEmpty()}" class="p-4 text-center text-muted small">
+      <i class="bi bi-inbox me-1"></i> Chương trình đào tạo cho ngành và khóa học này chưa được thiết lập.
+    </div>
+
+    <div th:unless="${curriculum == null or curriculum.isEmpty()}" class="table-responsive">
       <table class="table qd-table mb-0 align-middle">
         <thead>
           <tr>
@@ -61,12 +87,13 @@
             <th scope="col" class="text-center" style="width: 80px;">Số TC</th>
             <th scope="col">Khối kiến thức</th>
             <th scope="col" class="text-center" style="width: 120px;">Loại học phần</th>
-            <th scope="col" class="text-center" style="width: 140px;">Tình trạng</th>
+            <th scope="col" class="text-center" style="width: 165px;">Tình trạng</th>
           </tr>
         </thead>
         <tbody>
           <tr th:each="c : ${curriculum}"
-              th:classappend="${passedSubjects.contains(c.maMon) ? 'table-success bg-opacity-10' : ''}">
+              th:with="st=${courseStatuses != null ? courseStatuses.get(c.maMon) : (passedSubjects.contains(c.maMon) ? 'DA_TICH_LUY' : 'CHUA_HOC')}"
+              th:classappend="${st == 'DA_TICH_LUY' ? 'table-success bg-opacity-10' : ''}">
             <td class="text-center fw-bold text-muted" th:text="${'HK ' + c.hocKyChuan}">HK 1</td>
             <td class="font-monospace fw-bold" th:text="${c.maMon}">INT2204</td>
             <td class="fw-semibold text-dark" th:text="${c.tenMon}">Lập trình hướng đối tượng</td>
@@ -81,11 +108,17 @@
                     th:text="${c.loaiHocPhan.label}">Bắt buộc</span>
             </td>
             <td class="text-center">
-              <span th:if="${passedSubjects.contains(c.maMon)}" class="badge bg-success">
+              <span th:if="${st == 'DA_TICH_LUY'}" class="badge bg-success">
                 <i class="bi bi-check-circle-fill me-1"></i> Đã tích lũy
               </span>
-              <span th:unless="${passedSubjects.contains(c.maMon)}" class="badge bg-light text-muted border">
-                Chưa hoàn thành
+              <span th:if="${st == 'DANG_HOC'}" class="badge bg-info text-dark">
+                <i class="bi bi-hourglass-split me-1"></i> Đang học
+              </span>
+              <span th:if="${st == 'CHUA_DAT'}" class="badge bg-danger">
+                <i class="bi bi-arrow-repeat me-1"></i> Chưa đạt — Học lại
+              </span>
+              <span th:if="${st == 'CHUA_HOC'}" class="badge bg-light text-muted border">
+                Chưa học
               </span>
             </td>
           </tr>
