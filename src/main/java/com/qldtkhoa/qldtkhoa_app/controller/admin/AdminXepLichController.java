@@ -1,10 +1,10 @@
 package com.qldtkhoa.qldtkhoa_app.controller.admin;
 
+import com.qldtkhoa.qldtkhoa_app.dto.GiangVienOptionRow;
+import com.qldtkhoa.qldtkhoa_app.dto.HocKyOptionRow;
 import com.qldtkhoa.qldtkhoa_app.dto.LichGiangDayForm;
+import com.qldtkhoa.qldtkhoa_app.dto.LopHocPhanOptionRow;
 import com.qldtkhoa.qldtkhoa_app.dto.TimetableSlot;
-import com.qldtkhoa.qldtkhoa_app.entity.GiangVien;
-import com.qldtkhoa.qldtkhoa_app.entity.HocKyNamHoc;
-import com.qldtkhoa.qldtkhoa_app.entity.LopHocPhan;
 import com.qldtkhoa.qldtkhoa_app.exception.BusinessRuleException;
 import com.qldtkhoa.qldtkhoa_app.service.HocKyService;
 import com.qldtkhoa.qldtkhoa_app.service.LichGiangDayService;
@@ -42,10 +42,10 @@ public class AdminXepLichController {
                         @RequestParam(required = false) String phongHoc,
                         @RequestParam(required = false) String maGV,
                         Model model) {
-        List<HocKyNamHoc> hocKys = hocKyService.findAll();
+        List<HocKyOptionRow> hocKys = hocKyService.findAllOptions();
         if ((maHK == null || maHK.isBlank()) && !hocKys.isEmpty()) {
-            HocKyNamHoc current = hocKyService.getCurrentTerm();
-            maHK = current != null ? current.getMaHK() : hocKys.get(0).getMaHK();
+            HocKyOptionRow current = hocKyService.getCurrentTermOption();
+            maHK = current != null ? current.maHK() : hocKys.get(0).maHK();
         }
 
         List<String> distinctRooms = lichGiangDayService.getDistinctRooms(maHK);
@@ -62,10 +62,10 @@ public class AdminXepLichController {
             }
         }
 
-        List<GiangVien> giangViens = nhanSuService.findAllGiangVien();
+        List<GiangVienOptionRow> giangViens = nhanSuService.findAllGiangVienOptions();
         if ("THEO_GIANG_VIEN".equalsIgnoreCase(viewMode)) {
             if ((maGV == null || maGV.isBlank()) && !giangViens.isEmpty()) {
-                maGV = giangViens.get(0).getMaNS();
+                maGV = giangViens.get(0).maNS();
             }
         }
 
@@ -73,8 +73,8 @@ public class AdminXepLichController {
                 ? (maGV != null ? lichGiangDayService.getLecturerTimetable(maGV, maHK) : List.of())
                 : (phongHoc != null ? lichGiangDayService.getRoomTimetable(phongHoc, maHK) : List.of());
 
-        List<LopHocPhan> activeSections = lichGiangDayService.getActiveSections(maHK);
-        List<LopHocPhan> unscheduledSections = lichGiangDayService.getUnscheduledSections(maHK);
+        List<LopHocPhanOptionRow> activeSections = lichGiangDayService.getActiveSectionOptions(maHK);
+        List<LopHocPhanOptionRow> unscheduledSections = lichGiangDayService.getUnscheduledSectionOptions(maHK);
 
         LichGiangDayForm scheduleForm = new LichGiangDayForm();
         if ("THEO_PHONG".equalsIgnoreCase(viewMode) && phongHoc != null && !phongHoc.isBlank()) {
@@ -106,7 +106,7 @@ public class AdminXepLichController {
                                @RequestParam(required = false) String currentGv,
                                RedirectAttributes redirect) {
         if (bindingResult.hasErrors()) {
-            redirect.addFlashAttribute("flash", FlashMessage.danger("lhp.schedule.invalidInput"));
+            redirect.addFlashAttribute("flash", FlashMessage.danger("lophp.schedule.invalidInput"));
             return buildRedirect(redirect, currentHk, viewMode, currentPhong, currentGv);
         }
         try {

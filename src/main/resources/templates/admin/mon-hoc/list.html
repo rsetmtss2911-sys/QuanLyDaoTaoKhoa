@@ -30,11 +30,12 @@
     <form method="get" th:action="@{/admin/mon-hoc}" class="p-3 border-bottom d-flex flex-wrap gap-2 align-items-center" role="search">
       <div class="input-group qd-search">
         <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+        <label for="q" class="visually-hidden">Tìm kiếm</label>
         <input id="q" name="q" type="search" class="form-control border-start-0 ps-0"
                th:value="${q}" placeholder="Tìm theo mã hoặc tên môn học...">
       </div>
 
-      <select name="maBoMon" class="form-select w-auto" onchange="this.form.submit()">
+      <select name="maBoMon" class="form-select w-auto" data-auto-submit>
         <option value="">-- Tất cả bộ môn quản lý --</option>
         <option th:each="bm : ${boMons}" th:value="${bm.maBoMon}" th:text="${bm.tenBoMon + ' (' + bm.maBoMon + ')'}"
                 th:selected="${bm.maBoMon == maBoMon}">Bộ môn CNPM</option>
@@ -49,15 +50,16 @@
 
     <div class="table-responsive">
       <table class="table qd-table">
+        <caption class="visually-hidden">Quản lý Môn học & Học phần</caption>
         <thead>
           <tr>
-            <th scope="col" style="width: 140px;">Mã môn</th>
+            <th scope="col" class="qd-col-140">Mã môn</th>
             <th scope="col">Tên môn học</th>
-            <th scope="col" class="text-center" style="width: 110px;">Số TC (LT/TH)</th>
-            <th scope="col" class="text-center" style="width: 140px;">Trọng số điểm</th>
+            <th scope="col" class="text-center qd-col-110">Số TC (LT/TH)</th>
+            <th scope="col" class="text-center qd-col-140">Trọng số điểm</th>
             <th scope="col">Bộ môn quản lý</th>
-            <th scope="col" class="text-center" style="width: 110px;">Tiên quyết</th>
-            <th scope="col" class="text-end" style="width: 160px;">Thao tác</th>
+            <th scope="col" class="text-center qd-col-110">Tiên quyết</th>
+            <th scope="col" class="text-end qd-col-160">Thao tác</th>
           </tr>
         </thead>
         <tbody>
@@ -92,16 +94,16 @@
               <span th:unless="${row.soLuongTienQuyet > 0}" class="text-muted small">—</span>
             </td>
             <td class="text-end text-nowrap">
-              <a class="btn btn-sm btn-outline-info me-1" th:href="@{/admin/mon-hoc/{id}(id=${row.maMon})}" title="Chi tiết môn & Tiên quyết">
+              <a class="btn btn-sm btn-outline-info me-1" th:href="@{/admin/mon-hoc/{id}(id=${row.maMon})}" title="Chi tiết môn & Tiên quyết" aria-label="Chi tiết môn & Tiên quyết">
                 <i class="bi bi-eye"></i>
               </a>
               <span sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
-                <a class="btn btn-sm btn-outline-primary me-1" th:href="@{/admin/mon-hoc/{id}/edit(id=${row.maMon})}" title="Chỉnh sửa">
+                <a class="btn btn-sm btn-outline-primary me-1" th:href="@{/admin/mon-hoc/{id}/edit(id=${row.maMon})}" title="Chỉnh sửa" aria-label="Chỉnh sửa">
                   <i class="bi bi-pencil"></i>
                 </a>
                 <form class="d-inline" method="post" th:action="@{/admin/mon-hoc/{id}/delete(id=${row.maMon})}"
                       th:data-confirm="|Xóa môn học '${row.tenMon}'? Thao tác sẽ bị từ chối nếu môn đang thuộc CTĐT hoặc có lớp học phần.|">
-                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa môn">
+                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa môn" aria-label="Xóa môn">
                     <i class="bi bi-trash"></i>
                   </button>
                 </form>

@@ -16,7 +16,12 @@
           <li class="breadcrumb-item active" aria-current="page">Bảng điểm</li>
         </ol>
       </nav>
-      <h1 class="qd-h1 mb-0">Bảng điểm & Kết quả Học tập Cá nhân</h1>
+      <h1 class="qd-h1 mb-0">Bảng điểm &amp; Kết quả Học tập Cá nhân</h1>
+    </div>
+    <div class="qd-no-print">
+      <button type="button" class="btn btn-outline-secondary" data-print>
+        <i class="bi bi-printer me-1"></i> In bảng điểm (PDF)
+      </button>
     </div>
   </div>
 
@@ -76,20 +81,21 @@
         </div>
       </div>
 
-      <div class="table-responsive">
+      <div class="table-responsive d-none d-md-block">
         <table class="table qd-table mb-0 align-middle">
+          <caption class="visually-hidden" th:text="${'Bảng điểm ' + entry.key}">Bảng điểm học kỳ</caption>
           <thead>
             <tr>
-              <th scope="col" style="width: 120px;">Mã môn</th>
+              <th scope="col" class="qd-col-120">Mã môn</th>
               <th scope="col">Tên môn học</th>
-              <th scope="col" class="text-center" style="width: 70px;">TC</th>
-              <th scope="col" class="text-center" style="width: 90px;">Điểm QT</th>
-              <th scope="col" class="text-center" style="width: 90px;">Điểm GK</th>
-              <th scope="col" class="text-center" style="width: 90px;">Điểm CK</th>
-              <th scope="col" class="text-center" style="width: 100px;">Tổng (10)</th>
-              <th scope="col" class="text-center" style="width: 80px;">Hệ 4</th>
-              <th scope="col" class="text-center" style="width: 80px;">Điểm chữ</th>
-              <th scope="col" class="text-center" style="width: 100px;">Kết quả</th>
+              <th scope="col" class="text-center qd-col-70">TC</th>
+              <th scope="col" class="text-center qd-col-90">Điểm QT</th>
+              <th scope="col" class="text-center qd-col-90">Điểm GK</th>
+              <th scope="col" class="text-center qd-col-90">Điểm CK</th>
+              <th scope="col" class="text-center qd-col-100">Tổng (10)</th>
+              <th scope="col" class="text-center qd-col-80">Hệ 4</th>
+              <th scope="col" class="text-center qd-col-80">Điểm chữ</th>
+              <th scope="col" class="text-center qd-col-100">Kết quả</th>
             </tr>
           </thead>
           <tbody>
@@ -122,6 +128,32 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Thẻ Mobile cho Bảng điểm -->
+      <div class="d-md-none p-3 d-flex flex-column gap-2">
+        <div th:each="row : ${entry.value}" class="card border p-3">
+          <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+            <div>
+              <span class="font-monospace fw-bold text-primary" th:text="${row.maMon}">INT2204</span>
+              <span class="small text-muted" th:text="${' · ' + row.soTinChi + ' TC'}"> · 3 TC</span>
+            </div>
+            <span th:if="${row.trangThaiDangKy != null and row.trangThaiDangKy.name() == 'CAM_THI'}"
+                  class="badge bg-danger">Cấm thi</span>
+            <span th:unless="${row.trangThaiDangKy != null and row.trangThaiDangKy.name() == 'CAM_THI'}"
+                  class="badge"
+                  th:classappend="${row.ketQuaHocPhan == 'Đạt' ? 'bg-success' : ((row.ketQuaHocPhan == 'Học lại' or row.ketQuaHocPhan == 'Trượt') ? 'bg-danger' : 'bg-secondary')}"
+                  th:text="${row.ketQuaHocPhan != null ? row.ketQuaHocPhan : '—'}">Đạt</span>
+          </div>
+          <div class="fw-semibold text-dark mb-1" th:text="${row.tenMon}">Lập trình hướng đối tượng</div>
+          <div class="d-flex flex-wrap gap-2 small text-muted">
+            <span>QT: <strong th:text="${row.diemQuaTrinh != null ? #numbers.formatDecimal(row.diemQuaTrinh, 1, 1) : '—'}">8.5</strong></span>
+            <span>GK: <strong th:text="${row.diemGiuaKy != null ? #numbers.formatDecimal(row.diemGiuaKy, 1, 1) : '—'}">8.0</strong></span>
+            <span>CK: <strong th:text="${row.diemCuoiKy != null ? #numbers.formatDecimal(row.diemCuoiKy, 1, 1) : '—'}">9.0</strong></span>
+            <span class="text-primary">Tổng: <strong th:text="${row.diemTong != null ? #numbers.formatDecimal(row.diemTong, 1, 1) : '—'}">8.6</strong></span>
+            <span>Chữ: <strong th:text="${row.diemChu != null ? row.diemChu : '—'}">A</strong></span>
+          </div>
+        </div>
       </div>
     </div>
   </div>

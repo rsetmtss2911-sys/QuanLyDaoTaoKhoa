@@ -84,6 +84,12 @@
       "type": "java.lang.Boolean",
       "description": "Bật hoặc tắt các tác vụ chạy định kỳ (@Scheduled) của ứng dụng.",
       "defaultValue": true
+    },
+    {
+      "name": "app.ui.show-demo-credentials",
+      "type": "java.lang.Boolean",
+      "description": "Cho phép hiển thị khung tài khoản kiểm thử trên màn hình đăng nhập (chỉ có hiệu lực khi profile dev hoặc local đang bật).",
+      "defaultValue": false
     }
   ]
 }

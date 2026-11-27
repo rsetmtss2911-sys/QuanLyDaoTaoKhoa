@@ -1,8 +1,9 @@
 package com.qldtkhoa.qldtkhoa_app.controller.admin;
 
+import com.qldtkhoa.qldtkhoa_app.dto.SinhVienDetailView;
 import com.qldtkhoa.qldtkhoa_app.dto.SinhVienForm;
-import com.qldtkhoa.qldtkhoa_app.entity.SinhVien;
 import com.qldtkhoa.qldtkhoa_app.entity.enums.GioiTinh;
+import com.qldtkhoa.qldtkhoa_app.entity.enums.TrangThaiSinhVien;
 import com.qldtkhoa.qldtkhoa_app.service.DangKyHocPhanService;
 import com.qldtkhoa.qldtkhoa_app.service.LopHanhChinhService;
 import com.qldtkhoa.qldtkhoa_app.service.QuyetDinhHocVuService;
@@ -50,11 +51,14 @@ class SinhVienAdminControllerTest {
     }
 
     @Test
-    @DisplayName("detail should invoke getWithDetailsOrThrow and populate model")
+    @DisplayName("detail should invoke getDetailView and populate model")
     void testDetailLoadsWithDetails() {
         String maSV = "SV2024001";
-        SinhVien mockSv = mock(SinhVien.class);
-        when(sinhVienService.getWithDetailsOrThrow(maSV)).thenReturn(mockSv);
+        SinhVienDetailView mockSv = new SinhVienDetailView(
+                maSV, "Nguyễn Văn A", GioiTinh.NAM, java.time.LocalDate.of(2005, 1, 1),
+                TrangThaiSinhVien.DANG_HOC, "K66_CNTT", "CNTT", "K66", 2024,
+                "GV01", "TS. A", "sv@edu.vn", true);
+        when(sinhVienService.getDetailView(maSV)).thenReturn(mockSv);
         when(quyetDinhHocVuService.findBySinhVien(maSV)).thenReturn(Collections.emptyList());
         when(dangKyHocPhanService.findBySinhVien(maSV)).thenReturn(Collections.emptyList());
         when(diemService.getTranscriptView(maSV)).thenReturn(new com.qldtkhoa.qldtkhoa_app.dto.BangDiemSinhVienResponse(Collections.emptyMap(), 0, null, "—"));
@@ -68,15 +72,18 @@ class SinhVienAdminControllerTest {
         assertThat(model.getAttribute("dangKys")).isNotNull();
         assertThat(model.getAttribute("byTerm")).isNotNull();
         assertThat(model.getAttribute("tongTCTichLuy")).isEqualTo(0);
-        verify(sinhVienService).getWithDetailsOrThrow(maSV);
+        verify(sinhVienService).getDetailView(maSV);
     }
 
     @Test
     @DisplayName("detail should populate model when student has academic decisions")
     void testDetailLoadsWithAcademicDecisions() {
         String maSV = "SV65_06";
-        SinhVien mockSv = mock(SinhVien.class);
-        when(sinhVienService.getWithDetailsOrThrow(maSV)).thenReturn(mockSv);
+        SinhVienDetailView mockSv = new SinhVienDetailView(
+                maSV, "Bùi Hữu Trí", GioiTinh.NAM, java.time.LocalDate.of(2005, 1, 1),
+                TrangThaiSinhVien.DINH_CHI, "K65_CNTT", "CNTT", "K65", 2023,
+                "GV01", "TS. A", "sv65@edu.vn", true);
+        when(sinhVienService.getDetailView(maSV)).thenReturn(mockSv);
         com.qldtkhoa.qldtkhoa_app.dto.QuyetDinhRow qdRow = new com.qldtkhoa.qldtkhoa_app.dto.QuyetDinhRow(
                 "QD_2025_002",
                 maSV,

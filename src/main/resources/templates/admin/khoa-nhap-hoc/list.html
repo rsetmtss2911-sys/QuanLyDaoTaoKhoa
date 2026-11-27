@@ -30,6 +30,7 @@
     <form method="get" th:action="@{/admin/khoa-nhap-hoc}" class="p-3 border-bottom d-flex flex-wrap gap-2 align-items-center" role="search">
       <div class="input-group qd-search">
         <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+        <label for="q" class="visually-hidden">Tìm kiếm</label>
         <input id="q" name="q" type="search" class="form-control border-start-0 ps-0"
                th:value="${q}" placeholder="Tìm theo mã khóa (VD: K2024)...">
       </div>
@@ -41,11 +42,12 @@
 
     <div class="table-responsive">
       <table class="table qd-table">
+        <caption class="visually-hidden">Khóa nhập học</caption>
         <thead>
           <tr>
-            <th scope="col" style="width: 200px;">Mã khóa tuyển sinh</th>
+            <th scope="col" class="qd-col-200">Mã khóa tuyển sinh</th>
             <th scope="col">Năm bắt đầu tuyển sinh</th>
-            <th scope="col" class="text-end" style="width: 140px;">Thao tác</th>
+            <th scope="col" class="text-end qd-col-140">Thao tác</th>
           </tr>
         </thead>
         <tbody>
@@ -63,12 +65,12 @@
             </td>
             <td class="text-end text-nowrap">
               <span sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
-                <a class="btn btn-sm btn-outline-primary me-1" th:href="@{/admin/khoa-nhap-hoc/{id}/edit(id=${row.maKhoaHoc})}" title="Chỉnh sửa">
+                <a class="btn btn-sm btn-outline-primary me-1" th:href="@{/admin/khoa-nhap-hoc/{id}/edit(id=${row.maKhoaHoc})}" title="Chỉnh sửa" aria-label="Chỉnh sửa">
                   <i class="bi bi-pencil"></i> Sửa
                 </a>
                 <form class="d-inline" method="post" th:action="@{/admin/khoa-nhap-hoc/{id}/delete(id=${row.maKhoaHoc})}"
                       th:data-confirm="|Xóa khóa tuyển sinh '${row.maKhoaHoc}'? Thao tác sẽ bị chặn nếu đã có sinh viên hoặc CTĐT.|">
-                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa">
+                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa" aria-label="Xóa">
                     <i class="bi bi-trash"></i>
                   </button>
                 </form>

@@ -19,7 +19,7 @@
         </ol>
       </nav>
       <div class="d-flex align-items-center gap-3">
-        <h1 class="qd-h1 mb-0" th:text="${lop.monHoc.tenMon + ' (' + lop.maLHP + ')'}">Lập trình hướng đối tượng</h1>
+        <h1 class="qd-h1 mb-0" th:text="${lop.tenMon + ' (' + lop.maLHP + ')'}">Lập trình hướng đối tượng</h1>
         <span th:replace="~{fragments/status-badge :: sectionStatus(${lop.trangThaiLop})}"></span>
       </div>
     </div>
@@ -61,13 +61,13 @@
     <div class="col-md-3">
       <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
         <div class="text-muted small mb-1">Học kỳ đào tạo</div>
-        <div class="h5 fw-bold font-monospace text-primary mb-0" th:text="${lop.hocKy.tenHocKy + ' (' + lop.hocKy.namHoc + ')'}">Học kỳ 1</div>
+        <div class="h5 fw-bold font-monospace text-primary mb-0" th:text="${lop.tenHocKy + ' (' + lop.namHoc + ')'}">Học kỳ 1</div>
       </div>
     </div>
     <div class="col-md-3">
       <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
         <div class="text-muted small mb-1">Số tín chỉ</div>
-        <div class="h5 fw-bold text-dark mb-0" th:text="${lop.monHoc.soTinChi + ' TC (' + lop.monHoc.tinChiLT + ' LT / ' + lop.monHoc.tinChiTH + ' TH)'}">3 TC</div>
+        <div class="h5 fw-bold text-dark mb-0" th:text="${lop.soTinChi + ' TC (' + lop.tinChiLT + ' LT / ' + lop.tinChiTH + ' TH)'}">3 TC</div>
       </div>
     </div>
     <div class="col-md-3">
@@ -75,8 +75,8 @@
         <div class="text-muted small mb-1">Giảng viên phụ trách</div>
         <div class="fw-semibold text-dark mb-0">
           <i class="bi bi-person-badge text-secondary me-1"></i>
-          <span th:if="${lop.giangVien != null and lop.giangVien.nhanSu != null}" th:text="${lop.giangVien.nhanSu.hoTen}">TS. Nguyễn Văn A</span>
-          <span th:unless="${lop.giangVien != null and lop.giangVien.nhanSu != null}" class="badge bg-warning bg-opacity-10 text-warning">Chưa phân công</span>
+          <span th:if="${lop.tenGV != null}" th:text="${lop.tenGV}">TS. Nguyễn Văn A</span>
+          <span th:unless="${lop.tenGV != null}" class="badge bg-warning bg-opacity-10 text-warning">Chưa phân công</span>
         </div>
       </div>
     </div>
@@ -121,7 +121,7 @@
                       th:data-confirm="|Xóa tiết học Thứ ${sch.thuTrongTuan} (Tiết ${sch.tietBatDau}-${sch.tietKetThuc})?|">
                   <input type="hidden" name="thuTrongTuan" th:value="${sch.thuTrongTuan}">
                   <input type="hidden" name="tietBatDau" th:value="${sch.tietBatDau}">
-                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa lịch">
+                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa lịch" aria-label="Xóa lịch">
                     <i class="bi bi-trash"></i>
                   </button>
                 </form>
@@ -190,13 +190,14 @@
 
         <div class="table-responsive">
           <table class="table qd-table mb-0">
+        <caption class="visually-hidden">Chi tiết Lớp học phần</caption>
             <thead>
               <tr>
-                <th scope="col" style="width: 130px;">Mã SV</th>
+                <th scope="col" class="qd-col-130">Mã SV</th>
                 <th scope="col">Họ và tên</th>
                 <th scope="col">Lớp hành chính</th>
                 <th scope="col">Thời gian ĐK</th>
-                <th scope="col" class="text-center" style="width: 120px;">Trạng thái</th>
+                <th scope="col" class="text-center qd-col-120">Trạng thái</th>
               </tr>
             </thead>
             <tbody>
@@ -208,13 +209,13 @@
               <tr th:each="dk : ${registrations}">
                 <td>
                   <a class="fw-bold font-monospace text-primary text-decoration-none"
-                     th:href="@{/admin/sinh-vien/{id}(id=${dk.sinhVien.maSV})}"
-                     th:text="${dk.sinhVien.maSV}">23020001</a>
+                     th:href="@{/admin/sinh-vien/{id}(id=${dk.maSV})}"
+                     th:text="${dk.maSV}">23020001</a>
                 </td>
-                <td class="fw-semibold text-dark" th:text="${dk.sinhVien.hoTen}">Trần Thị Mai</td>
+                <td class="fw-semibold text-dark" th:text="${dk.hoTen}">Trần Thị Mai</td>
                 <td>
                   <span class="badge bg-light text-dark border"
-                        th:text="${dk.sinhVien.lopHanhChinh != null ? dk.sinhVien.lopHanhChinh.maLopHC : '—'}">CNTT2023A</span>
+                        th:text="${dk.maLopHC != null ? dk.maLopHC : '—'}">CNTT2023A</span>
                 </td>
                 <td class="text-muted small" th:text="${#temporals.format(dk.ngayDangKy, 'dd/MM/yyyy HH:mm')}">10/09/2023 09:30</td>
                 <td class="text-center">

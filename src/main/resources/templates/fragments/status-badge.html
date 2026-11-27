@@ -10,7 +10,7 @@
       th:if="${status != null}"
       th:classappend="'qd-status--' + ${@statusBadge.variant(status)}">
   <i class="bi" th:classappend="${@statusBadge.icon(status)}" aria-hidden="true"></i>
-  <span th:text="${status instanceof T(java.lang.String) ? status : status.label}">Đang học</span>
+  <span th:text="${@statusBadge.label(status)}">Đang học</span>
 </span>
 
 <!-- Fragment cho trạng thái đăng ký học phần -->
@@ -18,7 +18,7 @@
       th:if="${status != null}"
       th:classappend="'qd-status--' + ${@statusBadge.variant(status)}">
   <i class="bi" th:classappend="${@statusBadge.icon(status)}" aria-hidden="true"></i>
-  <span th:text="${status instanceof T(java.lang.String) ? status : status.label}">Hợp lệ</span>
+  <span th:text="${@statusBadge.label(status)}">Hợp lệ</span>
 </span>
 
 <!-- Fragment cho trạng thái lớp học phần -->
@@ -26,7 +26,7 @@
       th:if="${status != null}"
       th:classappend="'qd-status--' + ${@statusBadge.variant(status)}">
   <i class="bi" th:classappend="${@statusBadge.icon(status)}" aria-hidden="true"></i>
-  <span th:text="${status instanceof T(java.lang.String) ? status : status.label}">Chờ mở</span>
+  <span th:text="${@statusBadge.label(status)}">Chờ mở</span>
 </span>
 
 <!-- Fragment cho loại Quyết định học vụ -->
@@ -34,5 +34,5 @@
       th:if="${status != null}"
       th:classappend="'qd-status--' + ${@statusBadge.variant(status)}">
   <i class="bi" th:classappend="${@statusBadge.icon(status)}" aria-hidden="true"></i>
-  <span th:text="${status instanceof T(java.lang.String) ? status : status.label}">Bảo lưu</span>
+  <span th:text="${@statusBadge.label(status)}">Bảo lưu</span>
 </span>

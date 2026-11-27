@@ -25,8 +25,8 @@
       <label for="selectHocKy" class="form-label small fw-semibold text-muted mb-0 text-nowrap">
         <i class="bi bi-calendar-event me-1 text-primary"></i> Học kỳ:
       </label>
-      <select id="selectHocKy" class="form-select form-select-sm" style="min-width: 220px;"
-              onchange="location.href='/admin/dashboard?maHK=' + encodeURIComponent(this.value)">
+      <select id="selectHocKy" class="form-select form-select-sm qd-select-min-220"
+              data-navigate-url="/admin/dashboard?maHK=">
         <option th:each="hk : ${dashboard.hocKys}"
                 th:value="${hk.maHK}"
                 th:text="${hk.tenHocKy + ' (' + hk.namHoc + ')'}"
@@ -37,66 +37,64 @@
     </div>
   </div>
 
-  <!-- Thống kê tổng quan (Stat Cards) -->
+  <!-- Thống kê tổng quan (.qd-stat-tile điều hướng tới danh sách lọc tương ứng) -->
   <div class="row g-3 mb-4">
     <div class="col-sm-6 col-xl-3">
-      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100 position-relative overflow-hidden">
-        <div class="d-flex align-items-center justify-content-between mb-2">
-          <span class="text-muted small fw-medium">Sinh viên đang học</span>
-          <div class="p-2 bg-primary bg-opacity-10 text-primary rounded-3">
-            <i class="bi bi-people-fill fs-5"></i>
+      <a class="qd-stat-tile h-100" th:href="@{/admin/sinh-vien(status='DANG_HOC')}">
+        <div>
+          <div class="qd-stat-label mt-0 mb-1">Sinh viên đang học</div>
+          <div class="qd-stat-number" th:text="${dashboard.totalStudentsActive}">1,250</div>
+          <div class="text-muted small mt-1">
+            Tổng hồ sơ: <span class="fw-semibold text-dark" th:text="${dashboard.totalStudentsTotal}">1,280</span>
           </div>
         </div>
-        <div class="h3 fw-bold text-dark mb-1" th:text="${dashboard.totalStudentsActive}">1,250</div>
-        <div class="text-muted small">
-          Tổng hồ sơ: <span class="fw-semibold text-dark" th:text="${dashboard.totalStudentsTotal}">1,280</span>
+        <div class="qd-stat-icon">
+          <i class="bi bi-people-fill" aria-hidden="true"></i>
         </div>
-      </div>
+      </a>
     </div>
 
     <div class="col-sm-6 col-xl-3">
-      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100 position-relative overflow-hidden">
-        <div class="d-flex align-items-center justify-content-between mb-2">
-          <span class="text-muted small fw-medium">Đội ngũ Giảng viên</span>
-          <div class="p-2 bg-success bg-opacity-10 text-success rounded-3">
-            <i class="bi bi-person-badge-fill fs-5"></i>
-          </div>
+      <a class="qd-stat-tile qd-stat-tile--info h-100" th:href="@{/admin/nhan-su(role='GIANG_VIEN')}">
+        <div>
+          <div class="qd-stat-label mt-0 mb-1">Đội ngũ Giảng viên</div>
+          <div class="qd-stat-number" th:text="${dashboard.totalLecturers}">85</div>
+          <div class="text-muted small mt-1">Xem danh sách giảng viên</div>
         </div>
-        <div class="h3 fw-bold text-dark mb-1" th:text="${dashboard.totalLecturers}">85</div>
-        <div class="text-muted small">
-          Bộ môn trực thuộc: <span class="fw-semibold text-dark">Toàn khoa</span>
+        <div class="qd-stat-icon">
+          <i class="bi bi-person-badge-fill" aria-hidden="true"></i>
         </div>
-      </div>
+      </a>
     </div>
 
     <div class="col-sm-6 col-xl-3">
-      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100 position-relative overflow-hidden">
-        <div class="d-flex align-items-center justify-content-between mb-2">
-          <span class="text-muted small fw-medium">Lớp học phần kỳ này</span>
-          <div class="p-2 bg-warning bg-opacity-10 text-warning rounded-3">
-            <i class="bi bi-journal-bookmark-fill fs-5"></i>
+      <a class="qd-stat-tile qd-stat-tile--warning h-100" th:href="@{/admin/lop-hoc-phan(maHK=${dashboard.currentHk})}">
+        <div>
+          <div class="qd-stat-label mt-0 mb-1">Lớp học phần kỳ này</div>
+          <div class="qd-stat-number" th:text="${dashboard.totalSectionsCurrentTerm}">42</div>
+          <div class="mt-1">
+            <span class="badge bg-warning bg-opacity-10 text-warning fw-semibold" th:text="${dashboard.totalOpenSections + ' đang mở'}">12 đang mở</span>
           </div>
         </div>
-        <div class="h3 fw-bold text-dark mb-1" th:text="${dashboard.totalSectionsCurrentTerm}">42</div>
-        <div class="text-muted small">
-          <span class="badge bg-warning bg-opacity-10 text-warning fw-semibold" th:text="${dashboard.totalOpenSections + ' đang mở'}">12 đang mở</span>
+        <div class="qd-stat-icon">
+          <i class="bi bi-journal-bookmark-fill" aria-hidden="true"></i>
         </div>
-      </div>
+      </a>
     </div>
 
     <div class="col-sm-6 col-xl-3">
-      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100 position-relative overflow-hidden">
-        <div class="d-flex align-items-center justify-content-between mb-2">
-          <span class="text-muted small fw-medium">Danh mục Môn học</span>
-          <div class="p-2 bg-info bg-opacity-10 text-info rounded-3">
-            <i class="bi bi-book-half fs-5"></i>
+      <a class="qd-stat-tile h-100" th:href="@{/admin/mon-hoc}">
+        <div>
+          <div class="qd-stat-label mt-0 mb-1">Danh mục Môn học</div>
+          <div class="qd-stat-number" th:text="${dashboard.totalCourses}">120</div>
+          <div class="text-muted small mt-1">
+            Lớp hành chính: <span class="fw-semibold text-dark" th:text="${dashboard.totalAdministrativeClasses}">36</span>
           </div>
         </div>
-        <div class="h3 fw-bold text-dark mb-1" th:text="${dashboard.totalCourses}">120</div>
-        <div class="text-muted small">
-          Lớp hành chính: <span class="fw-semibold text-dark" th:text="${dashboard.totalAdministrativeClasses}">36</span>
+        <div class="qd-stat-icon">
+          <i class="bi bi-book-half" aria-hidden="true"></i>
         </div>
-      </div>
+      </a>
     </div>
   </div>
 
@@ -138,13 +136,14 @@
 
         <div class="table-responsive">
           <table class="table qd-table mb-0 align-middle">
+        <caption class="visually-hidden">Bàn làm việc Đào tạo</caption>
             <thead>
               <tr>
-                <th scope="col" style="width: 120px;">Mã LHP</th>
+                <th scope="col" class="qd-col-120">Mã LHP</th>
                 <th scope="col">Môn học</th>
                 <th scope="col">Giảng viên</th>
-                <th scope="col" class="text-center" style="width: 130px;">Sĩ số</th>
-                <th scope="col" class="text-end" style="width: 100px;">Chi tiết</th>
+                <th scope="col" class="text-center qd-col-130">Sĩ số</th>
+                <th scope="col" class="text-end qd-col-100">Chi tiết</th>
               </tr>
             </thead>
             <tbody>
@@ -164,13 +163,16 @@
                 <td class="small" th:text="${lhp.tenGV}">TS. Nguyễn Văn A</td>
                 <td class="text-center">
                   <div class="small fw-bold" th:text="${lhp.siSoHienTai + ' / ' + lhp.siSoToiDa}">38 / 40</div>
-                  <div class="progress mt-1" style="height: 4px;">
+                  <div class="progress mt-1 qd-progress-xs">
                     <div class="progress-bar bg-primary" role="progressbar"
-                         th:style="|width: ${(lhp.siSoHienTai * 100.0) / lhp.siSoToiDa}%|"></div>
+                         aria-valuemin="0" aria-valuemax="100"
+                         th:attr="aria-valuenow=${lhp.siSoToiDa > 0 ? (lhp.siSoHienTai * 100 / lhp.siSoToiDa) : 0},
+                                  aria-label=${'Tỷ lệ sĩ số lớp ' + lhp.maLHP},
+                                  data-progress-width=${lhp.siSoToiDa > 0 ? (lhp.siSoHienTai * 100 / lhp.siSoToiDa) : 0}"></div>
                   </div>
                 </td>
                 <td class="text-end">
-                  <a class="btn btn-sm btn-light border py-1 px-2" th:href="@{/admin/lop-hoc-phan/{id}(id=${lhp.maLHP})}" title="Xem chi tiết lớp">
+                  <a class="btn btn-sm btn-light border py-1 px-2" th:href="@{/admin/lop-hoc-phan/{id}(id=${lhp.maLHP})}" title="Xem chi tiết lớp" aria-label="Xem chi tiết lớp">
                     <i class="bi bi-eye"></i>
                   </a>
                 </td>
@@ -188,6 +190,7 @@
 
         <div class="table-responsive">
           <table class="table qd-table mb-0 align-middle">
+        <caption class="visually-hidden">Bàn làm việc Đào tạo</caption>
             <thead>
               <tr>
                 <th scope="col">Mã LHP & Tên Môn</th>
@@ -251,51 +254,6 @@
             <div th:if="${qd.lyDo != null and !#strings.isEmpty(qd.lyDo)}" class="text-muted small mt-1 fst-italic text-truncate" th:text="${'Lý do: ' + qd.lyDo}">
               Lý do: Điểm trung bình dưới chuẩn
             </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Panel 4: Lối tắt danh mục đào tạo -->
-      <div class="card border-0 shadow-sm rounded-3 p-4 bg-white">
-        <h2 class="h6 fw-bold text-dark mb-3">
-          <i class="bi bi-grid-3x3-gap-fill text-primary me-2"></i> Danh mục quản trị cốt lõi
-        </h2>
-        <div class="row g-2">
-          <div class="col-6">
-            <a class="btn btn-light border text-start w-100 p-2 d-flex align-items-center gap-2 rounded-2" th:href="@{/admin/khoa}">
-              <i class="bi bi-building text-primary"></i>
-              <span class="small fw-semibold text-dark">Khoa đào tạo</span>
-            </a>
-          </div>
-          <div class="col-6">
-            <a class="btn btn-light border text-start w-100 p-2 d-flex align-items-center gap-2 rounded-2" th:href="@{/admin/bo-mon}">
-              <i class="bi bi-diagram-3 text-primary"></i>
-              <span class="small fw-semibold text-dark">Bộ môn</span>
-            </a>
-          </div>
-          <div class="col-6">
-            <a class="btn btn-light border text-start w-100 p-2 d-flex align-items-center gap-2 rounded-2" th:href="@{/admin/nganh-hoc}">
-              <i class="bi bi-journal-bookmark text-primary"></i>
-              <span class="small fw-semibold text-dark">Ngành đào tạo</span>
-            </a>
-          </div>
-          <div class="col-6">
-            <a class="btn btn-light border text-start w-100 p-2 d-flex align-items-center gap-2 rounded-2" th:href="@{/admin/ctdt}">
-              <i class="bi bi-diagram-2 text-primary"></i>
-              <span class="small fw-semibold text-dark">Khung CTĐT</span>
-            </a>
-          </div>
-          <div class="col-6">
-            <a class="btn btn-light border text-start w-100 p-2 d-flex align-items-center gap-2 rounded-2" th:href="@{/admin/lop-hanh-chinh}">
-              <i class="bi bi-people text-primary"></i>
-              <span class="small fw-semibold text-dark">Lớp hành chính</span>
-            </a>
-          </div>
-          <div class="col-6">
-            <a class="btn btn-light border text-start w-100 p-2 d-flex align-items-center gap-2 rounded-2" th:href="@{/admin/mon-hoc}">
-              <i class="bi bi-book text-primary"></i>
-              <span class="small fw-semibold text-dark">Môn học & TQ</span>
-            </a>
           </div>
         </div>
       </div>

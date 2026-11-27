@@ -58,5 +58,22 @@ public interface SinhVienRepository extends JpaRepository<SinhVien, String> {
                           @Param("status") TrangThaiSinhVien status,
                           Pageable pageable);
 
+    @EntityGraph(attributePaths = {"lopHanhChinh", "taiKhoan"})
+    @Query("""
+           select sv from SinhVien sv
+           left join sv.lopHanhChinh lhc
+           left join sv.taiKhoan tk
+           where (:maLopHC is null or :maLopHC = '' or lhc.maLopHC = :maLopHC)
+             and (:status is null or sv.trangThaiHienTai = :status)
+             and (:q = '' or lower(sv.maSV) like lower(concat('%', :q, '%')) escape '\\'
+                         or lower(sv.hoTen) like lower(concat('%', :q, '%')) escape '\\'
+                         or (tk is not null and lower(tk.email) like lower(concat('%', :q, '%')) escape '\\'))
+           order by sv.maSV asc
+           """)
+    List<SinhVien> findForExport(@Param("q") String q,
+                                 @Param("maLopHC") String maLopHC,
+                                 @Param("status") TrangThaiSinhVien status,
+                                 Pageable pageable);
+
     long countByTrangThaiHienTai(TrangThaiSinhVien status);
 }

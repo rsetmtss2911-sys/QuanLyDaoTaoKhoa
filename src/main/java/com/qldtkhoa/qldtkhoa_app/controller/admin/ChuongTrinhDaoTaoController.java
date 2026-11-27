@@ -173,6 +173,11 @@ public class ChuongTrinhDaoTaoController {
         model.addAttribute("currentKhoa", maKhoaHoc);
         model.addAttribute("list", list);
         model.addAttribute("quotas", quotas);
+        model.addAttribute("loaiHocPhans", LoaiHocPhan.values());
+        model.addAttribute("khoiKienThucs", KhoiKienThuc.values());
+        model.addAttribute("quotaDaiCuong", quotas.getOrDefault(KhoiKienThuc.DAI_CUONG, 0));
+        model.addAttribute("quotaCoSoNganh", quotas.getOrDefault(KhoiKienThuc.CO_SO_NGANH, 0));
+        model.addAttribute("quotaChuyenNganh", quotas.getOrDefault(KhoiKienThuc.CHUYEN_NGANH, 0));
         model.addAttribute("tongTinChi", tongTinChi);
         model.addAttribute("tcBatBuoc", tongTinChiBatBuoc);
         model.addAttribute("tcTuChon", tcTuChon);

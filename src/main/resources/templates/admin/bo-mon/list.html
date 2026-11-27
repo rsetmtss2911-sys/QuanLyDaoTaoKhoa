@@ -31,11 +31,12 @@
     <form method="get" th:action="@{/admin/bo-mon}" class="p-3 border-bottom d-flex flex-wrap gap-2 align-items-center" role="search">
       <div class="input-group qd-search">
         <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+        <label for="q" class="visually-hidden">Tìm kiếm</label>
         <input id="q" name="q" type="search" class="form-control border-start-0 ps-0"
                th:value="${q}" placeholder="Tìm theo mã hoặc tên bộ môn...">
       </div>
 
-      <select name="maKhoa" class="form-select w-auto" onchange="this.form.submit()">
+      <select name="maKhoa" class="form-select w-auto" data-auto-submit>
         <option value="">-- Tất cả các khoa --</option>
         <option th:each="k : ${khoas}" th:value="${k.maKhoa}" th:text="${k.tenKhoa}"
                 th:selected="${k.maKhoa == maKhoa}">Khoa CNTT</option>
@@ -50,12 +51,13 @@
 
     <div class="table-responsive">
       <table class="table qd-table">
+        <caption class="visually-hidden">Quản lý Bộ môn</caption>
         <thead>
           <tr>
-            <th scope="col" style="width: 150px;">Mã bộ môn</th>
+            <th scope="col" class="qd-col-150">Mã bộ môn</th>
             <th scope="col">Tên bộ môn</th>
             <th scope="col">Khoa trực thuộc</th>
-            <th scope="col" class="text-end" style="width: 140px;">Thao tác</th>
+            <th scope="col" class="text-end qd-col-140">Thao tác</th>
           </tr>
         </thead>
         <tbody>
@@ -74,12 +76,12 @@
             </td>
             <td class="text-end text-nowrap">
               <span sec:authorize="hasRole('ADMIN')">
-                <a class="btn btn-sm btn-outline-primary me-1" th:href="@{/admin/bo-mon/{id}/edit(id=${row.maBoMon})}" title="Chỉnh sửa">
+                <a class="btn btn-sm btn-outline-primary me-1" th:href="@{/admin/bo-mon/{id}/edit(id=${row.maBoMon})}" title="Chỉnh sửa" aria-label="Chỉnh sửa">
                   <i class="bi bi-pencil"></i> Sửa
                 </a>
                 <form class="d-inline" method="post" th:action="@{/admin/bo-mon/{id}/delete(id=${row.maBoMon})}"
                       th:data-confirm="|Xóa bộ môn '${row.tenBoMon}'? Hành động này sẽ thất bại nếu bộ môn đã có giảng viên hoặc môn học.|">
-                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa bộ môn">
+                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa bộ môn" aria-label="Xóa bộ môn">
                     <i class="bi bi-trash"></i>
                   </button>
                 </form>

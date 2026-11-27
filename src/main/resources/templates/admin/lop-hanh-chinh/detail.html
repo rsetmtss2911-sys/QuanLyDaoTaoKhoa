@@ -44,7 +44,7 @@
       <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
         <div class="text-muted small mb-1">Khóa & Ngành</div>
         <div class="fw-semibold text-dark mb-0">
-          <span th:text="${lop.khoaNhapHoc.maKhoaHoc}">K2023</span> - <span th:text="${lop.nganhHoc.tenNganh}">CNTT</span>
+          <span th:text="${lop.maKhoaHoc}">K2023</span> - <span th:text="${lop.tenNganh}">CNTT</span>
         </div>
       </div>
     </div>
@@ -52,8 +52,8 @@
       <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
         <div class="text-muted small mb-1">Cố vấn học tập (CVHT)</div>
         <div class="fw-semibold text-dark mb-0">
-          <span th:if="${lop.coVan != null}" th:text="${lop.coVan.nhanSu.hoTen}">TS. Nguyễn Văn A</span>
-          <span th:unless="${lop.coVan != null}" class="badge bg-warning bg-opacity-10 text-warning">Chưa phân công</span>
+          <span th:if="${lop.tenCoVan != null}" th:text="${lop.tenCoVan}">TS. Nguyễn Văn A</span>
+          <span th:unless="${lop.tenCoVan != null}" class="badge bg-warning bg-opacity-10 text-warning">Chưa phân công</span>
         </div>
       </div>
     </div>
@@ -78,15 +78,16 @@
 
     <div class="table-responsive">
       <table class="table qd-table mb-0">
+        <caption class="visually-hidden">Chi tiết Lớp hành chính</caption>
         <thead>
           <tr>
-            <th scope="col" style="width: 140px;">Mã sinh viên</th>
+            <th scope="col" class="qd-col-140">Mã sinh viên</th>
             <th scope="col">Họ và tên</th>
             <th scope="col">Giới tính</th>
             <th scope="col">Ngày sinh</th>
             <th scope="col">Email tài khoản</th>
-            <th scope="col" class="text-center" style="width: 130px;">Trạng thái</th>
-            <th scope="col" class="text-end" style="width: 130px;">Hồ sơ</th>
+            <th scope="col" class="text-center qd-col-130">Trạng thái</th>
+            <th scope="col" class="text-end qd-col-130">Hồ sơ</th>
           </tr>
         </thead>
         <tbody>
@@ -115,7 +116,7 @@
               <span th:replace="~{fragments/status-badge :: studentStatus(${sv.trangThaiHienTai})}"></span>
             </td>
             <td class="text-end text-nowrap">
-              <a class="btn btn-sm btn-outline-info" th:href="@{/admin/sinh-vien/{id}(id=${sv.maSV})}" title="Xem hồ sơ chi tiết">
+              <a class="btn btn-sm btn-outline-info" th:href="@{/admin/sinh-vien/{id}(id=${sv.maSV})}" title="Xem hồ sơ chi tiết" aria-label="Xem hồ sơ chi tiết">
                 <i class="bi bi-person-lines-fill me-1"></i> Hồ sơ
               </a>
             </td>

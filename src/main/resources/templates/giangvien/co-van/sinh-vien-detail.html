@@ -14,9 +14,9 @@
         <ol class="breadcrumb mb-1">
           <li class="breadcrumb-item"><a th:href="@{/giang-vien/dashboard}">Trang chủ</a></li>
           <li class="breadcrumb-item"><a th:href="@{/giang-vien/co-van/lop-hanh-chinh}">Cố vấn học tập</a></li>
-          <li class="breadcrumb-item" th:if="${sv.lopHanhChinh != null}">
-            <a th:href="@{/giang-vien/co-van/lop-hanh-chinh/{id}(id=${sv.lopHanhChinh.maLopHC})}"
-               th:text="${sv.lopHanhChinh.maLopHC}">CNTT2023A</a>
+          <li class="breadcrumb-item" th:if="${sv.maLopHC != null}">
+            <a th:href="@{/giang-vien/co-van/lop-hanh-chinh/{id}(id=${sv.maLopHC})}"
+               th:text="${sv.maLopHC}">CNTT2023A</a>
           </li>
           <li class="breadcrumb-item active" aria-current="page" th:text="${sv.maSV}">23020001</li>
         </ol>
@@ -27,7 +27,7 @@
       </div>
     </div>
     <a class="btn btn-outline-secondary"
-       th:href="${sv.lopHanhChinh != null} ? @{/giang-vien/co-van/lop-hanh-chinh/{id}(id=${sv.lopHanhChinh.maLopHC})} : @{/giang-vien/co-van/lop-hanh-chinh}">
+       th:href="${sv.maLopHC != null} ? @{/giang-vien/co-van/lop-hanh-chinh/{id}(id=${sv.maLopHC})} : @{/giang-vien/co-van/lop-hanh-chinh}">
       <i class="bi bi-arrow-left me-1"></i> Quay lại lớp cố vấn
     </a>
   </div>
@@ -76,6 +76,7 @@
     </div>
     <div class="table-responsive">
       <table class="table qd-table mb-0">
+        <caption class="visually-hidden">Hồ sơ học tập sinh viên</caption>
         <thead>
           <tr>
             <th scope="col">Số quyết định</th>
@@ -113,6 +114,7 @@
       </div>
       <div class="table-responsive">
         <table class="table qd-table mb-0">
+        <caption class="visually-hidden">Hồ sơ học tập sinh viên</caption>
           <thead>
             <tr>
               <th scope="col">Mã môn</th>

@@ -19,14 +19,19 @@
       <h1 class="qd-h1 mb-0">Thời khóa biểu Tuần cá nhân</h1>
     </div>
 
-    <!-- Chọn học kỳ -->
-    <form method="get" th:action="@{/sinh-vien/thoi-khoa-bieu}" class="d-flex align-items-center gap-2">
-      <label for="maHK" class="fw-semibold text-dark small text-nowrap">Học kỳ:</label>
-      <select id="maHK" name="maHK" class="form-select w-auto" onchange="this.form.submit()">
-        <option th:each="hk : ${hocKys}" th:value="${hk.maHK}" th:text="${hk.tenHocKy + ' (' + hk.namHoc + ')'}"
-                th:selected="${hk.maHK == currentHk}">Học kỳ 1</option>
-      </select>
-    </form>
+    <!-- Chọn học kỳ & In PDF -->
+    <div class="d-flex align-items-center gap-2 qd-no-print">
+      <form method="get" th:action="@{/sinh-vien/thoi-khoa-bieu}" class="d-flex align-items-center gap-2">
+        <label for="maHK" class="fw-semibold text-dark small text-nowrap">Học kỳ:</label>
+        <select id="maHK" name="maHK" class="form-select w-auto" data-auto-submit>
+          <option th:each="hk : ${hocKys}" th:value="${hk.maHK}" th:text="${hk.tenHocKy + ' (' + hk.namHoc + ')'}"
+                  th:selected="${hk.maHK == currentHk}">Học kỳ 1</option>
+        </select>
+      </form>
+      <button type="button" class="btn btn-outline-secondary" data-print>
+        <i class="bi bi-printer me-1"></i> In TKB
+      </button>
+    </div>
   </div>
 
   <!-- Thẻ tóm tắt thông tin đăng ký & lịch học -->
@@ -77,14 +82,16 @@
     <div class="qd-panel-body p-0">
       <div th:if="${(slots == null or slots.isEmpty()) and (registeredCourses == null or registeredCourses.isEmpty())}" class="p-4 text-center text-muted small">
         <i class="bi bi-calendar-x me-1"></i> Chưa có lịch học trong học kỳ này.
-        <a class="btn btn-outline-primary btn-sm py-0 px-2 ms-2" style="font-size: 0.75rem;" th:href="@{/sinh-vien/dang-ky-hoc-phan}">Đăng ký môn học ngay</a>
+        <a class="btn btn-outline-primary btn-sm py-0 px-2 ms-2" th:href="@{/sinh-vien/dang-ky-hoc-phan}">Đăng ký môn học ngay</a>
       </div>
 
-      <div th:if="${(slots == null or slots.isEmpty()) and (registeredCourses != null and !registeredCourses.isEmpty())}" class="p-4 text-center">
-        <div class="py-4">
-          <i class="bi bi-calendar-check text-warning fs-1 d-block mb-3"></i>
-          <h5 class="fw-bold text-dark">Các môn học đã đăng ký thành công đang chờ xếp phòng và tiết học</h5>
-          <p class="text-muted small mb-0">Phòng Đào tạo đang tổng hợp danh sách lớp để phân bố giảng đường. Vui lòng xem danh sách các môn đã đăng ký ở bảng phía dưới.</p>
+      <div th:if="${unscheduledCourses != null and !unscheduledCourses.isEmpty()}"
+           class="alert alert-warning m-3 mb-0 d-flex align-items-start gap-2 small" role="status">
+        <i class="bi bi-clock-history fs-5 flex-shrink-0"></i>
+        <div>
+          <span class="fw-semibold">Có <span th:text="${unscheduledCourses.size()}">0</span> học phần chưa xếp lịch phòng/tiết:</span>
+          <span th:each="uc, uStat : ${unscheduledCourses}"
+                th:text="${uc.tenMon + ' (' + uc.maLHP + ')' + (uStat.last ? '' : ', ')}">Môn học (LHP)</span>.
         </div>
       </div>
 
@@ -105,16 +112,17 @@
     <div class="qd-panel-body p-0">
       <div class="table-responsive">
         <table class="table qd-table mb-0">
+          <caption class="visually-hidden">Danh sách chi tiết các học phần sinh viên đã đăng ký trong kỳ</caption>
           <thead>
             <tr>
-              <th style="width: 50px;" class="text-center">STT</th>
-              <th style="width: 140px;">Mã LHP</th>
-              <th style="width: 110px;">Mã môn</th>
-              <th>Tên môn học</th>
-              <th class="text-center" style="width: 90px;">Số TC</th>
-              <th>Giảng viên phụ trách</th>
-              <th>Lịch học trong tuần</th>
-              <th class="text-center" style="width: 160px;">Trạng thái lớp</th>
+              <th scope="col" class="text-center qd-col-50">STT</th>
+              <th scope="col" class="qd-col-140">Mã LHP</th>
+              <th scope="col" class="qd-col-110">Mã môn</th>
+              <th scope="col">Tên môn học</th>
+              <th scope="col" class="text-center qd-col-90">Số TC</th>
+              <th scope="col">Giảng viên phụ trách</th>
+              <th scope="col">Lịch học trong tuần</th>
+              <th scope="col" class="text-center qd-col-160">Trạng thái lớp</th>
             </tr>
           </thead>
           <tbody>
@@ -146,44 +154,6 @@
                 </span>
                 <span th:if="${c.trangThaiLop != 'Đã chốt danh sách' and c.trangThaiLop != 'Chờ mở'}" class="badge bg-secondary-subtle text-secondary border"
                       th:text="${c.trangThaiLop}">Khác</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- Panel 3: Danh sách các môn học chờ xếp lịch học (nếu có môn nào chưa được xếp phòng/tiết) -->
-  <div th:if="${unscheduledCourses != null and !unscheduledCourses.isEmpty()}" class="qd-panel mt-4">
-    <div class="qd-panel-header bg-light">
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-clock-history text-warning fs-5"></i>
-        <h2 class="qd-panel-title mb-0">Học phần chờ xếp lịch học (<span th:text="${unscheduledCourses.size()}">0</span>)</h2>
-      </div>
-    </div>
-    <div class="qd-panel-body p-0">
-      <div class="table-responsive">
-        <table class="table qd-table mb-0">
-          <thead>
-            <tr>
-              <th style="width: 130px;">Mã LHP</th>
-              <th style="width: 110px;">Mã môn</th>
-              <th>Tên môn học</th>
-              <th class="text-center" style="width: 100px;">Số tín chỉ</th>
-              <th>Giảng viên</th>
-              <th class="text-center" style="width: 150px;">Trạng thái lịch</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr th:each="row : ${unscheduledCourses}">
-              <td class="font-monospace fw-bold text-primary" th:text="${row.maLHP}">LHP01</td>
-              <td class="font-monospace text-muted" th:text="${row.maMon}">INT2201</td>
-              <td class="fw-semibold text-dark" th:text="${row.tenMon}">Cấu trúc dữ liệu và giải thuật</td>
-              <td class="text-center" th:text="${row.soTinChi}">3</td>
-              <td th:text="${row.tenGiangVien}">ThS. Nguyễn Văn A</td>
-              <td class="text-center">
-                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning">Chờ xếp lịch</span>
               </td>
             </tr>
           </tbody>

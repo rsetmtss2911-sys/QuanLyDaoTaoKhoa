@@ -6,6 +6,7 @@ import com.qldtkhoa.qldtkhoa_app.repository.NhatKyHeThongRepository;
 import com.qldtkhoa.qldtkhoa_app.util.LikeUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -63,6 +64,15 @@ public class AuditService {
                 blankToNull(doiTuong),
                 blankToNull(hanhDong),
                 pageable
+        );
+    }
+
+    public List<NhatKyRow> findForExport(String q, String doiTuong, String hanhDong) {
+        return nhatKyHeThongRepository.findForExport(
+                LikeUtils.escape(q),
+                blankToNull(doiTuong),
+                blankToNull(hanhDong),
+                PageRequest.of(0, 5000)
         );
     }
 

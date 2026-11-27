@@ -1,5 +1,6 @@
 package com.qldtkhoa.qldtkhoa_app.service;
 
+import com.qldtkhoa.qldtkhoa_app.dto.GiangVienOptionRow;
 import com.qldtkhoa.qldtkhoa_app.dto.NhanSuForm;
 import com.qldtkhoa.qldtkhoa_app.dto.NhanSuRow;
 import com.qldtkhoa.qldtkhoa_app.entity.BoMon;
@@ -43,6 +44,16 @@ public class NhanSuService {
 
     public List<GiangVien> findAllGiangVien() {
         return giangVienRepository.findAllByOrderByNhanSu_HoTenAsc();
+    }
+
+    public List<GiangVienOptionRow> findAllGiangVienOptions() {
+        return findAllGiangVien().stream()
+                .map(gv -> new GiangVienOptionRow(
+                        gv.getMaNS(),
+                        gv.getNhanSu() != null ? gv.getNhanSu().getHoTen() : gv.getMaNS(),
+                        gv.getBoMon() != null ? gv.getBoMon().getTenBoMon() : ""
+                ))
+                .toList();
     }
 
     public NhanSu getOrThrow(String maNS) {

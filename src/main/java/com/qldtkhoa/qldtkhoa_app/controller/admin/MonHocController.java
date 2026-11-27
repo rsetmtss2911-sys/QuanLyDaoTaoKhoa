@@ -1,7 +1,7 @@
 package com.qldtkhoa.qldtkhoa_app.controller.admin;
 
+import com.qldtkhoa.qldtkhoa_app.dto.MonHocDetailView;
 import com.qldtkhoa.qldtkhoa_app.dto.MonHocForm;
-import com.qldtkhoa.qldtkhoa_app.entity.MonHoc;
 import com.qldtkhoa.qldtkhoa_app.exception.BusinessRuleException;
 import com.qldtkhoa.qldtkhoa_app.exception.DuplicateResourceException;
 import com.qldtkhoa.qldtkhoa_app.service.BoMonService;
@@ -73,9 +73,9 @@ public class MonHocController {
 
     @GetMapping("/{maMon}")
     public String detail(@PathVariable String maMon, Model model) {
-        MonHoc mh = monHocService.getWithDetailsOrThrow(maMon);
+        MonHocDetailView mh = monHocService.getDetailView(maMon);
         model.addAttribute("mon", mh);
-        model.addAttribute("prereqs", monHocService.findPrerequisites(maMon));
+        model.addAttribute("prereqs", monHocService.findPrerequisiteRows(maMon));
         model.addAttribute("allMonHocs", monHocService.findAll());
         return "admin/mon-hoc/detail";
     }

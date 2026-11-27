@@ -215,7 +215,7 @@ body {
   border: 1px solid var(--qd-border);
   border-radius: var(--qd-radius-md);
   box-shadow: 0 1px 4px rgba(20, 32, 43, 0.04);
-  overflow: hidden;
+  overflow: visible;
   margin-bottom: var(--qd-space-5);
 }
 
@@ -223,11 +223,15 @@ body {
   padding: var(--qd-space-4) var(--qd-space-5);
   border-bottom: 1px solid var(--qd-border);
   background-color: var(--qd-bg-surface);
+  border-top-left-radius: var(--qd-radius-md);
+  border-top-right-radius: var(--qd-radius-md);
 }
 
 .qd-panel-body {
   padding: var(--qd-space-5);
   background-color: var(--qd-bg-surface);
+  border-bottom-left-radius: var(--qd-radius-md);
+  border-bottom-right-radius: var(--qd-radius-md);
 }
 
 .qd-panel-title {
@@ -656,4 +660,129 @@ body {
 .breadcrumb-item.active {
   color: var(--qd-ink-500);
   font-weight: 500;
+}
+
+.qd-required::after {
+  content: " *";
+  color: var(--qd-danger);
+  font-weight: 700;
+}
+
+/* ---------- 10. Login Page (Extracted for Strict CSP) ---------- */
+body.qd-login-page {
+  background: radial-gradient(circle at 10% 20%, var(--qd-brand-50) 0%, var(--qd-ink-50) 90%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 440px;
+  border: 1px solid var(--qd-border);
+  border-radius: var(--qd-radius-lg);
+  background: var(--qd-white);
+  box-shadow: 0 12px 32px rgba(20, 32, 43, 0.08);
+  overflow: hidden;
+}
+
+.login-header {
+  background: linear-gradient(135deg, var(--qd-brand-900), var(--qd-brand-700));
+  padding: 2.25rem 2rem 2rem;
+  text-align: center;
+  color: var(--qd-white);
+}
+
+.login-logo {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 1rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  color: var(--qd-brand-100);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.qd-demo-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+}
+
+/* ---------- 11. Semantic Sizing & Helper Utilities (Replaces Inline Styles) ---------- */
+.qd-text-xs { font-size: var(--qd-text-xs); }
+.qd-dot-8 { width: 8px; height: 8px; }
+.qd-avatar-64 { width: 64px; height: 64px; }
+.qd-icon-circle-80 { width: 80px; height: 80px; }
+.qd-max-w-500 { max-width: 500px; }
+.qd-max-w-540 { max-width: 540px; }
+.qd-select-min-200 { min-width: 200px; }
+.qd-select-min-220 { min-width: 220px; }
+
+.qd-progress-xs { height: 4px; }
+.qd-progress-sm { height: 6px; }
+.qd-progress-md { height: 8px; }
+.qd-progress-lg { height: 12px; }
+.qd-progress-xl { height: 24px; }
+
+.qd-col-50  { width: 50px; }
+.qd-col-70  { width: 70px; }
+.qd-col-75  { width: 75px; }
+.qd-col-80  { width: 80px; }
+.qd-col-90  { width: 90px; }
+.qd-col-95  { width: 95px; }
+.qd-col-100 { width: 100px; }
+.qd-col-105 { width: 105px; }
+.qd-col-110 { width: 110px; }
+.qd-col-120 { width: 120px; }
+.qd-col-130 { width: 130px; }
+.qd-col-135 { width: 135px; }
+.qd-col-140 { width: 140px; }
+.qd-col-150 { width: 150px; }
+.qd-col-155 { width: 155px; }
+.qd-col-160 { width: 160px; }
+.qd-col-165 { width: 165px; }
+.qd-col-170 { width: 170px; }
+.qd-col-180 { width: 180px; }
+.qd-col-190 { width: 190px; }
+.qd-col-200 { width: 200px; }
+.qd-col-220 { width: 220px; }
+
+/* ---------- 12. Print Styles (A4 Transcript & Timetable Export) ---------- */
+@media print {
+  .qd-sidebar,
+  .qd-topbar,
+  .qd-no-print,
+  .breadcrumb,
+  .btn,
+  .pagination {
+    display: none !important;
+  }
+
+  .qd-content,
+  .qd-main {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #FFFFFF !important;
+  }
+
+  .qd-panel,
+  .card {
+    box-shadow: none !important;
+    border-color: #CCCCCC !important;
+    break-inside: avoid;
+  }
+
+  .timetable-table {
+    min-width: 100% !important;
+    font-size: 0.72rem;
+  }
 }

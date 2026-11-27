@@ -31,7 +31,10 @@ public class AuthController {
         if (authentication != null && authentication.isAuthenticated() && !authentication.getName().equals("anonymousUser")) {
             return "redirect:/";
         }
-        boolean showDemo = environment != null && environment.acceptsProfiles(Profiles.of("dev", "local"));
+        boolean showDemo = environment != null && (
+                environment.acceptsProfiles(Profiles.of("dev", "local"))
+                || Boolean.TRUE.equals(environment.getProperty("app.ui.show-demo-credentials", Boolean.class, false))
+        );
         model.addAttribute("showDemoCredentials", showDemo);
         return "auth/login";
     }

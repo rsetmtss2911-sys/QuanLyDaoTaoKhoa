@@ -17,6 +17,8 @@ import com.qldtkhoa.qldtkhoa_app.repository.BangDiemSinhVienViewRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.DangKyHocPhanRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.KetQuaHocTapRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.LopHocPhanRepository;
+import com.qldtkhoa.qldtkhoa_app.util.CsvExportUtils;
+import org.springframework.http.ResponseEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -278,6 +280,38 @@ public class DiemService {
 
     public static Double calculateGpa4(Double diemTong) {
         return GradeScale.toGpa4(diemTong);
+    }
+
+    public ResponseEntity<byte[]> exportGradeSheetCsv(String maLHP) {
+        List<DiemRow> rows = getGradeSheet(maLHP);
+        List<String> headers = List.of(
+                "MaSV", "HoTen", "LopHC", "TrangThai", "LyDoCamThi",
+                "DiemQT", "DiemGK", "DiemCK", "DiemTong", "DiemHe4", "DiemChu"
+        );
+        List<List<String>> csvRows = rows.stream()
+                .map(r -> List.of(
+                        str(r.maSV()),
+                        str(r.hoTen()),
+                        str(r.maLopHC()),
+                        r.trangThaiDangKy() != null ? r.trangThaiDangKy().getLabel() : "",
+                        str(r.lyDoCamThi()),
+                        num(r.diemQuaTrinh()),
+                        num(r.diemGiuaKy()),
+                        num(r.diemCuoiKy()),
+                        num(r.diemTong()),
+                        num(r.diemHe4()),
+                        str(r.diemChu())
+                ))
+                .toList();
+        return CsvExportUtils.csvResponse("bang-diem-" + maLHP + ".csv", headers, csvRows);
+    }
+
+    private static String str(String val) {
+        return val != null ? val : "";
+    }
+
+    private static String num(Double val) {
+        return val != null ? String.valueOf(val) : "";
     }
 
     private record PendingAudit(

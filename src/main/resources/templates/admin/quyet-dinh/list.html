@@ -35,6 +35,7 @@
     <form method="get" th:action="@{/admin/quyet-dinh}" class="p-3 border-bottom d-flex flex-wrap gap-2 align-items-center" role="search">
       <div class="input-group qd-search">
         <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+        <label for="q" class="visually-hidden">Tìm kiếm</label>
         <input id="q" name="q" type="search" class="form-control border-start-0 ps-0"
                th:value="${q}" placeholder="Tìm theo số quyết định, MSSV, tên SV...">
       </div>
@@ -48,15 +49,16 @@
 
     <div class="table-responsive">
       <table class="table qd-table mb-0">
+        <caption class="visually-hidden">Quyết định học vụ</caption>
         <thead>
           <tr>
-            <th scope="col" style="width: 150px;">Số quyết định</th>
-            <th scope="col" style="width: 130px;">Mã SV</th>
+            <th scope="col" class="qd-col-150">Số quyết định</th>
+            <th scope="col" class="qd-col-130">Mã SV</th>
             <th scope="col">Họ và tên</th>
             <th scope="col">Lớp HC</th>
-            <th scope="col" class="text-center" style="width: 140px;">Loại quyết định</th>
-            <th scope="col" style="width: 130px;">Ngày hiệu lực</th>
-            <th scope="col" class="text-center" style="width: 135px;">Tình trạng</th>
+            <th scope="col" class="text-center qd-col-140">Loại quyết định</th>
+            <th scope="col" class="qd-col-130">Ngày hiệu lực</th>
+            <th scope="col" class="text-center qd-col-135">Tình trạng</th>
             <th scope="col">Lý do ban hành</th>
           </tr>
         </thead>

@@ -89,6 +89,16 @@ public class SecurityConfig {
                         .sessionRegistry(sessionRegistry())
                         .expiredUrl("/login?expired=true"))
                 .headers(headers -> headers
+                        .contentSecurityPolicy(csp -> csp.policyDirectives(
+                                "default-src 'self'; "
+                                        + "script-src 'self'; "
+                                        + "style-src 'self' https://fonts.googleapis.com; "
+                                        + "font-src 'self' https://fonts.gstatic.com data:; "
+                                        + "img-src 'self' data:; "
+                                        + "object-src 'none'; "
+                                        + "base-uri 'self'; "
+                                        + "frame-ancestors 'self'; "
+                                        + "form-action 'self'"))
                         .referrerPolicy(referrer -> referrer
                                 .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
                         .permissionsPolicyHeader(permissions -> permissions

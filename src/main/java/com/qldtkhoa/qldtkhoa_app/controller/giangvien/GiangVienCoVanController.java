@@ -1,14 +1,20 @@
 package com.qldtkhoa.qldtkhoa_app.controller.giangvien;
 
-import com.qldtkhoa.qldtkhoa_app.dto.*;
-import com.qldtkhoa.qldtkhoa_app.entity.LopHanhChinh;
-import com.qldtkhoa.qldtkhoa_app.entity.SinhVien;
-import com.qldtkhoa.qldtkhoa_app.entity.view.BangDiemSinhVienView;
-import com.qldtkhoa.qldtkhoa_app.repository.BangDiemSinhVienViewRepository;
+import com.qldtkhoa.qldtkhoa_app.dto.BangDiemSinhVienResponse;
+import com.qldtkhoa.qldtkhoa_app.dto.CoVanClassRosterView;
+import com.qldtkhoa.qldtkhoa_app.dto.LopHanhChinhRow;
+import com.qldtkhoa.qldtkhoa_app.dto.QuyetDinhRow;
+import com.qldtkhoa.qldtkhoa_app.dto.SinhVienDangKyRow;
+import com.qldtkhoa.qldtkhoa_app.dto.SinhVienDetailView;
+import com.qldtkhoa.qldtkhoa_app.dto.TienDoHocTapView;
 import com.qldtkhoa.qldtkhoa_app.security.AppUserPrincipal;
-import com.qldtkhoa.qldtkhoa_app.service.*;
+import com.qldtkhoa.qldtkhoa_app.service.ChuongTrinhDaoTaoService;
+import com.qldtkhoa.qldtkhoa_app.service.DangKyHocPhanService;
+import com.qldtkhoa.qldtkhoa_app.service.HocLucService;
+import com.qldtkhoa.qldtkhoa_app.service.LopHanhChinhService;
+import com.qldtkhoa.qldtkhoa_app.service.QuyetDinhHocVuService;
+import com.qldtkhoa.qldtkhoa_app.service.SinhVienService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -19,8 +25,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/giang-vien/co-van")
@@ -30,7 +34,6 @@ public class GiangVienCoVanController {
 
     private final LopHanhChinhService lopHanhChinhService;
     private final SinhVienService sinhVienService;
-    private final BangDiemSinhVienViewRepository bangDiemViewRepository;
     private final HocLucService hocLucService;
     private final ChuongTrinhDaoTaoService ctdtService;
     private final QuyetDinhHocVuService quyetDinhHocVuService;
@@ -52,42 +55,14 @@ public class GiangVienCoVanController {
                               @RequestParam(defaultValue = "false") boolean onlyAtRisk,
                               @AuthenticationPrincipal AppUserPrincipal principal,
                               Model model) {
-        LopHanhChinh lhc = lopHanhChinhService.getWithDetailsOrThrow(maLopHC);
-        if (lhc.getCoVan() == null || !lhc.getCoVan().getMaNS().equalsIgnoreCase(principal.getMaNS())) {
-            throw new AccessDeniedException("Bạn không phải là Cố vấn học tập của lớp hành chính này!");
-        }
-        List<SinhVienRow> students = sinhVienService.findByLopHanhChinh(maLopHC);
-
-        List<String> maSVs = students.stream().map(sv -> sv.maSV()).toList();
-        Map<String, List<BangDiemSinhVienView>> gradesBySv = maSVs.isEmpty()
-                ? Map.of()
-                : bangDiemViewRepository.findById_MaSVInOrderByNamHocDescMaHKAscTenMonAsc(maSVs).stream()
-                        .collect(Collectors.groupingBy(v -> v.getMaSV()));
-
-        List<CoVanStudentRow> allStudentRows = students.stream()
-                .map(sv -> {
-                    HocLucSummary summary = hocLucService.evaluateSummary(gradesBySv.getOrDefault(sv.maSV(), List.of()));
-                    return new CoVanStudentRow(
-                            sv.maSV(), sv.hoTen(), sv.gioiTinh(), sv.ngaySinh(), sv.email(),
-                            sv.trangThaiHienTai(),
-                            summary.cpa4(), summary.xepLoai(), summary.tongTCTichLuy(),
-                            summary.soMonTruot(), summary.coCamThi(),
-                            summary.canhBaoHocVu(), summary.lyDoCanhBao()
-                    );
-                })
-                .toList();
-
-        long atRiskCount = allStudentRows.stream().filter(r -> r.isAtRisk()).count();
-        List<CoVanStudentRow> displayedRows = onlyAtRisk
-                ? allStudentRows.stream().filter(r -> r.isAtRisk()).toList()
-                : allStudentRows;
-
-        model.addAttribute("lop", lhc);
-        model.addAttribute("students", students);
-        model.addAttribute("studentRows", displayedRows);
+        CoVanClassRosterView roster = lopHanhChinhService.getAdvisedClassRoster(
+                maLopHC, principal.getMaNS(), onlyAtRisk);
+        model.addAttribute("lop", roster.lop());
+        model.addAttribute("students", roster.students());
+        model.addAttribute("studentRows", roster.studentRows());
         model.addAttribute("onlyAtRisk", onlyAtRisk);
-        model.addAttribute("atRiskCount", atRiskCount);
-        model.addAttribute("totalStudents", allStudentRows.size());
+        model.addAttribute("atRiskCount", roster.atRiskCount());
+        model.addAttribute("totalStudents", roster.totalStudents());
         return "giangvien/co-van/detail";
     }
 
@@ -95,13 +70,7 @@ public class GiangVienCoVanController {
     public String studentDetail(@PathVariable String maSV,
                                 @AuthenticationPrincipal AppUserPrincipal principal,
                                 Model model) {
-        SinhVien sv = sinhVienService.getWithDetailsOrThrow(maSV);
-        if (sv.getLopHanhChinh() == null
-                || sv.getLopHanhChinh().getCoVan() == null
-                || !sv.getLopHanhChinh().getCoVan().getMaNS().equalsIgnoreCase(principal.getMaNS())) {
-            throw new AccessDeniedException("Bạn không phải là Cố vấn học tập của sinh viên này!");
-        }
-
+        SinhVienDetailView sv = sinhVienService.getAdvisedStudentDetail(maSV, principal.getMaNS());
         BangDiemSinhVienResponse transcript = hocLucService.evaluateStudent(maSV);
         TienDoHocTapView tienDo = ctdtService.getTienDoCTDT(maSV);
         List<QuyetDinhRow> decisions = quyetDinhHocVuService.findBySinhVien(maSV);

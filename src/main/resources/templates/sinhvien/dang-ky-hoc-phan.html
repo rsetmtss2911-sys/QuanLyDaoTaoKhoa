@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::#pageScripts})}">
 <head>
   <title>Cổng Đăng ký Học phần · QLĐT Khoa</title>
 </head>
@@ -16,13 +16,13 @@
           <li class="breadcrumb-item active" aria-current="page">Đăng ký học phần</li>
         </ol>
       </nav>
-      <h1 class="qd-h1 mb-0">Cổng Đăng ký Môn học & Học phần Trực tuyến</h1>
+      <h1 class="qd-h1 mb-0">Cổng Đăng ký Môn học &amp; Học phần Trực tuyến</h1>
     </div>
 
     <!-- Chọn học kỳ đăng ký -->
     <form method="get" th:action="@{/sinh-vien/dang-ky-hoc-phan}" class="d-flex align-items-center gap-2">
       <label for="maHK" class="fw-semibold text-dark small text-nowrap">Học kỳ:</label>
-      <select id="maHK" name="maHK" class="form-select w-auto" onchange="this.form.submit()">
+      <select id="maHK" name="maHK" class="form-select w-auto" data-auto-submit>
         <option th:each="hk : ${hocKys}" th:value="${hk.maHK}" th:text="${hk.tenHocKy + ' (' + hk.namHoc + ')'}"
                 th:selected="${hk.maHK == currentHk}">Học kỳ 1</option>
       </select>
@@ -70,24 +70,65 @@
     </div>
   </div>
 
+  <!-- Thanh chuyển Tab trên Mobile -->
+  <div class="btn-group w-100 d-md-none mb-3" role="tablist" aria-label="Chuyển danh sách lớp">
+    <button type="button" class="btn btn-primary" data-dk-tab="open">
+      Lớp đang mở (<span th:text="${availableSections.size()}">0</span>)
+    </button>
+    <button type="button" class="btn btn-outline-secondary" data-dk-tab="selected">
+      Đã đăng ký (<span th:text="${selectedCourses.size()}">0</span>)
+    </button>
+  </div>
+
   <!-- Bảng 1: Danh sách các lớp học phần đang mở cho đăng ký -->
-  <div class="qd-panel mb-4">
-    <div class="qd-panel-header d-flex justify-content-between align-items-center">
+  <div id="dkOpenPane" class="qd-panel mb-4">
+    <div class="qd-panel-header d-flex flex-wrap justify-content-between align-items-center gap-2">
       <h2 class="qd-panel-title mb-0">Danh sách Lớp học phần đang mở</h2>
-      <span class="badge bg-light text-dark border font-monospace" th:text="${availableSections.size() + ' lớp'}">12 lớp</span>
+      <span id="dkVisibleCount" class="badge bg-light text-dark border font-monospace"
+            th:text="${availableSections.size() + ' lớp'}">12 lớp</span>
     </div>
 
-    <div class="table-responsive">
+    <!-- Thanh tìm kiếm & lọc lớp học phần -->
+    <div class="p-3 border-bottom bg-light bg-opacity-50 d-flex flex-wrap align-items-center gap-2">
+      <div class="input-group input-group-sm qd-search">
+        <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search" aria-hidden="true"></i></span>
+        <label for="dkSearchInput" class="visually-hidden">Tìm kiếm môn học, mã lớp, giảng viên</label>
+        <input id="dkSearchInput" type="search" class="form-control border-start-0 ps-0"
+               placeholder="Tìm theo mã LHP, tên môn, giảng viên...">
+      </div>
+      <label for="dkDayFilter" class="visually-hidden">Lọc theo thứ học</label>
+      <select id="dkDayFilter" class="form-select form-select-sm w-auto">
+        <option value="">-- Tất cả các thứ --</option>
+        <option value="T2">Thứ 2</option>
+        <option value="T3">Thứ 3</option>
+        <option value="T4">Thứ 4</option>
+        <option value="T5">Thứ 5</option>
+        <option value="T6">Thứ 6</option>
+        <option value="T7">Thứ 7</option>
+        <option value="CN">Chủ nhật</option>
+      </select>
+      <div class="form-check form-check-inline mb-0 small ms-1">
+        <input id="dkSeatOnly" class="form-check-input" type="checkbox">
+        <label class="form-check-label" for="dkSeatOnly">Còn chỗ</label>
+      </div>
+      <div class="form-check form-check-inline mb-0 small">
+        <input id="dkEligibleOnly" class="form-check-input" type="checkbox">
+        <label class="form-check-label" for="dkEligibleOnly">Đủ điều kiện</label>
+      </div>
+    </div>
+
+    <div class="table-responsive d-none d-md-block">
       <table class="table qd-table mb-0">
+        <caption class="visually-hidden">Danh sách lớp học phần đang mở trong học kỳ</caption>
         <thead>
           <tr>
-            <th scope="col" style="width: 130px;">Mã LHP</th>
+            <th scope="col" class="qd-col-130">Mã LHP</th>
             <th scope="col">Tên môn học</th>
-            <th scope="col" class="text-center" style="width: 80px;">Số TC</th>
+            <th scope="col" class="text-center qd-col-80">Số TC</th>
             <th scope="col">Giảng viên</th>
-            <th scope="col">Lịch học & Phòng học</th>
-            <th scope="col" class="text-center" style="width: 130px;">Sĩ số / Tối đa</th>
-            <th scope="col" class="text-end" style="width: 140px;">Thao tác</th>
+            <th scope="col">Lịch học &amp; Phòng học</th>
+            <th scope="col" class="text-center qd-col-130">Sĩ số / Tối đa</th>
+            <th scope="col" class="text-end qd-col-140">Thao tác</th>
           </tr>
         </thead>
         <tbody>
@@ -97,6 +138,11 @@
             </td>
           </tr>
           <tr th:each="row : ${availableSections}"
+              data-dk-item
+              th:attr="data-search=${row.maLHP + ' ' + row.maMon + ' ' + row.tenMon + ' ' + row.tenGV + ' ' + row.lichHoc},
+                       data-days=${row.lichHoc},
+                       data-has-seat=${row.siSoHienTai < row.siSoToiDa},
+                       data-eligible=${row.eligible}"
               th:classappend="${row.daDangKy ? 'table-success bg-opacity-10' : ''}">
             <td>
               <span class="font-monospace fw-bold text-primary" th:text="${row.maLHP}">INT2204_1</span>
@@ -113,40 +159,36 @@
             <td th:text="${row.tenGV}">TS. Nguyễn Văn A</td>
             <td class="small">
               <i class="bi bi-calendar-event text-secondary me-1"></i>
-              <span th:text="${row.lichHoc}">T2 (1-3) P301-G2</span>
+              <span th:text="${row.lichHoc}">T2 (1-3) 301-G2</span>
             </td>
             <td class="text-center">
               <span class="fw-bold"
                     th:classappend="${row.siSoHienTai >= row.siSoToiDa ? 'text-danger' : 'text-dark'}"
                     th:text="${row.siSoHienTai + ' / ' + row.siSoToiDa}">48 / 50</span>
-              <div class="progress mt-1" style="height: 4px;">
+              <div class="progress mt-1 qd-progress-xs">
                 <div class="progress-bar"
                      th:classappend="${row.siSoHienTai >= row.siSoToiDa ? 'bg-danger' : 'bg-primary'}"
                      role="progressbar"
-                     th:style="'width: ' + (${row.siSoToiDa > 0 ? (row.siSoHienTai * 100 / row.siSoToiDa) : 0}) + '%;'">
+                     aria-valuemin="0" aria-valuemax="100"
+                     th:attr="aria-valuenow=${row.siSoToiDa > 0 ? (row.siSoHienTai * 100 / row.siSoToiDa) : 0},
+                              aria-label=${'Tỷ lệ sĩ số lớp ' + row.maLHP},
+                              data-progress-width=${row.siSoToiDa > 0 ? (row.siSoHienTai * 100 / row.siSoToiDa) : 0}">
                 </div>
               </div>
             </td>
             <td class="text-end text-nowrap">
-              <!-- Trường hợp 1: Đã đăng ký chính lớp này -->
               <span th:if="${row.daDangKy}" class="badge bg-success bg-opacity-10 text-success">
                 <i class="bi bi-check-lg me-1"></i> Đã đăng ký
               </span>
-
-              <!-- Trường hợp 2: Đã đăng ký lớp khác của môn này -->
               <span th:if="${row.daDangKyMonKhac}" class="badge bg-secondary bg-opacity-10 text-secondary"
                     title="Bạn đã đăng ký một lớp khác của môn học này trong kỳ">
                 Đã chọn lớp khác
               </span>
-
-              <!-- Trường hợp 3: Không đủ điều kiện / Hết chỗ / Khóa -->
               <span th:if="${!row.daDangKy and !row.daDangKyMonKhac and !row.eligible}"
                     class="badge bg-danger bg-opacity-10 text-danger"
                     th:text="${row.siSoHienTai >= row.siSoToiDa ? 'Hết chỗ' : 'Không đủ ĐK'}">
                 Không đủ ĐK
               </span>
-
-              <!-- Trường hợp 4: Có thể đăng ký -->
               <form th:if="${!row.daDangKy and !row.daDangKyMonKhac and row.eligible}"
                     method="post" th:action="@{/sinh-vien/dang-ky-hoc-phan/register}">
                 <input type="hidden" name="maLHP" th:value="${row.maLHP}">
@@ -160,10 +202,52 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Thẻ dọc trên Mobile -->
+    <div class="d-md-none p-3 d-flex flex-column gap-3">
+      <div th:if="${availableSections.isEmpty()}" class="text-center text-muted small py-3">
+        Hiện chưa có lớp học phần nào mở cho đăng ký
+      </div>
+      <div th:each="row : ${availableSections}"
+           class="card border p-3"
+           data-dk-item
+           th:attr="data-search=${row.maLHP + ' ' + row.maMon + ' ' + row.tenMon + ' ' + row.tenGV + ' ' + row.lichHoc},
+                    data-days=${row.lichHoc},
+                    data-has-seat=${row.siSoHienTai < row.siSoToiDa},
+                    data-eligible=${row.eligible}">
+        <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+          <span class="font-monospace fw-bold text-primary" th:text="${row.maLHP}">INT2204_1</span>
+          <span class="badge bg-light text-dark border" th:text="${row.soTinChi + ' TC'}">3 TC</span>
+        </div>
+        <div class="fw-semibold text-dark mb-1" th:text="${row.tenMon}">Lập trình hướng đối tượng</div>
+        <div class="small text-muted mb-1" th:text="${row.tenGV}">TS. Nguyễn Văn A</div>
+        <div class="small text-dark mb-2" th:text="${row.lichHoc}">T2 (1-3) 301-G2</div>
+        <div class="d-flex flex-wrap gap-1 mb-2" th:if="${row.blockReason != null or row.warningNote != null}">
+          <span th:if="${row.blockReason != null}" class="badge bg-danger bg-opacity-10 text-danger" th:text="${row.blockReason}">Lý do chặn</span>
+          <span th:if="${row.warningNote != null}" class="badge bg-warning bg-opacity-10 text-warning" th:text="${row.warningNote}">Cảnh báo</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+          <span class="small fw-semibold" th:text="${'Sĩ số: ' + row.siSoHienTai + '/' + row.siSoToiDa}">Sĩ số: 48/50</span>
+          <div>
+            <span th:if="${row.daDangKy}" class="badge bg-success bg-opacity-10 text-success">Đã đăng ký</span>
+            <span th:if="${row.daDangKyMonKhac}" class="badge bg-secondary bg-opacity-10 text-secondary">Đã chọn lớp khác</span>
+            <span th:if="${!row.daDangKy and !row.daDangKyMonKhac and !row.eligible}"
+                  class="badge bg-danger bg-opacity-10 text-danger"
+                  th:text="${row.siSoHienTai >= row.siSoToiDa ? 'Hết chỗ' : 'Không đủ ĐK'}">Không đủ ĐK</span>
+            <form th:if="${!row.daDangKy and !row.daDangKyMonKhac and row.eligible}"
+                  method="post" th:action="@{/sinh-vien/dang-ky-hoc-phan/register}">
+              <input type="hidden" name="maLHP" th:value="${row.maLHP}">
+              <input type="hidden" name="maHK" th:value="${currentHk}">
+              <button type="submit" class="btn btn-sm btn-primary" data-submit-once>Đăng ký</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Bảng 2: Kết quả đăng ký học phần trong học kỳ -->
-  <div class="qd-panel">
+  <div id="dkSelectedPane" class="qd-panel d-none d-md-block">
     <div class="qd-panel-header d-flex justify-content-between align-items-center">
       <h2 class="qd-panel-title mb-0">Học phần đã đăng ký thành công</h2>
       <a class="btn btn-sm btn-outline-primary" th:href="@{/sinh-vien/thoi-khoa-bieu(maHK=${currentHk})}">
@@ -171,17 +255,18 @@
       </a>
     </div>
 
-    <div class="table-responsive">
+    <div class="table-responsive d-none d-md-block">
       <table class="table qd-table mb-0">
+        <caption class="visually-hidden">Danh sách học phần sinh viên đã đăng ký trong học kỳ</caption>
         <thead>
           <tr>
-            <th scope="col" style="width: 130px;">Mã LHP</th>
+            <th scope="col" class="qd-col-130">Mã LHP</th>
             <th scope="col">Tên môn học</th>
-            <th scope="col" class="text-center" style="width: 80px;">Số TC</th>
+            <th scope="col" class="text-center qd-col-80">Số TC</th>
             <th scope="col">Giảng viên</th>
-            <th scope="col">Lịch học & Phòng học</th>
+            <th scope="col">Lịch học &amp; Phòng học</th>
             <th scope="col">Thời gian ĐK</th>
-            <th scope="col" class="text-end" style="width: 120px;">Hủy / Rút</th>
+            <th scope="col" class="text-end qd-col-120">Hủy / Rút</th>
           </tr>
         </thead>
         <tbody>
@@ -204,7 +289,7 @@
                     th:data-confirm="|Bạn có chắc chắn muốn hủy / rút khỏi lớp học phần '${sel.tenMon}' (${sel.maLHP})?|">
                 <input type="hidden" name="maLHP" th:value="${sel.maLHP}">
                 <input type="hidden" name="maHK" th:value="${currentHk}">
-                <button type="submit" class="btn btn-sm btn-outline-danger" title="Rút học phần">
+                <button type="submit" class="btn btn-sm btn-outline-danger" title="Rút học phần" aria-label="Rút học phần">
                   <i class="bi bi-x-circle me-1"></i> Rút lớp
                 </button>
               </form>
@@ -229,7 +314,40 @@
         </tfoot>
       </table>
     </div>
+
+    <div class="d-md-none p-3 d-flex flex-column gap-3">
+      <div th:if="${selectedCourses.isEmpty()}" class="text-center text-muted small py-3">
+        Chưa đăng ký môn học nào trong học kỳ này
+      </div>
+      <div th:each="sel : ${selectedCourses}" class="card border p-3">
+        <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+          <span class="font-monospace fw-bold text-success" th:text="${sel.maLHP}">INT2204_1</span>
+          <span class="badge bg-light text-dark border" th:text="${sel.soTinChi + ' TC'}">3 TC</span>
+        </div>
+        <div class="fw-semibold text-dark mb-1" th:text="${sel.tenMon}">Lập trình hướng đối tượng</div>
+        <div class="small text-muted mb-1" th:text="${sel.tenGV}">TS. Nguyễn Văn A</div>
+        <div class="small text-dark mb-2" th:text="${sel.lichHoc}">T2 (1-3) 301-G2</div>
+        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+          <span class="small text-muted" th:text="${#temporals.format(sel.ngayDangKy, 'dd/MM/yyyy HH:mm')}">10/09/2023</span>
+          <div>
+            <form th:if="${sel.coTheRut()}" method="post" th:action="@{/sinh-vien/dang-ky-hoc-phan/withdraw}"
+                  th:data-confirm="|Bạn có chắc chắn muốn hủy / rút khỏi lớp học phần '${sel.tenMon}' (${sel.maLHP})?|">
+              <input type="hidden" name="maLHP" th:value="${sel.maLHP}">
+              <input type="hidden" name="maHK" th:value="${currentHk}">
+              <button type="submit" class="btn btn-sm btn-outline-danger">Rút lớp</button>
+            </form>
+            <span th:if="${sel.trangThaiLop != null and sel.trangThaiLop.name() == 'DA_CHOT_DANH_SACH'}"
+                  class="badge bg-secondary bg-opacity-10 text-secondary">Đã chốt DS</span>
+            <span th:if="${sel.trangThaiLop != null and sel.trangThaiLop.name() == 'DA_HUY'}"
+                  class="badge bg-danger bg-opacity-10 text-danger">Đã hủy lớp</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </main>
+<th:block id="pageScripts">
+  <script th:src="@{/js/dang-ky-hoc-phan.js}"></script>
+</th:block>
 </body>
 </html>

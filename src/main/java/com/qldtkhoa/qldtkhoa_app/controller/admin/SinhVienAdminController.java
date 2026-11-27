@@ -1,8 +1,8 @@
 package com.qldtkhoa.qldtkhoa_app.controller.admin;
 
 import com.qldtkhoa.qldtkhoa_app.dto.BangDiemSinhVienResponse;
+import com.qldtkhoa.qldtkhoa_app.dto.SinhVienDetailView;
 import com.qldtkhoa.qldtkhoa_app.dto.SinhVienForm;
-import com.qldtkhoa.qldtkhoa_app.entity.SinhVien;
 import com.qldtkhoa.qldtkhoa_app.entity.enums.GioiTinh;
 import com.qldtkhoa.qldtkhoa_app.entity.enums.TrangThaiSinhVien;
 import com.qldtkhoa.qldtkhoa_app.exception.BusinessRuleException;
@@ -12,12 +12,17 @@ import com.qldtkhoa.qldtkhoa_app.service.DiemService;
 import com.qldtkhoa.qldtkhoa_app.service.LopHanhChinhService;
 import com.qldtkhoa.qldtkhoa_app.service.QuyetDinhHocVuService;
 import com.qldtkhoa.qldtkhoa_app.service.SinhVienService;
+import com.qldtkhoa.qldtkhoa_app.util.CsvExportUtils;
 import com.qldtkhoa.qldtkhoa_app.util.FlashMessage;
 import com.qldtkhoa.qldtkhoa_app.util.SortWhitelist;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -74,6 +79,27 @@ public class SinhVienAdminController {
         return "admin/sinh-vien/list";
     }
 
+    @GetMapping("/export-csv")
+    public ResponseEntity<byte[]> exportCsv(@RequestParam(defaultValue = "") String q,
+                                            @RequestParam(required = false) String maLopHC,
+                                            @RequestParam(required = false) TrangThaiSinhVien status) {
+        var rows = sinhVienService.findForExport(q, maLopHC, status);
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        List<String> headers = List.of("MaSV", "HoTen", "GioiTinh", "NgaySinh", "LopHC", "Email", "TrangThai");
+        List<List<String>> csvRows = rows.stream()
+                .map(r -> List.of(
+                        r.maSV() != null ? r.maSV() : "",
+                        r.hoTen() != null ? r.hoTen() : "",
+                        r.gioiTinh() != null ? r.gioiTinh().getLabel() : "",
+                        r.ngaySinh() != null ? r.ngaySinh().format(fmt) : "",
+                        r.maLopHC() != null ? r.maLopHC() : "",
+                        r.email() != null ? r.email() : "",
+                        r.trangThaiHienTai() != null ? r.trangThaiHienTai().getLabel() : ""
+                ))
+                .toList();
+        return CsvExportUtils.csvResponse("danh-sach-sinh-vien.csv", headers, csvRows);
+    }
+
     private void populateFormAttributes(Model model) {
         model.addAttribute("gioiTinhs", GioiTinh.values());
         model.addAttribute("lopHanhChinhs", lopHanhChinhService.findAll());
@@ -120,7 +146,7 @@ public class SinhVienAdminController {
 
     @GetMapping("/{maSV}")
     public String detail(@PathVariable String maSV, Model model) {
-        SinhVien sv = sinhVienService.getWithDetailsOrThrow(maSV);
+        SinhVienDetailView sv = sinhVienService.getDetailView(maSV);
         model.addAttribute("sv", sv);
         model.addAttribute("quyetDinhs", quyetDinhHocVuService.findBySinhVien(maSV));
         model.addAttribute("dangKys", dangKyHocPhanService.findBySinhVien(maSV));

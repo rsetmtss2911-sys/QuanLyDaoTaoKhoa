@@ -30,17 +30,18 @@
     <form method="get" th:action="@{/admin/lop-hanh-chinh}" class="p-3 border-bottom d-flex flex-wrap gap-2 align-items-center" role="search">
       <div class="input-group qd-search">
         <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+        <label for="q" class="visually-hidden">Tìm kiếm</label>
         <input id="q" name="q" type="search" class="form-control border-start-0 ps-0"
                th:value="${q}" placeholder="Tìm theo mã hoặc tên lớp...">
       </div>
 
-      <select name="maKhoaHoc" class="form-select w-auto" onchange="this.form.submit()">
+      <select name="maKhoaHoc" class="form-select w-auto" data-auto-submit>
         <option value="">-- Tất cả khóa học --</option>
         <option th:each="kh : ${khoaHocs}" th:value="${kh.maKhoaHoc}" th:text="${kh.maKhoaHoc + ' (Năm ' + kh.namBatDau + ')'}"
                 th:selected="${kh.maKhoaHoc == maKhoaHoc}">K2023</option>
       </select>
 
-      <select name="maNganh" class="form-select w-auto" onchange="this.form.submit()">
+      <select name="maNganh" class="form-select w-auto" data-auto-submit>
         <option value="">-- Tất cả ngành học --</option>
         <option th:each="ng : ${nganhs}" th:value="${ng.maNganh}" th:text="${ng.tenNganh}"
                 th:selected="${ng.maNganh == maNganh}">CNTT</option>
@@ -55,15 +56,16 @@
 
     <div class="table-responsive">
       <table class="table qd-table">
+        <caption class="visually-hidden">Quản lý Lớp Hành chính</caption>
         <thead>
           <tr>
-            <th scope="col" style="width: 140px;">Mã lớp HC</th>
+            <th scope="col" class="qd-col-140">Mã lớp HC</th>
             <th scope="col">Tên lớp hành chính</th>
             <th scope="col">Khóa nhập học</th>
             <th scope="col">Ngành đào tạo</th>
             <th scope="col">Cố vấn học tập</th>
-            <th scope="col" class="text-center" style="width: 90px;">Sĩ số</th>
-            <th scope="col" class="text-end" style="width: 160px;">Thao tác</th>
+            <th scope="col" class="text-center qd-col-90">Sĩ số</th>
+            <th scope="col" class="text-end qd-col-160">Thao tác</th>
           </tr>
         </thead>
         <tbody>
@@ -94,16 +96,16 @@
               <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary fw-bold" th:text="${row.siSo}">45</span>
             </td>
             <td class="text-end text-nowrap">
-              <a class="btn btn-sm btn-outline-info me-1" th:href="@{/admin/lop-hanh-chinh/{id}(id=${row.maLopHC})}" title="Xem danh sách sinh viên">
+              <a class="btn btn-sm btn-outline-info me-1" th:href="@{/admin/lop-hanh-chinh/{id}(id=${row.maLopHC})}" title="Xem danh sách sinh viên" aria-label="Xem danh sách sinh viên">
                 <i class="bi bi-eye"></i>
               </a>
               <span sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
-                <a class="btn btn-sm btn-outline-primary me-1" th:href="@{/admin/lop-hanh-chinh/{id}/edit(id=${row.maLopHC})}" title="Chỉnh sửa">
+                <a class="btn btn-sm btn-outline-primary me-1" th:href="@{/admin/lop-hanh-chinh/{id}/edit(id=${row.maLopHC})}" title="Chỉnh sửa" aria-label="Chỉnh sửa">
                   <i class="bi bi-pencil"></i>
                 </a>
                 <form class="d-inline" method="post" th:action="@{/admin/lop-hanh-chinh/{id}/delete(id=${row.maLopHC})}"
                       th:data-confirm="|Xóa lớp hành chính '${row.tenLopHC}'? Thao tác sẽ bị từ chối nếu lớp đã có sinh viên.|">
-                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa lớp">
+                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa lớp" aria-label="Xóa lớp">
                     <i class="bi bi-trash"></i>
                   </button>
                 </form>

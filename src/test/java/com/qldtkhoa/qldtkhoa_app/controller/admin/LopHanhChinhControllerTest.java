@@ -1,6 +1,6 @@
 package com.qldtkhoa.qldtkhoa_app.controller.admin;
 
-import com.qldtkhoa.qldtkhoa_app.entity.LopHanhChinh;
+import com.qldtkhoa.qldtkhoa_app.dto.LopHanhChinhDetailView;
 import com.qldtkhoa.qldtkhoa_app.service.KhoaNhapHocService;
 import com.qldtkhoa.qldtkhoa_app.service.LopHanhChinhService;
 import com.qldtkhoa.qldtkhoa_app.service.NganhHocService;
@@ -42,19 +42,20 @@ class LopHanhChinhControllerTest {
     private LopHanhChinhController controller;
 
     @Test
-    @DisplayName("detail should call getWithDetailsOrThrow and populate sinhViens")
+    @DisplayName("detail should call getDetailView and populate sinhViens")
     void testDetailLoadsWithDetails() {
         String maLop = "CNTT-K24A";
-        LopHanhChinh mockLop = mock(LopHanhChinh.class);
-        when(lopHanhChinhService.getWithDetailsOrThrow(maLop)).thenReturn(mockLop);
+        LopHanhChinhDetailView detailView = new LopHanhChinhDetailView(
+                maLop, "CNTT K24 A", "K2024", "Công nghệ thông tin", "GV_01", "TS. Nguyễn Văn A");
+        when(lopHanhChinhService.getDetailView(maLop)).thenReturn(detailView);
         when(sinhVienService.findByLopHanhChinh(maLop)).thenReturn(Collections.emptyList());
 
         Model model = new ConcurrentModel();
         String view = controller.detail(maLop, model);
 
         assertThat(view).isEqualTo("admin/lop-hanh-chinh/detail");
-        assertThat(model.getAttribute("lop")).isSameAs(mockLop);
+        assertThat(model.getAttribute("lop")).isSameAs(detailView);
         assertThat(model.getAttribute("sinhViens")).isNotNull();
-        verify(lopHanhChinhService).getWithDetailsOrThrow(maLop);
+        verify(lopHanhChinhService).getDetailView(maLop);
     }
 }

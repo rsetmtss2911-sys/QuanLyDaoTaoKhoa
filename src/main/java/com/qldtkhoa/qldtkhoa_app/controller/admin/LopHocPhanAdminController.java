@@ -4,8 +4,8 @@ import com.qldtkhoa.qldtkhoa_app.dto.BangDiemLopForm;
 import com.qldtkhoa.qldtkhoa_app.dto.DiemEntryForm;
 import com.qldtkhoa.qldtkhoa_app.dto.DiemRow;
 import com.qldtkhoa.qldtkhoa_app.dto.LichGiangDayForm;
+import com.qldtkhoa.qldtkhoa_app.dto.LopHocPhanDetailView;
 import com.qldtkhoa.qldtkhoa_app.dto.LopHocPhanForm;
-import com.qldtkhoa.qldtkhoa_app.entity.LopHocPhan;
 import com.qldtkhoa.qldtkhoa_app.entity.enums.TrangThaiDangKy;
 import com.qldtkhoa.qldtkhoa_app.entity.enums.TrangThaiLop;
 import com.qldtkhoa.qldtkhoa_app.exception.BusinessRuleException;
@@ -22,6 +22,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -104,10 +105,10 @@ public class LopHocPhanAdminController {
 
     @GetMapping("/{maLHP}")
     public String detail(@PathVariable String maLHP, Model model) {
-        LopHocPhan lhp = lopHocPhanService.getWithDetailsOrThrow(maLHP);
+        LopHocPhanDetailView lhp = lopHocPhanService.getDetailView(maLHP);
         model.addAttribute("lop", lhp);
-        model.addAttribute("schedules", lopHocPhanService.findSchedules(maLHP));
-        model.addAttribute("registrations", lopHocPhanService.findRegistrations(maLHP));
+        model.addAttribute("schedules", lopHocPhanService.findScheduleViews(maLHP));
+        model.addAttribute("registrations", lopHocPhanService.findRegistrationRows(maLHP));
         model.addAttribute("activeCount", lopHocPhanService.countActiveRegistrations(maLHP));
         model.addAttribute("scheduleForm", new LichGiangDayForm());
         return "admin/lop-hoc-phan/detail";
@@ -188,11 +189,17 @@ public class LopHocPhanAdminController {
 
     @GetMapping("/{maLHP}/diem")
     public String gradeSheet(@PathVariable String maLHP, Model model) {
-        LopHocPhan lhp = lopHocPhanService.getWithDetailsOrThrow(maLHP);
+        LopHocPhanDetailView lhp = lopHocPhanService.getDetailView(maLHP);
         model.addAttribute("lop", lhp);
         model.addAttribute("rows", diemService.getGradeSheet(maLHP));
         model.addAttribute("form", new BangDiemLopForm());
         return "admin/lop-hoc-phan/diem";
+    }
+
+    @GetMapping("/{maLHP}/diem/export-csv")
+    public ResponseEntity<byte[]> exportGradeSheetCsv(@PathVariable String maLHP) {
+        lopHocPhanService.getDetailView(maLHP);
+        return diemService.exportGradeSheetCsv(maLHP);
     }
 
     @PostMapping("/{maLHP}/diem")
@@ -237,9 +244,9 @@ public class LopHocPhanAdminController {
                               Model model,
                               RedirectAttributes redirect) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("lop", lopHocPhanService.getWithDetailsOrThrow(maLHP));
-            model.addAttribute("schedules", lopHocPhanService.findSchedules(maLHP));
-            model.addAttribute("registrations", lopHocPhanService.findRegistrations(maLHP));
+            model.addAttribute("lop", lopHocPhanService.getDetailView(maLHP));
+            model.addAttribute("schedules", lopHocPhanService.findScheduleViews(maLHP));
+            model.addAttribute("registrations", lopHocPhanService.findRegistrationRows(maLHP));
             model.addAttribute("activeCount", lopHocPhanService.countActiveRegistrations(maLHP));
             return "admin/lop-hoc-phan/detail";
         }
@@ -250,9 +257,9 @@ public class LopHocPhanAdminController {
             return "redirect:/admin/lop-hoc-phan/{maLHP}";
         } catch (BusinessRuleException ex) {
             bindingResult.reject(ex.getMessageKey(), ex.getArgs(), ex.getMessageKey());
-            model.addAttribute("lop", lopHocPhanService.getWithDetailsOrThrow(maLHP));
-            model.addAttribute("schedules", lopHocPhanService.findSchedules(maLHP));
-            model.addAttribute("registrations", lopHocPhanService.findRegistrations(maLHP));
+            model.addAttribute("lop", lopHocPhanService.getDetailView(maLHP));
+            model.addAttribute("schedules", lopHocPhanService.findScheduleViews(maLHP));
+            model.addAttribute("registrations", lopHocPhanService.findRegistrationRows(maLHP));
             model.addAttribute("activeCount", lopHocPhanService.countActiveRegistrations(maLHP));
             return "admin/lop-hoc-phan/detail";
         }
@@ -274,7 +281,7 @@ public class LopHocPhanAdminController {
     }
 
     private void populateGradeSheetModelForError(String maLHP, BangDiemLopForm form, Model model, FlashMessage flash) {
-        LopHocPhan lhp = lopHocPhanService.getWithDetailsOrThrow(maLHP);
+        LopHocPhanDetailView lhp = lopHocPhanService.getDetailView(maLHP);
         Map<String, DiemEntryForm> submittedBySv = new HashMap<>();
         if (form.getEntries() != null) {
             for (DiemEntryForm entry : form.getEntries()) {

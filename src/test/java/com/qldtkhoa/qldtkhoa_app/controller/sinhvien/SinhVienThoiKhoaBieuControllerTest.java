@@ -1,9 +1,8 @@
 package com.qldtkhoa.qldtkhoa_app.controller.sinhvien;
 
+import com.qldtkhoa.qldtkhoa_app.dto.HocKyOptionRow;
 import com.qldtkhoa.qldtkhoa_app.dto.RegisteredCourseTimetableRow;
 import com.qldtkhoa.qldtkhoa_app.dto.TimetableSlot;
-//import com.qldtkhoa.qldtkhoa_app.dto.UnscheduledCourseRow;
-import com.qldtkhoa.qldtkhoa_app.entity.HocKyNamHoc;
 import com.qldtkhoa.qldtkhoa_app.security.AppUserPrincipal;
 import com.qldtkhoa.qldtkhoa_app.service.HocKyService;
 import com.qldtkhoa.qldtkhoa_app.service.LichGiangDayService;
@@ -16,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ui.ConcurrentModel;
 import org.springframework.ui.Model;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,12 +38,10 @@ class SinhVienThoiKhoaBieuControllerTest {
         AppUserPrincipal principal = mock(AppUserPrincipal.class);
         when(principal.getMaSV()).thenReturn("SV001");
 
-        HocKyNamHoc currentHk = new HocKyNamHoc("HK1_2025", "Học kỳ 1", 2025, LocalDate.of(2025, 9, 1),
-                LocalDate.of(2026, 1, 15));
-        when(hocKyService.findAll()).thenReturn(List.of(currentHk));
-        when(hocKyService.getCurrentTerm()).thenReturn(currentHk);
+        HocKyOptionRow currentHk = new HocKyOptionRow("HK1_2025", "Học kỳ 1", 2025);
+        when(hocKyService.findAllOptions()).thenReturn(List.of(currentHk));
+        when(hocKyService.getCurrentTermOption()).thenReturn(currentHk);
 
-        // Giả lập 2 môn học do 2 giảng viên khác nhau phụ trách
         TimetableSlot slot1 = new TimetableSlot(2, 1, 3, "Lập trình hướng đối tượng", "INT2204_1", "P301-G2",
                 "TS. Nguyễn Văn A");
         TimetableSlot slot2 = new TimetableSlot(4, 6, 8, "Cơ sở dữ liệu", "INT2207_1", "P402-G2", "ThS. Trần Thị B");
@@ -85,9 +81,8 @@ class SinhVienThoiKhoaBieuControllerTest {
         AppUserPrincipal principal = mock(AppUserPrincipal.class);
         when(principal.getMaSV()).thenReturn("SV001");
 
-        HocKyNamHoc hk = new HocKyNamHoc("HK2_2024", "Học kỳ 2", 2024, LocalDate.of(2025, 2, 3),
-                LocalDate.of(2025, 6, 20));
-        when(hocKyService.findAll()).thenReturn(List.of(hk));
+        HocKyOptionRow hk = new HocKyOptionRow("HK2_2024", "Học kỳ 2", 2024);
+        when(hocKyService.findAllOptions()).thenReturn(List.of(hk));
 
         when(lichGiangDayService.getStudentTimetable("SV001", "HK2_2024")).thenReturn(List.of());
         when(lichGiangDayService.getRegisteredCoursesSummary("SV001", "HK2_2024")).thenReturn(List.of());

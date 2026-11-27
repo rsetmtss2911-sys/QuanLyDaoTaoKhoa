@@ -18,11 +18,14 @@
         </ol>
       </nav>
       <div class="d-flex align-items-center gap-3">
-        <h1 class="qd-h1 mb-0" th:text="${lop.monHoc.tenMon + ' (' + lop.maLHP + ')'}">Lập trình hướng đối tượng</h1>
+        <h1 class="qd-h1 mb-0" th:text="${lop.tenMon + ' (' + lop.maLHP + ')'}">Lập trình hướng đối tượng</h1>
         <span th:replace="~{fragments/status-badge :: sectionStatus(${lop.trangThaiLop})}"></span>
       </div>
     </div>
     <div class="d-flex gap-2">
+      <a class="btn btn-outline-success" th:href="@{/giang-vien/lop-hoc-phan/{id}/diem/export-csv(id=${lop.maLHP})}">
+        <i class="bi bi-file-earmark-spreadsheet me-1"></i> Xuất CSV
+      </a>
       <a class="btn btn-outline-secondary" th:href="@{/giang-vien/lop-hoc-phan}">
         <i class="bi bi-arrow-left me-1"></i> Quay lại
       </a>
@@ -48,7 +51,7 @@
       <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
         <div class="text-muted small mb-1">Học kỳ & Số tín chỉ</div>
         <div class="fw-bold text-dark mb-0">
-          <span th:text="${lop.hocKy.tenHocKy}">Học kỳ 1</span> · <span th:text="${lop.monHoc.soTinChi + ' TC'}">3 TC</span>
+          <span th:text="${lop.tenHocKy}">Học kỳ 1</span> · <span th:text="${lop.soTinChi + ' TC'}">3 TC</span>
         </div>
       </div>
     </div>
@@ -56,9 +59,9 @@
       <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
         <div class="text-muted small mb-1">Trọng số đánh giá học phần</div>
         <div class="fw-semibold text-primary mb-0">
-          <span th:text="${'QT: ' + (lop.monHoc.trongSoQT != null ? #numbers.formatPercent(lop.monHoc.trongSoQT, 0, 0) : '0%')}">QT: 20%</span> +
-          <span th:text="${'GK: ' + (lop.monHoc.trongSoGK != null ? #numbers.formatPercent(lop.monHoc.trongSoGK, 0, 0) : '0%')}">GK: 30%</span> +
-          <span th:text="${'CK: ' + (lop.monHoc.trongSoCK != null ? #numbers.formatPercent(lop.monHoc.trongSoCK, 0, 0) : '0%')}">CK: 50%</span> = 100%
+          <span th:text="${'QT: ' + (lop.trongSoQT != null ? #numbers.formatPercent(lop.trongSoQT, 0, 0) : '0%')}">QT: 20%</span> +
+          <span th:text="${'GK: ' + (lop.trongSoGK != null ? #numbers.formatPercent(lop.trongSoGK, 0, 0) : '0%')}">GK: 30%</span> +
+          <span th:text="${'CK: ' + (lop.trongSoCK != null ? #numbers.formatPercent(lop.trongSoCK, 0, 0) : '0%')}">CK: 50%</span> = 100%
         </div>
       </div>
     </div>
@@ -83,24 +86,25 @@
           th:action="@{/giang-vien/lop-hoc-phan/{id}/diem(id=${lop.maLHP})}">
       <div class="table-responsive">
         <table id="gradeGridTable" class="table qd-table mb-0 align-middle"
-               th:data-wqt="${lop.monHoc.trongSoQT}"
-               th:data-wgk="${lop.monHoc.trongSoGK}"
-               th:data-wck="${lop.monHoc.trongSoCK}">
+               th:data-wqt="${lop.trongSoQT}"
+               th:data-wgk="${lop.trongSoGK}"
+               th:data-wck="${lop.trongSoCK}">
+        <caption class="visually-hidden">Nhập điểm Lớp học phần</caption>
           <thead>
             <tr>
-              <th scope="col" style="width: 50px;" class="text-center">STT</th>
-              <th scope="col" style="width: 120px;">Mã SV</th>
+              <th scope="col"  class="text-center qd-col-50">STT</th>
+              <th scope="col" class="qd-col-120">Mã SV</th>
               <th scope="col">Họ và tên</th>
-              <th scope="col" style="width: 120px;">Lớp HC</th>
-              <th scope="col" style="width: 90px;" class="text-center">Cấm thi</th>
-              <th scope="col" style="width: 170px;">Lý do cấm thi</th>
-              <th scope="col" style="width: 120px;" class="text-center bg-light">Điểm QT</th>
-              <th scope="col" style="width: 120px;" class="text-center bg-light">Điểm GK</th>
-              <th scope="col" style="width: 120px;" class="text-center bg-light">Điểm CK</th>
-              <th scope="col" style="width: 100px;" class="text-center">Điểm Tổng (10)</th>
-              <th scope="col" style="width: 80px;" class="text-center">Hệ 4</th>
-              <th scope="col" style="width: 80px;" class="text-center">Điểm Chữ</th>
-              <th scope="col" style="width: 90px;" class="text-center">Kết quả</th>
+              <th scope="col" class="qd-col-120">Lớp HC</th>
+              <th scope="col"  class="text-center qd-col-90">Cấm thi</th>
+              <th scope="col" class="qd-col-170">Lý do cấm thi</th>
+              <th scope="col"  class="text-center bg-light qd-col-120">Điểm QT</th>
+              <th scope="col"  class="text-center bg-light qd-col-120">Điểm GK</th>
+              <th scope="col"  class="text-center bg-light qd-col-120">Điểm CK</th>
+              <th scope="col"  class="text-center qd-col-100">Điểm Tổng (10)</th>
+              <th scope="col"  class="text-center qd-col-80">Hệ 4</th>
+              <th scope="col"  class="text-center qd-col-80">Điểm Chữ</th>
+              <th scope="col"  class="text-center qd-col-90">Kết quả</th>
             </tr>
           </thead>
           <tbody>

@@ -30,6 +30,7 @@
     <form method="get" th:action="@{/admin/hoc-ky}" class="p-3 border-bottom d-flex flex-wrap gap-2 align-items-center" role="search">
       <div class="input-group qd-search">
         <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+        <label for="q" class="visually-hidden">Tìm kiếm</label>
         <input id="q" name="q" type="search" class="form-control border-start-0 ps-0"
                th:value="${q}" placeholder="Tìm theo mã hoặc tên học kỳ...">
       </div>
@@ -41,14 +42,15 @@
 
     <div class="table-responsive">
       <table class="table qd-table">
+        <caption class="visually-hidden">Học kỳ năm học</caption>
         <thead>
           <tr>
-            <th scope="col" style="width: 140px;">Mã học kỳ</th>
+            <th scope="col" class="qd-col-140">Mã học kỳ</th>
             <th scope="col">Tên học kỳ</th>
-            <th scope="col" class="text-center" style="width: 120px;">Năm học</th>
-            <th scope="col" style="width: 150px;">Ngày bắt đầu</th>
-            <th scope="col" style="width: 150px;">Ngày kết thúc</th>
-            <th scope="col" class="text-end" style="width: 140px;">Thao tác</th>
+            <th scope="col" class="text-center qd-col-120">Năm học</th>
+            <th scope="col" class="qd-col-150">Ngày bắt đầu</th>
+            <th scope="col" class="qd-col-150">Ngày kết thúc</th>
+            <th scope="col" class="text-end qd-col-140">Thao tác</th>
           </tr>
         </thead>
         <tbody>
@@ -67,12 +69,12 @@
             <td class="font-monospace text-muted" th:text="${row.ngayKetThuc != null ? #temporals.format(row.ngayKetThuc, 'dd/MM/yyyy') : '-'}">15/01/2026</td>
             <td class="text-end text-nowrap">
               <span sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
-                <a class="btn btn-sm btn-outline-primary me-1" th:href="@{/admin/hoc-ky/{id}/edit(id=${row.maHK})}" title="Chỉnh sửa">
+                <a class="btn btn-sm btn-outline-primary me-1" th:href="@{/admin/hoc-ky/{id}/edit(id=${row.maHK})}" title="Chỉnh sửa" aria-label="Chỉnh sửa">
                   <i class="bi bi-pencil"></i> Sửa
                 </a>
                 <form class="d-inline" method="post" th:action="@{/admin/hoc-ky/{id}/delete(id=${row.maHK})}"
                       th:data-confirm="|Xóa học kỳ '${row.tenHK}'? Thao tác sẽ bị chặn nếu đã mở lớp học phần.|">
-                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa">
+                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa" aria-label="Xóa">
                     <i class="bi bi-trash"></i>
                   </button>
                 </form>

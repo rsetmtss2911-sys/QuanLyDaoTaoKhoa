@@ -22,7 +22,7 @@
     <!-- Chọn học kỳ -->
     <form method="get" th:action="@{/giang-vien/lop-hoc-phan}" class="d-flex align-items-center gap-2">
       <label for="maHK" class="fw-semibold text-dark small text-nowrap">Học kỳ:</label>
-      <select id="maHK" name="maHK" class="form-select w-auto" onchange="this.form.submit()">
+      <select id="maHK" name="maHK" class="form-select w-auto" data-auto-submit>
         <option value="">-- Tất cả học kỳ --</option>
         <option th:each="hk : ${hocKys}" th:value="${hk.maHK}" th:text="${hk.tenHocKy + ' (' + hk.namHoc + ')'}"
                 th:selected="${hk.maHK == currentHk}">Học kỳ 1</option>
@@ -40,15 +40,16 @@
 
     <div class="table-responsive">
       <table class="table qd-table mb-0">
+        <caption class="visually-hidden">Lớp học phần giảng dạy</caption>
         <thead>
           <tr>
-            <th scope="col" style="width: 140px;">Mã LHP</th>
+            <th scope="col" class="qd-col-140">Mã LHP</th>
             <th scope="col">Tên môn học</th>
-            <th scope="col" class="text-center" style="width: 90px;">Số TC</th>
+            <th scope="col" class="text-center qd-col-90">Số TC</th>
             <th scope="col">Học kỳ</th>
-            <th scope="col" class="text-center" style="width: 130px;">Sĩ số / Tối đa</th>
-            <th scope="col" class="text-center" style="width: 140px;">Trạng thái lớp</th>
-            <th scope="col" class="text-end" style="width: 160px;">Nhập điểm</th>
+            <th scope="col" class="text-center qd-col-130">Sĩ số / Tối đa</th>
+            <th scope="col" class="text-center qd-col-140">Trạng thái lớp</th>
+            <th scope="col" class="text-end qd-col-160">Nhập điểm</th>
           </tr>
         </thead>
         <tbody>
@@ -68,9 +69,12 @@
             </td>
             <td class="text-center">
               <span class="fw-bold text-dark" th:text="${row.siSoHienTai + ' / ' + row.siSoToiDa}">48 / 50</span>
-              <div class="progress mt-1" style="height: 4px;">
+              <div class="progress mt-1 qd-progress-xs">
                 <div class="progress-bar bg-primary" role="progressbar"
-                     th:style="'width: ' + (${row.siSoToiDa > 0 ? (row.siSoHienTai * 100 / row.siSoToiDa) : 0}) + '%;'">
+                     aria-valuemin="0" aria-valuemax="100"
+                     th:attr="aria-valuenow=${row.siSoToiDa > 0 ? (row.siSoHienTai * 100 / row.siSoToiDa) : 0},
+                              aria-label=${'Tỷ lệ sĩ số lớp ' + row.maLHP},
+                              data-progress-width=${row.siSoToiDa > 0 ? (row.siSoHienTai * 100 / row.siSoToiDa) : 0}">
                 </div>
               </div>
             </td>

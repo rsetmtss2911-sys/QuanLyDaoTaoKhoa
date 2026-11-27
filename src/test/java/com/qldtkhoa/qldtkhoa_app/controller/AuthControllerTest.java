@@ -34,11 +34,12 @@ class AuthControllerTest {
     private AuthController controller;
 
     @Test
-    @DisplayName("login: Người dùng chưa đăng nhập thì trả về view auth/login và ẩn tài khoản mẫu khi không ở profile dev/local")
+    @DisplayName("login: Người dùng chưa đăng nhập thì trả về view auth/login và ẩn tài khoản mẫu khi không ở profile dev/local và không bật property")
     void login_anonymous_returnsLoginView() {
         Authentication auth = mock(Authentication.class);
         when(auth.isAuthenticated()).thenReturn(false);
         when(environment.acceptsProfiles(any(Profiles.class))).thenReturn(false);
+        when(environment.getProperty("app.ui.show-demo-credentials", Boolean.class, false)).thenReturn(false);
 
         Model model1 = new ConcurrentModel();
         String view = controller.login(auth, model1);
@@ -48,6 +49,31 @@ class AuthControllerTest {
         Model model2 = new ConcurrentModel();
         String viewNull = controller.login(null, model2);
         assertThat(viewNull).isEqualTo("auth/login");
+    }
+
+    @Test
+    @DisplayName("login: Hiển thị tài khoản mẫu khi đang chạy profile dev/local")
+    void login_devOrLocalProfile_showsDemoCredentials() {
+        when(environment.acceptsProfiles(any(Profiles.class))).thenReturn(true);
+
+        Model model = new ConcurrentModel();
+        String view = controller.login(null, model);
+
+        assertThat(view).isEqualTo("auth/login");
+        assertThat(model.getAttribute("showDemoCredentials")).isEqualTo(true);
+    }
+
+    @Test
+    @DisplayName("login: Hiển thị tài khoản mẫu khi bật cờ app.ui.show-demo-credentials=true")
+    void login_propertyEnabled_showsDemoCredentials() {
+        when(environment.acceptsProfiles(any(Profiles.class))).thenReturn(false);
+        when(environment.getProperty("app.ui.show-demo-credentials", Boolean.class, false)).thenReturn(true);
+
+        Model model = new ConcurrentModel();
+        String view = controller.login(null, model);
+
+        assertThat(view).isEqualTo("auth/login");
+        assertThat(model.getAttribute("showDemoCredentials")).isEqualTo(true);
     }
 
     @Test
