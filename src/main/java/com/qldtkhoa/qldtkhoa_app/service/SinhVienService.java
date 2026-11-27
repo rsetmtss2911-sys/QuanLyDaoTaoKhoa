@@ -1,5 +1,6 @@
 package com.qldtkhoa.qldtkhoa_app.service;
 
+import com.qldtkhoa.qldtkhoa_app.dto.SinhVienDetailView;
 import com.qldtkhoa.qldtkhoa_app.dto.SinhVienForm;
 import com.qldtkhoa.qldtkhoa_app.dto.SinhVienRow;
 import com.qldtkhoa.qldtkhoa_app.entity.LopHanhChinh;
@@ -18,6 +19,7 @@ import com.qldtkhoa.qldtkhoa_app.repository.VaiTroRepository;
 import com.qldtkhoa.qldtkhoa_app.util.LikeUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -44,6 +46,13 @@ public class SinhVienService {
                 .map(this::toRow);
     }
 
+    public List<SinhVienRow> findForExport(String q, String maLopHC, TrangThaiSinhVien status) {
+        return sinhVienRepository.findForExport(LikeUtils.escape(q), maLopHC, status, PageRequest.of(0, 5000))
+                .stream()
+                .map(this::toRow)
+                .toList();
+    }
+
     public List<SinhVienRow> findByLopHanhChinh(String maLopHC) {
         return sinhVienRepository.findByLopHanhChinh_MaLopHC(maLopHC)
                 .stream()
@@ -59,6 +68,49 @@ public class SinhVienService {
     public SinhVien getWithDetailsOrThrow(String maSV) {
         return sinhVienRepository.findByIdWithDetails(maSV)
                 .orElseThrow(() -> new ResourceNotFoundException("sinhvien.notFound", maSV));
+    }
+
+    public SinhVienDetailView getDetailView(String maSV) {
+        return toDetailView(getWithDetailsOrThrow(maSV));
+    }
+
+    public SinhVienDetailView getAdvisedStudentDetail(String maSV, String advisorMaNS) {
+        SinhVien sv = getWithDetailsOrThrow(maSV);
+        if (sv.getLopHanhChinh() == null
+                || sv.getLopHanhChinh().getCoVan() == null
+                || !sv.getLopHanhChinh().getCoVan().getMaNS().equalsIgnoreCase(advisorMaNS)) {
+            throw new org.springframework.security.access.AccessDeniedException("Bạn không phải là Cố vấn học tập của sinh viên này!");
+        }
+        return toDetailView(sv);
+    }
+
+    private SinhVienDetailView toDetailView(SinhVien sv) {
+        LopHanhChinh lhc = sv.getLopHanhChinh();
+        String maLopHC = lhc != null ? lhc.getMaLopHC() : null;
+        String tenNganh = (lhc != null && lhc.getNganhHoc() != null) ? lhc.getNganhHoc().getTenNganh() : null;
+        String maKhoaHoc = (lhc != null && lhc.getKhoaNhapHoc() != null) ? lhc.getKhoaNhapHoc().getMaKhoaHoc() : null;
+        Integer namBatDau = (lhc != null && lhc.getKhoaNhapHoc() != null) ? lhc.getKhoaNhapHoc().getNamBatDau() : null;
+        String maCoVan = (lhc != null && lhc.getCoVan() != null) ? lhc.getCoVan().getMaNS() : null;
+        String tenCoVan = (lhc != null && lhc.getCoVan() != null && lhc.getCoVan().getNhanSu() != null)
+                ? lhc.getCoVan().getNhanSu().getHoTen()
+                : null;
+        String email = sv.getTaiKhoan() != null ? sv.getTaiKhoan().getEmail() : null;
+        Boolean active = sv.getTaiKhoan() != null ? sv.getTaiKhoan().getTrangThaiKichHoat() : null;
+        return new SinhVienDetailView(
+                sv.getMaSV(),
+                sv.getHoTen(),
+                sv.getGioiTinh(),
+                sv.getNgaySinh(),
+                sv.getTrangThaiHienTai(),
+                maLopHC,
+                tenNganh,
+                maKhoaHoc,
+                namBatDau,
+                maCoVan,
+                tenCoVan,
+                email,
+                active
+        );
     }
 
     public SinhVien findByEmailOrThrow(String email) {

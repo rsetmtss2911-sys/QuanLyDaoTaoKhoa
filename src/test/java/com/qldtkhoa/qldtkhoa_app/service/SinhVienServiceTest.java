@@ -18,16 +18,19 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -166,5 +169,22 @@ class SinhVienServiceTest {
         assertThat(row.email()).isEmpty();
         assertThat(row.maLopHC()).isEmpty();
         assertThat(row.tenLopHC()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("findForExport: Thoát wildcard LIKE và ánh xạ sang SinhVienRow không kèm Sort.by")
+    void findForExport_escapesWildcardsAndMapsRows() {
+        SinhVien sv = mock(SinhVien.class);
+        when(sv.getMaSV()).thenReturn("SV01");
+        when(sv.getHoTen()).thenReturn("Nguyễn Văn A");
+        when(sv.getGioiTinh()).thenReturn(GioiTinh.NAM);
+        when(sv.getTrangThaiHienTai()).thenReturn(TrangThaiSinhVien.DANG_HOC);
+        when(sinhVienRepository.findForExport(eq("100\\%\\_"), eq("K68_A"), eq(TrangThaiSinhVien.DANG_HOC), eq(PageRequest.of(0, 5000))))
+                .thenReturn(List.of(sv));
+
+        List<SinhVienRow> rows = sinhVienService.findForExport("100%_", "K68_A", TrangThaiSinhVien.DANG_HOC);
+
+        assertThat(rows).hasSize(1);
+        assertThat(rows.get(0).maSV()).isEqualTo("SV01");
     }
 }

@@ -3,8 +3,8 @@ package com.qldtkhoa.qldtkhoa_app.controller.giangvien;
 import com.qldtkhoa.qldtkhoa_app.dto.BangDiemLopForm;
 import com.qldtkhoa.qldtkhoa_app.dto.DiemEntryForm;
 import com.qldtkhoa.qldtkhoa_app.dto.DiemRow;
-import com.qldtkhoa.qldtkhoa_app.entity.HocKyNamHoc;
-import com.qldtkhoa.qldtkhoa_app.entity.LopHocPhan;
+import com.qldtkhoa.qldtkhoa_app.dto.HocKyOptionRow;
+import com.qldtkhoa.qldtkhoa_app.dto.LopHocPhanDetailView;
 import com.qldtkhoa.qldtkhoa_app.entity.enums.TrangThaiDangKy;
 import com.qldtkhoa.qldtkhoa_app.exception.BusinessRuleException;
 import com.qldtkhoa.qldtkhoa_app.security.AppUserPrincipal;
@@ -14,7 +14,7 @@ import com.qldtkhoa.qldtkhoa_app.service.LopHocPhanService;
 import com.qldtkhoa.qldtkhoa_app.util.FlashMessage;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -47,10 +47,10 @@ public class GiangVienLopHocPhanController {
     public String list(@RequestParam(required = false) String maHK,
                        @AuthenticationPrincipal AppUserPrincipal principal,
                        Model model) {
-        var hocKys = hocKyService.findAll();
+        List<HocKyOptionRow> hocKys = hocKyService.findAllOptions();
         if (maHK == null && !hocKys.isEmpty()) {
-            HocKyNamHoc current = hocKyService.getCurrentTerm();
-            maHK = current != null ? current.getMaHK() : hocKys.get(0).getMaHK();
+            HocKyOptionRow current = hocKyService.getCurrentTermOption();
+            maHK = current != null ? current.maHK() : hocKys.get(0).maHK();
         } else if (maHK != null && maHK.isBlank()) {
             maHK = "";
         }
@@ -68,17 +68,20 @@ public class GiangVienLopHocPhanController {
     public String gradeSheet(@PathVariable String maLHP,
                              @AuthenticationPrincipal AppUserPrincipal principal,
                              Model model) {
-        LopHocPhan lhp = lopHocPhanService.getWithDetailsOrThrow(maLHP);
-        if (lhp.getGiangVien() == null || !lhp.getGiangVien().getMaNS().equalsIgnoreCase(principal.getMaNS())) {
-            throw new AccessDeniedException("Bạn không phải là giảng viên phụ trách lớp học phần này!");
-        }
-
+        LopHocPhanDetailView lhp = lopHocPhanService.getAssignedDetailView(maLHP, principal.getMaNS());
         List<DiemRow> rows = diemService.getGradeSheet(maLHP);
         model.addAttribute("lop", lhp);
         model.addAttribute("rows", rows);
         model.addAttribute("form", new BangDiemLopForm());
 
         return "giangvien/lop-hoc-phan/diem";
+    }
+
+    @GetMapping("/{maLHP}/diem/export-csv")
+    public ResponseEntity<byte[]> exportGradeSheetCsv(@PathVariable String maLHP,
+                                                      @AuthenticationPrincipal AppUserPrincipal principal) {
+        lopHocPhanService.getAssignedDetailView(maLHP, principal.getMaNS());
+        return diemService.exportGradeSheetCsv(maLHP);
     }
 
     @PostMapping("/{maLHP}/diem")
@@ -104,7 +107,7 @@ public class GiangVienLopHocPhanController {
     }
 
     private void populateGradeSheetModelForError(String maLHP, BangDiemLopForm form, Model model, FlashMessage flash) {
-        LopHocPhan lhp = lopHocPhanService.getWithDetailsOrThrow(maLHP);
+        LopHocPhanDetailView lhp = lopHocPhanService.getDetailView(maLHP);
         Map<String, DiemEntryForm> submittedBySv = new HashMap<>();
         if (form.getEntries() != null) {
             for (DiemEntryForm entry : form.getEntries()) {

@@ -3,11 +3,13 @@ package com.qldtkhoa.qldtkhoa_app.controller.sinhvien;
 import com.qldtkhoa.qldtkhoa_app.config.AcademicPolicy;
 import com.qldtkhoa.qldtkhoa_app.dto.DangKyDaChonRow;
 import com.qldtkhoa.qldtkhoa_app.dto.DangKyItemRow;
-import com.qldtkhoa.qldtkhoa_app.entity.HocKyNamHoc;
+import com.qldtkhoa.qldtkhoa_app.dto.HocKyOptionRow;
+import com.qldtkhoa.qldtkhoa_app.dto.SinhVienDetailView;
 import com.qldtkhoa.qldtkhoa_app.exception.BusinessRuleException;
 import com.qldtkhoa.qldtkhoa_app.security.AppUserPrincipal;
 import com.qldtkhoa.qldtkhoa_app.service.DangKyHocPhanService;
 import com.qldtkhoa.qldtkhoa_app.service.HocKyService;
+import com.qldtkhoa.qldtkhoa_app.service.SinhVienService;
 import com.qldtkhoa.qldtkhoa_app.util.FlashMessage;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,13 +28,13 @@ public class SinhVienDangKyController {
     private final DangKyHocPhanService dangKyHocPhanService;
     private final HocKyService hocKyService;
     private final AcademicPolicy academicPolicy;
-    private final com.qldtkhoa.qldtkhoa_app.service.SinhVienService sinhVienService;
+    private final SinhVienService sinhVienService;
 
     public SinhVienDangKyController(
             DangKyHocPhanService dangKyHocPhanService,
             HocKyService hocKyService,
             AcademicPolicy academicPolicy,
-            com.qldtkhoa.qldtkhoa_app.service.SinhVienService sinhVienService) {
+            SinhVienService sinhVienService) {
         this.dangKyHocPhanService = dangKyHocPhanService;
         this.hocKyService = hocKyService;
         this.academicPolicy = academicPolicy;
@@ -43,14 +45,14 @@ public class SinhVienDangKyController {
     public String index(@RequestParam(required = false) String maHK,
                         @AuthenticationPrincipal AppUserPrincipal principal,
                         Model model) {
-        var hocKys = hocKyService.findAll();
+        List<HocKyOptionRow> hocKys = hocKyService.findAllOptions();
         if ((maHK == null || maHK.isBlank()) && !hocKys.isEmpty()) {
-            HocKyNamHoc current = hocKyService.getCurrentTerm();
-            maHK = current != null ? current.getMaHK() : hocKys.get(0).getMaHK();
+            HocKyOptionRow current = hocKyService.getCurrentTermOption();
+            maHK = current != null ? current.maHK() : hocKys.get(0).maHK();
         }
 
         String maSV = principal.getMaSV();
-        var sv = sinhVienService.getOrThrow(maSV);
+        SinhVienDetailView sv = sinhVienService.getDetailView(maSV);
         List<DangKyItemRow> availableSections = dangKyHocPhanService.getAvailableSections(maSV, maHK);
         List<DangKyDaChonRow> selectedCourses = dangKyHocPhanService.getSelectedCourses(maSV, maHK);
 

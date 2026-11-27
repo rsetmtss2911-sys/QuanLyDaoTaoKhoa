@@ -1,5 +1,6 @@
 package com.qldtkhoa.qldtkhoa_app.service;
 
+import com.qldtkhoa.qldtkhoa_app.dto.LopHocPhanOptionRow;
 import com.qldtkhoa.qldtkhoa_app.dto.RegisteredCourseTimetableRow;
 import com.qldtkhoa.qldtkhoa_app.dto.TimetableSlot;
 import com.qldtkhoa.qldtkhoa_app.dto.UnscheduledCourseRow;
@@ -131,8 +132,25 @@ public class LichGiangDayService {
         return lopHocPhanRepository.findUnscheduledSections(maHK);
     }
 
+    public List<LopHocPhanOptionRow> getUnscheduledSectionOptions(String maHK) {
+        return getUnscheduledSections(maHK).stream().map(this::toOptionRow).toList();
+    }
+
     public List<LopHocPhan> getActiveSections(String maHK) {
         return lopHocPhanRepository.findActiveSectionsByHocKy(maHK);
+    }
+
+    public List<LopHocPhanOptionRow> getActiveSectionOptions(String maHK) {
+        return getActiveSections(maHK).stream().map(this::toOptionRow).toList();
+    }
+
+    private LopHocPhanOptionRow toOptionRow(LopHocPhan lhp) {
+        return new LopHocPhanOptionRow(
+                lhp.getMaLHP(),
+                lhp.getMonHoc() != null ? lhp.getMonHoc().getMaMon() : "",
+                lhp.getMonHoc() != null ? lhp.getMonHoc().getTenMon() : "",
+                lhp.getMonHoc() != null ? lhp.getMonHoc().getSoTinChi() : null
+        );
     }
 
     private boolean isActiveRegistration(DangKyHocPhan dk) {

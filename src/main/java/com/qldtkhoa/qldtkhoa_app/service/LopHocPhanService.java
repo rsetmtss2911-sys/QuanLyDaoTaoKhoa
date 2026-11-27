@@ -2,8 +2,11 @@ package com.qldtkhoa.qldtkhoa_app.service;
 
 import com.qldtkhoa.qldtkhoa_app.config.AcademicPolicy;
 import com.qldtkhoa.qldtkhoa_app.dto.LichGiangDayForm;
+import com.qldtkhoa.qldtkhoa_app.dto.LopHocPhanDetailView;
 import com.qldtkhoa.qldtkhoa_app.dto.LopHocPhanForm;
 import com.qldtkhoa.qldtkhoa_app.dto.LopHocPhanRow;
+import com.qldtkhoa.qldtkhoa_app.dto.ScheduleItemView;
+import com.qldtkhoa.qldtkhoa_app.dto.SectionRegistrationRow;
 import com.qldtkhoa.qldtkhoa_app.entity.*;
 import com.qldtkhoa.qldtkhoa_app.entity.enums.TrangThaiDangKy;
 import com.qldtkhoa.qldtkhoa_app.entity.enums.TrangThaiLop;
@@ -54,6 +57,67 @@ public class LopHocPhanService {
     public LopHocPhan getWithDetailsOrThrow(String maLHP) {
         return lopHocPhanRepository.findByIdWithDetails(maLHP)
                 .orElseThrow(() -> new ResourceNotFoundException("lophp.notFound", maLHP));
+    }
+
+    public LopHocPhanDetailView getDetailView(String maLHP) {
+        LopHocPhan lhp = getWithDetailsOrThrow(maLHP);
+        MonHoc mh = lhp.getMonHoc();
+        HocKyNamHoc hk = lhp.getHocKy();
+        GiangVien gv = lhp.getGiangVien();
+        return new LopHocPhanDetailView(
+                lhp.getMaLHP(),
+                mh != null ? mh.getMaMon() : null,
+                mh != null ? mh.getTenMon() : null,
+                mh != null ? mh.getSoTinChi() : null,
+                mh != null ? mh.getTinChiLT() : null,
+                mh != null ? mh.getTinChiTH() : null,
+                mh != null ? mh.getTrongSoQT() : null,
+                mh != null ? mh.getTrongSoGK() : null,
+                mh != null ? mh.getTrongSoCK() : null,
+                hk != null ? hk.getMaHK() : null,
+                hk != null ? hk.getTenHK() : null,
+                hk != null ? hk.getNamHoc() : null,
+                gv != null ? gv.getMaNS() : null,
+                (gv != null && gv.getNhanSu() != null) ? gv.getNhanSu().getHoTen() : null,
+                lhp.getSiSoToiDa(),
+                lhp.getTrangThaiLop()
+        );
+    }
+
+    public LopHocPhanDetailView getAssignedDetailView(String maLHP, String maNS) {
+        LopHocPhanDetailView view = getDetailView(maLHP);
+        if (view.maGV() == null || !view.maGV().equalsIgnoreCase(maNS)) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "Bạn không phải là giảng viên phụ trách lớp học phần này!");
+        }
+        return view;
+    }
+
+    public List<ScheduleItemView> findScheduleViews(String maLHP) {
+        return findSchedules(maLHP).stream()
+                .map(s -> new ScheduleItemView(
+                        s.getThuTrongTuan(),
+                        s.getTietBatDau(),
+                        s.getTietKetThuc(),
+                        s.getPhongHoc()
+                ))
+                .toList();
+    }
+
+    public List<SectionRegistrationRow> findRegistrationRows(String maLHP) {
+        return findRegistrations(maLHP).stream()
+                .map(dk -> {
+                    SinhVien sv = dk.getSinhVien();
+                    String maLopHC = (sv != null && sv.getLopHanhChinh() != null) ? sv.getLopHanhChinh().getMaLopHC() : null;
+                    return new SectionRegistrationRow(
+                            sv != null ? sv.getMaSV() : null,
+                            sv != null ? sv.getHoTen() : null,
+                            maLopHC,
+                            dk.getNgayDangKy(),
+                            dk.getTrangThaiDangKy()
+                    );
+                })
+                .toList();
     }
 
     public LopHocPhanForm getForm(String maLHP) {

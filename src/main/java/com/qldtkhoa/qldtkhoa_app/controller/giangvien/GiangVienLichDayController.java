@@ -1,7 +1,7 @@
 package com.qldtkhoa.qldtkhoa_app.controller.giangvien;
 
+import com.qldtkhoa.qldtkhoa_app.dto.HocKyOptionRow;
 import com.qldtkhoa.qldtkhoa_app.dto.TimetableSlot;
-import com.qldtkhoa.qldtkhoa_app.entity.HocKyNamHoc;
 import com.qldtkhoa.qldtkhoa_app.security.AppUserPrincipal;
 import com.qldtkhoa.qldtkhoa_app.service.HocKyService;
 import com.qldtkhoa.qldtkhoa_app.service.LichGiangDayService;
@@ -29,10 +29,10 @@ public class GiangVienLichDayController {
     public String viewTimetable(@RequestParam(required = false) String maHK,
                                 @AuthenticationPrincipal AppUserPrincipal principal,
                                 Model model) {
-        var hocKys = hocKyService.findAll();
+        List<HocKyOptionRow> hocKys = hocKyService.findAllOptions();
         if ((maHK == null || maHK.isBlank()) && !hocKys.isEmpty()) {
-            HocKyNamHoc current = hocKyService.getCurrentTerm();
-            maHK = current != null ? current.getMaHK() : hocKys.get(0).getMaHK();
+            HocKyOptionRow current = hocKyService.getCurrentTermOption();
+            maHK = current != null ? current.maHK() : hocKys.get(0).maHK();
         }
 
         List<TimetableSlot> slots = lichGiangDayService.getLecturerTimetable(principal.getMaNS(), maHK);

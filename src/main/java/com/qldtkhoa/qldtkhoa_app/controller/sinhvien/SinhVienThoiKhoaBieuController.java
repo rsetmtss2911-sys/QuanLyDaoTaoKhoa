@@ -1,11 +1,10 @@
 package com.qldtkhoa.qldtkhoa_app.controller.sinhvien;
 
+import com.qldtkhoa.qldtkhoa_app.dto.HocKyOptionRow;
 import com.qldtkhoa.qldtkhoa_app.dto.TimetableSlot;
-import com.qldtkhoa.qldtkhoa_app.entity.HocKyNamHoc;
 import com.qldtkhoa.qldtkhoa_app.security.AppUserPrincipal;
 import com.qldtkhoa.qldtkhoa_app.service.HocKyService;
 import com.qldtkhoa.qldtkhoa_app.service.LichGiangDayService;
-//import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -33,10 +32,10 @@ public class SinhVienThoiKhoaBieuController {
     public String viewTimetable(@RequestParam(required = false) String maHK,
                                 @AuthenticationPrincipal AppUserPrincipal principal,
                                 Model model) {
-        var hocKys = hocKyService.findAll();
+        List<HocKyOptionRow> hocKys = hocKyService.findAllOptions();
         if ((maHK == null || maHK.isBlank()) && !hocKys.isEmpty()) {
-            HocKyNamHoc current = hocKyService.getCurrentTerm();
-            maHK = current != null ? current.getMaHK() : hocKys.get(0).getMaHK();
+            HocKyOptionRow current = hocKyService.getCurrentTermOption();
+            maHK = current != null ? current.maHK() : hocKys.get(0).maHK();
         }
 
         List<TimetableSlot> slots = lichGiangDayService.getStudentTimetable(principal.getMaSV(), maHK);

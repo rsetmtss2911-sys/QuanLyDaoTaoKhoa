@@ -6,7 +6,8 @@
   <title>Khung Chương trình Đào tạo (CTĐT) · QLĐT Khoa</title>
 </head>
 <body>
-<main id="main" class="qd-main" tabindex="-1">
+<main id="main" class="qd-main" tabindex="-1"
+      th:attr="data-auto-open-modal=${showAddModal} ? 'addCourseModal' : null">
   <div th:replace="~{fragments/flash :: flash}"></div>
 
   <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
@@ -34,7 +35,7 @@
     <form method="get" th:action="@{/admin/ctdt}" class="p-3 d-flex flex-wrap gap-3 align-items-center">
       <div class="d-flex align-items-center gap-2">
         <label for="maNganh" class="fw-semibold text-dark small text-nowrap">Ngành đào tạo:</label>
-        <select id="maNganh" name="maNganh" class="form-select w-auto" onchange="this.form.submit()">
+        <select id="maNganh" name="maNganh" class="form-select w-auto" data-auto-submit>
           <option th:each="ng : ${nganhs}" th:value="${ng.maNganh}" th:text="${ng.tenNganh + ' (' + ng.maNganh + ')'}"
                   th:selected="${ng.maNganh == currentNganh}">Công nghệ thông tin</option>
         </select>
@@ -42,7 +43,7 @@
 
       <div class="d-flex align-items-center gap-2">
         <label for="maKhoaHoc" class="fw-semibold text-dark small text-nowrap">Khóa tuyển sinh:</label>
-        <select id="maKhoaHoc" name="maKhoaHoc" class="form-select w-auto" onchange="this.form.submit()">
+        <select id="maKhoaHoc" name="maKhoaHoc" class="form-select w-auto" data-auto-submit>
           <option th:each="kh : ${khoas}" th:value="${kh.maKhoaHoc}" th:text="${kh.maKhoaHoc + ' (Năm ' + kh.namBatDau + ')'}"
                   th:selected="${kh.maKhoaHoc == currentKhoa}">K2023</option>
         </select>
@@ -86,17 +87,17 @@
       <div class="col-md-3">
         <label for="quotaDaiCuong" class="form-label small fw-semibold">Khối Đại cương (TC)</label>
         <input id="quotaDaiCuong" name="daiCuong" type="number" min="0" max="100" class="form-control form-control-sm"
-               th:value="${quotas.get(T(com.qldtkhoa.qldtkhoa_app.entity.enums.KhoiKienThuc).DAI_CUONG)}">
+               th:value="${quotaDaiCuong}">
       </div>
       <div class="col-md-3">
         <label for="quotaCoSoNganh" class="form-label small fw-semibold">Khối Cơ sở ngành (TC)</label>
         <input id="quotaCoSoNganh" name="coSoNganh" type="number" min="0" max="100" class="form-control form-control-sm"
-               th:value="${quotas.get(T(com.qldtkhoa.qldtkhoa_app.entity.enums.KhoiKienThuc).CO_SO_NGANH)}">
+               th:value="${quotaCoSoNganh}">
       </div>
       <div class="col-md-3">
         <label for="quotaChuyenNganh" class="form-label small fw-semibold">Khối Chuyên ngành (TC)</label>
         <input id="quotaChuyenNganh" name="chuyenNganh" type="number" min="0" max="100" class="form-control form-control-sm"
-               th:value="${quotas.get(T(com.qldtkhoa.qldtkhoa_app.entity.enums.KhoiKienThuc).CHUYEN_NGANH)}">
+               th:value="${quotaChuyenNganh}">
       </div>
       <div class="col-md-3">
         <button type="submit" class="btn btn-sm btn-outline-primary w-100" data-submit-once>
@@ -114,15 +115,16 @@
 
     <div class="table-responsive">
       <table class="table qd-table mb-0">
+        <caption class="visually-hidden">Khung Chương trình Đào tạo (CTĐT)</caption>
         <thead>
           <tr>
-            <th scope="col" style="width: 100px;" class="text-center">Học kỳ chuẩn</th>
-            <th scope="col" style="width: 140px;">Mã môn</th>
+            <th scope="col"  class="text-center qd-col-100">Học kỳ chuẩn</th>
+            <th scope="col" class="qd-col-140">Mã môn</th>
             <th scope="col">Tên môn học</th>
-            <th scope="col" class="text-center" style="width: 100px;">Số TC</th>
+            <th scope="col" class="text-center qd-col-100">Số TC</th>
             <th scope="col">Khối kiến thức</th>
-            <th scope="col" class="text-center" style="width: 130px;">Loại học phần</th>
-            <th scope="col" class="text-end" style="width: 100px;">Thao tác</th>
+            <th scope="col" class="text-center qd-col-130">Loại học phần</th>
+            <th scope="col" class="text-end qd-col-100">Thao tác</th>
           </tr>
         </thead>
         <tbody>
@@ -154,7 +156,7 @@
             <td class="text-end text-nowrap">
               <span sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
                 <button class="btn btn-sm btn-outline-primary me-1" type="button"
-                        data-bs-toggle="collapse" th:attr="data-bs-target=|#editRow-${r.maMon}|" title="Sửa môn trong CTĐT">
+                        data-bs-toggle="collapse" th:attr="data-bs-target=|#editRow-${r.maMon}|" title="Sửa môn trong CTĐT" aria-label="Sửa môn trong CTĐT">
                   <i class="bi bi-pencil"></i>
                 </button>
                 <form class="d-inline" method="post" th:action="@{/admin/ctdt/delete}"
@@ -162,7 +164,7 @@
                   <input type="hidden" name="maNganh" th:value="${r.maNganh}">
                   <input type="hidden" name="maKhoaHoc" th:value="${r.maKhoaHoc}">
                   <input type="hidden" name="maMon" th:value="${r.maMon}">
-                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa khỏi CTĐT">
+                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa khỏi CTĐT" aria-label="Xóa khỏi CTĐT">
                     <i class="bi bi-trash"></i>
                   </button>
                 </form>
@@ -187,14 +189,14 @@
                 </div>
                 <div class="col-md-2">
                   <select name="loaiHocPhan" class="form-select form-select-sm" aria-label="Loại học phần">
-                    <option th:each="l : ${T(com.qldtkhoa.qldtkhoa_app.entity.enums.LoaiHocPhan).values()}"
+                    <option th:each="l : ${loaiHocPhans}"
                             th:value="${l.name()}" th:text="${l.label}"
                             th:selected="${l == r.loaiHocPhan}">Bắt buộc</option>
                   </select>
                 </div>
                 <div class="col-md-3">
                   <select name="khoiKienThuc" class="form-select form-select-sm" aria-label="Khối kiến thức">
-                    <option th:each="k : ${T(com.qldtkhoa.qldtkhoa_app.entity.enums.KhoiKienThuc).values()}"
+                    <option th:each="k : ${khoiKienThucs}"
                             th:value="${k.name()}" th:text="${k.label}"
                             th:selected="${k == r.khoiKienThuc}">Cơ sở ngành</option>
                   </select>
@@ -250,7 +252,7 @@
               <div class="col-md-6">
                 <label for="modalLoaiHocPhan" class="form-label qd-required">Loại học phần</label>
                 <select id="modalLoaiHocPhan" th:field="*{loaiHocPhan}" class="form-select" required>
-                  <option th:each="l : ${T(com.qldtkhoa.qldtkhoa_app.entity.enums.LoaiHocPhan).values()}"
+                  <option th:each="l : ${loaiHocPhans}"
                           th:value="${l.name()}" th:text="${l.label}">Bắt buộc</option>
                 </select>
               </div>
@@ -258,7 +260,7 @@
               <div class="col-12">
                 <label for="modalKhoiKienThuc" class="form-label qd-required">Khối kiến thức</label>
                 <select id="modalKhoiKienThuc" th:field="*{khoiKienThuc}" class="form-select" required>
-                  <option th:each="k : ${T(com.qldtkhoa.qldtkhoa_app.entity.enums.KhoiKienThuc).values()}"
+                  <option th:each="k : ${khoiKienThucs}"
                           th:value="${k.name()}" th:text="${k.label}">Cơ sở ngành</option>
                 </select>
               </div>
@@ -311,16 +313,6 @@
       </div>
     </div>
   </div>
-
-  <script th:if="${showAddModal}">
-    document.addEventListener("DOMContentLoaded", function() {
-      var modalEl = document.getElementById("addCourseModal");
-      if (modalEl) {
-        var modal = new bootstrap.Modal(modalEl);
-        modal.show();
-      }
-    });
-  </script>
 </main>
 </body>
 </html>

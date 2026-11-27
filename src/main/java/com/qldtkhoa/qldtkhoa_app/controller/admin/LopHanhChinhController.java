@@ -1,7 +1,7 @@
 package com.qldtkhoa.qldtkhoa_app.controller.admin;
 
+import com.qldtkhoa.qldtkhoa_app.dto.LopHanhChinhDetailView;
 import com.qldtkhoa.qldtkhoa_app.dto.LopHanhChinhForm;
-import com.qldtkhoa.qldtkhoa_app.entity.LopHanhChinh;
 import com.qldtkhoa.qldtkhoa_app.exception.BusinessRuleException;
 import com.qldtkhoa.qldtkhoa_app.exception.DuplicateResourceException;
 import com.qldtkhoa.qldtkhoa_app.service.SinhVienService;
@@ -81,7 +81,7 @@ public class LopHanhChinhController {
 
     @GetMapping("/{maLopHC}")
     public String detail(@PathVariable String maLopHC, Model model) {
-        LopHanhChinh lhc = lopHanhChinhService.getWithDetailsOrThrow(maLopHC);
+        LopHanhChinhDetailView lhc = lopHanhChinhService.getDetailView(maLopHC);
         model.addAttribute("lop", lhc);
         model.addAttribute("sinhViens", sinhVienService.findByLopHanhChinh(maLopHC));
         return "admin/lop-hanh-chinh/detail";

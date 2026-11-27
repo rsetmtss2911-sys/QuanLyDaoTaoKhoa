@@ -25,11 +25,12 @@
     <form method="get" th:action="@{/admin/tai-khoan}" class="p-3 border-bottom d-flex flex-wrap gap-2 align-items-center" role="search">
       <div class="input-group qd-search">
         <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+        <label for="q" class="visually-hidden">Tìm kiếm</label>
         <input id="q" name="q" type="search" class="form-control border-start-0 ps-0"
                th:value="${q}" placeholder="Tìm theo email tài khoản...">
       </div>
 
-      <select name="maVaiTro" class="form-select w-auto" onchange="this.form.submit()">
+      <select name="maVaiTro" class="form-select w-auto" data-auto-submit>
         <option value="">-- Tất cả vai trò --</option>
         <option th:each="r : ${vaiTros}" th:value="${r.maVaiTro}" th:text="${r.tenVaiTro}"
                 th:selected="${r.maVaiTro == maVaiTro}">Sinh viên</option>
@@ -44,12 +45,13 @@
 
     <div class="table-responsive">
       <table class="table qd-table">
+        <caption class="visually-hidden">Quản lý Tài khoản Hệ thống</caption>
         <thead>
           <tr>
             <th scope="col">Email (Tên đăng nhập)</th>
             <th scope="col">Vai trò</th>
-            <th scope="col" class="text-center" style="width: 140px;">Trạng thái</th>
-            <th scope="col" class="text-end" style="width: 220px;">Hành động quản trị</th>
+            <th scope="col" class="text-center qd-col-140">Trạng thái</th>
+            <th scope="col" class="text-end qd-col-220">Hành động quản trị</th>
           </tr>
         </thead>
         <tbody>
@@ -84,7 +86,7 @@
                 <button class="btn btn-sm"
                         th:classappend="${row.trangThaiKichHoat ? 'btn-outline-warning' : 'btn-outline-success'}"
                         type="submit"
-                        th:title="${row.trangThaiKichHoat ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}">
+                        th:title="${row.trangThaiKichHoat ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}" aria-label="${row.trangThaiKichHoat ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}">
                   <i class="bi" th:classappend="${row.trangThaiKichHoat ? 'bi-lock' : 'bi-unlock'}"></i>
                   <span th:text="${row.trangThaiKichHoat ? 'Khóa' : 'Mở khóa'}">Khóa</span>
                 </button>
@@ -94,7 +96,7 @@
               <form class="d-inline ms-1" method="post" th:action="@{/admin/tai-khoan/reset-password}"
                     th:data-confirm="'Đặt lại mật khẩu cho ' + ${row.email} + ' về mặc định: 123456?'">
                 <input type="hidden" name="email" th:value="${row.email}">
-                <button class="btn btn-sm btn-outline-secondary" type="submit" title="Đặt lại mật khẩu về 123456">
+                <button class="btn btn-sm btn-outline-secondary" type="submit" title="Đặt lại mật khẩu về 123456" aria-label="Đặt lại mật khẩu về 123456">
                   <i class="bi bi-key me-1"></i> Reset MK
                 </button>
               </form>

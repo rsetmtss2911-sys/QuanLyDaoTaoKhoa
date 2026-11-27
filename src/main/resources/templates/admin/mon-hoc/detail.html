@@ -46,9 +46,9 @@
           <dl class="row mb-0">
             <dt class="col-sm-4 text-muted">Bộ môn quản lý</dt>
             <dd class="col-sm-8 fw-semibold text-dark">
-              <span th:text="${mon.boMon != null ? mon.boMon.tenBoMon : '—'}">Bộ môn CNPM</span>
-              <span class="text-muted small" th:if="${mon.boMon != null and mon.boMon.khoa != null}"
-                    th:text="${' (Khoa ' + mon.boMon.khoa.tenKhoa + ')'}">(Khoa CNTT)</span>
+              <span th:text="${mon.tenBoMon != null ? mon.tenBoMon : '—'}">Bộ môn CNPM</span>
+              <span class="text-muted small" th:if="${mon.tenKhoa != null}"
+                    th:text="${' (Khoa ' + mon.tenKhoa + ')'}">(Khoa CNTT)</span>
             </dd>
 
             <dt class="col-sm-4 text-muted">Tổng số tín chỉ</dt>
@@ -62,15 +62,21 @@
 
             <dt class="col-sm-4 text-muted mt-3">Trọng số điểm</dt>
             <dd class="col-sm-8 mt-3">
-              <div class="progress" style="height: 24px;">
+              <div class="progress qd-progress-xl">
                 <div class="progress-bar bg-info" role="progressbar"
-                     th:style="'width: ' + (${mon.trongSoQT != null ? mon.trongSoQT : 0} * 100) + '%;'"
+                     aria-valuemin="0" aria-valuemax="100" aria-label="Trọng số điểm quá trình"
+                     th:attr="aria-valuenow=${mon.trongSoQT != null ? (mon.trongSoQT * 100) : 0},
+                              data-progress-width=${mon.trongSoQT != null ? (mon.trongSoQT * 100) : 0}"
                      th:text="'QT ' + ${mon.trongSoQT != null ? #numbers.formatPercent(mon.trongSoQT, 0, 0) : '0%'}">QT 20%</div>
                 <div class="progress-bar bg-warning" role="progressbar"
-                     th:style="'width: ' + (${mon.trongSoGK != null ? mon.trongSoGK : 0} * 100) + '%;'"
+                     aria-valuemin="0" aria-valuemax="100" aria-label="Trọng số điểm giữa kỳ"
+                     th:attr="aria-valuenow=${mon.trongSoGK != null ? (mon.trongSoGK * 100) : 0},
+                              data-progress-width=${mon.trongSoGK != null ? (mon.trongSoGK * 100) : 0}"
                      th:text="'GK ' + ${mon.trongSoGK != null ? #numbers.formatPercent(mon.trongSoGK, 0, 0) : '0%'}">GK 30%</div>
                 <div class="progress-bar bg-success" role="progressbar"
-                     th:style="'width: ' + (${mon.trongSoCK != null ? mon.trongSoCK : 0} * 100) + '%;'"
+                     aria-valuemin="0" aria-valuemax="100" aria-label="Trọng số điểm cuối kỳ"
+                     th:attr="aria-valuenow=${mon.trongSoCK != null ? (mon.trongSoCK * 100) : 0},
+                              data-progress-width=${mon.trongSoCK != null ? (mon.trongSoCK * 100) : 0}"
                      th:text="'CK ' + ${mon.trongSoCK != null ? #numbers.formatPercent(mon.trongSoCK, 0, 0) : '0%'}">CK 50%</div>
               </div>
               <div class="d-flex justify-content-between text-muted small mt-1">
@@ -99,14 +105,14 @@
           <ul th:unless="${prereqs.isEmpty()}" class="list-group list-group-flush mb-4">
             <li th:each="pr : ${prereqs}" class="list-group-item d-flex justify-content-between align-items-center px-0">
               <div>
-                <span class="badge bg-primary bg-opacity-10 text-primary font-monospace me-2" th:text="${pr.monTienQuyet.maMon}">INT1001</span>
-                <span class="fw-semibold text-dark" th:text="${pr.monTienQuyet.tenMon}">Tin học cơ sở</span>
-                <span class="text-muted small" th:text="${' (' + pr.monTienQuyet.soTinChi + ' TC)'}"> (3 TC)</span>
+                <span class="badge bg-primary bg-opacity-10 text-primary font-monospace me-2" th:text="${pr.maMon}">INT1001</span>
+                <span class="fw-semibold text-dark" th:text="${pr.tenMon}">Tin học cơ sở</span>
+                <span class="text-muted small" th:text="${' (' + pr.soTinChi + ' TC)'}"> (3 TC)</span>
               </div>
               <div sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
-                <form method="post" th:action="@{/admin/mon-hoc/{id}/prerequisites/{tqId}/delete(id=${mon.maMon}, tqId=${pr.monTienQuyet.maMon})}"
-                      th:data-confirm="|Xóa môn tiên quyết '${pr.monTienQuyet.tenMon}'?|">
-                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa môn tiên quyết">
+                <form method="post" th:action="@{/admin/mon-hoc/{id}/prerequisites/{tqId}/delete(id=${mon.maMon}, tqId=${pr.maMon})}"
+                      th:data-confirm="|Xóa môn tiên quyết '${pr.tenMon}'?|">
+                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa môn tiên quyết" aria-label="Xóa môn tiên quyết">
                     <i class="bi bi-trash"></i>
                   </button>
                 </form>

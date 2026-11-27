@@ -7,17 +7,44 @@
 </div>
 
 <div th:fragment="renderGrid(slots, adminMode)" class="timetable-wrapper" xmlns:th="http://www.thymeleaf.org">
-  <table class="timetable-table">
+  <!-- Chế độ Mobile: Danh sách lịch học theo từng Thứ -->
+  <div class="d-md-none p-2 d-flex flex-column gap-3">
+    <div th:each="thu : ${#numbers.sequence(2, 8)}"
+         th:with="daySlots=${slots.?[thuTrongTuan == #vars.thu]}"
+         th:if="${!daySlots.isEmpty()}"
+         class="card border">
+      <div class="card-header bg-light py-2 px-3 fw-bold text-primary"
+           th:text="${thu == 8 ? 'Chủ nhật' : 'Thứ ' + thu}">Thứ 2</div>
+      <div class="list-group list-group-flush">
+        <div th:each="slot : ${daySlots}" class="list-group-item px-3 py-2">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="badge bg-primary bg-opacity-10 text-primary font-monospace"
+                  th:text="|Tiết ${slot.tietBatDau}-${slot.tietKetThuc}|">Tiết 1-3</span>
+            <span class="small fw-semibold" th:text="|P.${slot.phongHoc}|">P.301-G2</span>
+          </div>
+          <div class="fw-semibold text-dark small" th:text="${slot.tenMon}">Môn học</div>
+          <div class="small text-muted">
+            <span class="font-monospace" th:text="${slot.maLHP}">LHP01</span>
+            <span th:if="${slot.tenGiangVien != null}" th:text="${' · ' + slot.tenGiangVien}"> · GV</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chế độ Desktop: Bảng lưới TKB theo tiết -->
+  <table class="timetable-table d-none d-md-table">
+    <caption class="visually-hidden">Lưới thời khóa biểu chi tiết từ Thứ 2 đến Chủ nhật</caption>
     <thead>
       <tr>
-        <th class="timetable-period-col text-center">Tiết</th>
-        <th>Thứ 2</th>
-        <th>Thứ 3</th>
-        <th>Thứ 4</th>
-        <th>Thứ 5</th>
-        <th>Thứ 6</th>
-        <th>Thứ 7</th>
-        <th>Chủ nhật</th>
+        <th scope="col" class="timetable-period-col text-center">Tiết</th>
+        <th scope="col">Thứ 2</th>
+        <th scope="col">Thứ 3</th>
+        <th scope="col">Thứ 4</th>
+        <th scope="col">Thứ 5</th>
+        <th scope="col">Thứ 6</th>
+        <th scope="col">Thứ 7</th>
+        <th scope="col">Chủ nhật</th>
       </tr>
     </thead>
     <tbody>
@@ -42,7 +69,7 @@
                 <span class="d-block text-secondary" th:if="${slot.tenGiangVien != null}" th:text="${slot.tenGiangVien}">GV</span>
               </div>
               <form th:if="${adminMode}" th:action="@{/admin/xep-lich/delete}" method="post" class="mt-1 text-end"
-                    onsubmit="return confirm('Bạn có chắc muốn xóa tiết giảng dạy này?');">
+                    data-confirm="Bạn có chắc muốn xóa tiết giảng dạy này?">
                 <input type="hidden" name="maLHP" th:value="${slot.maLHP}"/>
                 <input type="hidden" name="thuTrongTuan" th:value="${slot.thuTrongTuan}"/>
                 <input type="hidden" name="tietBatDau" th:value="${slot.tietBatDau}"/>
@@ -50,7 +77,7 @@
                 <input type="hidden" name="viewMode" th:value="${viewMode}"/>
                 <input type="hidden" name="currentPhong" th:value="${phongHoc}"/>
                 <input type="hidden" name="currentGv" th:value="${maGV}"/>
-                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1" title="Xóa tiết học này">
+                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1" title="Xóa tiết học này" aria-label="Xóa tiết học này">
                   <i class="bi bi-trash"></i>
                 </button>
               </form>
@@ -82,7 +109,7 @@
                 <span class="d-block text-secondary" th:if="${slot.tenGiangVien != null}" th:text="${slot.tenGiangVien}">GV</span>
               </div>
               <form th:if="${adminMode}" th:action="@{/admin/xep-lich/delete}" method="post" class="mt-1 text-end"
-                    onsubmit="return confirm('Bạn có chắc muốn xóa tiết giảng dạy này?');">
+                    data-confirm="Bạn có chắc muốn xóa tiết giảng dạy này?">
                 <input type="hidden" name="maLHP" th:value="${slot.maLHP}"/>
                 <input type="hidden" name="thuTrongTuan" th:value="${slot.thuTrongTuan}"/>
                 <input type="hidden" name="tietBatDau" th:value="${slot.tietBatDau}"/>
@@ -90,7 +117,7 @@
                 <input type="hidden" name="viewMode" th:value="${viewMode}"/>
                 <input type="hidden" name="currentPhong" th:value="${phongHoc}"/>
                 <input type="hidden" name="currentGv" th:value="${maGV}"/>
-                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1" title="Xóa tiết học này">
+                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1" title="Xóa tiết học này" aria-label="Xóa tiết học này">
                   <i class="bi bi-trash"></i>
                 </button>
               </form>
@@ -122,7 +149,7 @@
                 <span class="d-block text-secondary" th:if="${slot.tenGiangVien != null}" th:text="${slot.tenGiangVien}">GV</span>
               </div>
               <form th:if="${adminMode}" th:action="@{/admin/xep-lich/delete}" method="post" class="mt-1 text-end"
-                    onsubmit="return confirm('Bạn có chắc muốn xóa tiết giảng dạy này?');">
+                    data-confirm="Bạn có chắc muốn xóa tiết giảng dạy này?">
                 <input type="hidden" name="maLHP" th:value="${slot.maLHP}"/>
                 <input type="hidden" name="thuTrongTuan" th:value="${slot.thuTrongTuan}"/>
                 <input type="hidden" name="tietBatDau" th:value="${slot.tietBatDau}"/>
@@ -130,7 +157,7 @@
                 <input type="hidden" name="viewMode" th:value="${viewMode}"/>
                 <input type="hidden" name="currentPhong" th:value="${phongHoc}"/>
                 <input type="hidden" name="currentGv" th:value="${maGV}"/>
-                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1" title="Xóa tiết học này">
+                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1" title="Xóa tiết học này" aria-label="Xóa tiết học này">
                   <i class="bi bi-trash"></i>
                 </button>
               </form>

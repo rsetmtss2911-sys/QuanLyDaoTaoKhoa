@@ -37,7 +37,7 @@
       <form method="get" th:action="@{/admin/xep-lich}" class="row g-3 align-items-end">
         <div class="col-md-3">
           <label for="filterHk" class="form-label small fw-semibold text-dark">Học kỳ năm học</label>
-          <select id="filterHk" name="maHK" class="form-select form-select-sm" onchange="this.form.submit()">
+          <select id="filterHk" name="maHK" class="form-select form-select-sm" data-auto-submit>
             <option th:each="hk : ${hocKys}" th:value="${hk.maHK}"
                     th:text="${hk.tenHocKy + ' (' + hk.namHoc + ')'}"
                     th:selected="${hk.maHK == currentHk}">HK1 (2025-2026)</option>
@@ -48,11 +48,11 @@
           <label class="form-label small fw-semibold text-dark">Chế độ xem lịch</label>
           <div class="btn-group btn-group-sm w-100" role="group">
             <input type="radio" class="btn-check" name="viewMode" id="modeRoom" value="THEO_PHONG"
-                   th:checked="${viewMode == 'THEO_PHONG'}" onchange="this.form.submit()">
+                   th:checked="${viewMode == 'THEO_PHONG'}" data-auto-submit>
             <label class="btn btn-outline-primary" for="modeRoom">Theo Phòng học</label>
 
             <input type="radio" class="btn-check" name="viewMode" id="modeGv" value="THEO_GIANG_VIEN"
-                   th:checked="${viewMode == 'THEO_GIANG_VIEN'}" onchange="this.form.submit()">
+                   th:checked="${viewMode == 'THEO_GIANG_VIEN'}" data-auto-submit>
             <label class="btn btn-outline-primary" for="modeGv">Theo Giảng viên</label>
           </div>
         </div>
@@ -60,7 +60,7 @@
         <div class="col-md-4" th:if="${viewMode == 'THEO_PHONG'}">
           <label for="filterRoom" class="form-label small fw-semibold text-dark">Chọn phòng học</label>
           <div class="input-group input-group-sm">
-            <select id="filterRoom" name="phongHoc" class="form-select" onchange="this.form.submit()">
+            <select id="filterRoom" name="phongHoc" class="form-select" data-auto-submit>
               <option th:each="r : ${rooms}" th:value="${r}" th:text="|Phòng ${r}|"
                       th:selected="${r == phongHoc}">Phòng 301-G2</option>
             </select>
@@ -69,9 +69,9 @@
 
         <div class="col-md-4" th:if="${viewMode == 'THEO_GIANG_VIEN'}">
           <label for="filterGv" class="form-label small fw-semibold text-dark">Chọn giảng viên</label>
-          <select id="filterGv" name="maGV" class="form-select form-select-sm" onchange="this.form.submit()">
+          <select id="filterGv" name="maGV" class="form-select form-select-sm" data-auto-submit>
             <option th:each="gv : ${giangViens}" th:value="${gv.maNS}"
-                    th:text="|${gv.nhanSu.hoTen} (${gv.maNS} - ${gv.boMon.tenBoMon})|"
+                    th:text="|${gv.hoTen} (${gv.maNS} - ${gv.tenBoMon})|"
                     th:selected="${gv.maNS == maGV}">ThS. Nguyễn Văn A</option>
           </select>
         </div>
@@ -93,7 +93,7 @@
           <span th:if="${viewMode == 'THEO_PHONG'}" th:text="|Thời khóa biểu: Phòng ${phongHoc}|">Thời khóa biểu Phòng 301-G2</span>
           <span th:if="${viewMode == 'THEO_GIANG_VIEN'}">
             Thời khóa biểu Giảng viên:
-            <span class="text-primary" th:each="gv : ${giangViens}" th:if="${gv.maNS == maGV}" th:text="${gv.nhanSu.hoTen}">ThS. Nguyễn Văn A</span>
+            <span class="text-primary" th:each="gv : ${giangViens}" th:if="${gv.maNS == maGV}" th:text="${gv.hoTen}">ThS. Nguyễn Văn A</span>
           </span>
         </h2>
         <p class="text-muted small mb-0" th:text="|Tổng cộng: ${slots.size()} tiết đã xếp lịch trong tuần|">
@@ -103,7 +103,7 @@
 
       <div class="d-flex align-items-center gap-2">
         <span class="badge bg-light text-dark border">
-          <span class="d-inline-block rounded-circle bg-success me-1" style="width: 8px; height: 8px;"></span>
+          <span class="d-inline-block rounded-circle bg-success me-1 qd-dot-8"></span>
           Click ô trống = Xếp lịch
         </span>
       </div>
@@ -138,13 +138,13 @@
                 <option value="" disabled selected>-- Chọn lớp học phần cần xếp lịch --</option>
                 <optgroup label="Lớp học phần chưa có lịch" th:if="${unscheduledSections != null and !unscheduledSections.isEmpty()}">
                   <option th:each="l : ${unscheduledSections}" th:value="${l.maLHP}"
-                          th:text="|${l.maLHP} - ${l.monHoc.tenMon} (${l.monHoc.soTinChi} TC)|">
+                          th:text="|${l.maLHP} - ${l.tenMon} (${l.soTinChi} TC)|">
                     LHP01 - Nhập môn lập trình (3 TC)
                   </option>
                 </optgroup>
                 <optgroup label="Tất cả các lớp học phần trong kỳ" th:if="${activeSections != null and !activeSections.isEmpty()}">
                   <option th:each="l : ${activeSections}" th:value="${l.maLHP}"
-                          th:text="|${l.maLHP} - ${l.monHoc.tenMon} (${l.monHoc.soTinChi} TC)|">
+                          th:text="|${l.maLHP} - ${l.tenMon} (${l.soTinChi} TC)|">
                     LHP02 - Cơ sở dữ liệu (3 TC)
                   </option>
                 </optgroup>
@@ -200,42 +200,7 @@
 </main>
 
 <th:block th:fragment="scripts">
-  <script>
-    function openAddScheduleModal(cellOrThu, tiet) {
-      let thuVal = typeof cellOrThu === 'object' ? cellOrThu.getAttribute('data-thu') : cellOrThu;
-      let tietVal = typeof cellOrThu === 'object' ? cellOrThu.getAttribute('data-tiet') : tiet;
-      if (thuVal) {
-        const thuSelect = document.getElementById('modalThu');
-        if (thuSelect) thuSelect.value = thuVal;
-      }
-      if (tietVal) {
-        const startInput = document.getElementById('modalTietBatDau');
-        const endInput = document.getElementById('modalTietKetThuc');
-        if (startInput) startInput.value = tietVal;
-        if (endInput) {
-          let end = parseInt(tietVal, 10) + 2;
-          if (end > 15) end = 15;
-          endInput.value = end;
-        }
-      }
-      const modalEl = document.getElementById('addScheduleModal');
-      if (modalEl && window.bootstrap) {
-        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-        modal.show();
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-      document.querySelectorAll('.timetable-cell-interactive').forEach(cell => {
-        cell.addEventListener('click', function(e) {
-          if (e.target.closest('.timetable-slot') || e.target.closest('form') || e.target.closest('button')) {
-            return;
-          }
-          openAddScheduleModal(this);
-        });
-      });
-    });
-  </script>
+  <script th:src="@{/js/xep-lich.js}"></script>
 </th:block>
 </body>
 </html>

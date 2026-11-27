@@ -2,6 +2,7 @@ package com.qldtkhoa.qldtkhoa_app.service;
 
 import com.qldtkhoa.qldtkhoa_app.dto.QuyetDinhForm;
 import com.qldtkhoa.qldtkhoa_app.dto.QuyetDinhRow;
+import com.qldtkhoa.qldtkhoa_app.dto.SinhVienPreviewDto;
 import com.qldtkhoa.qldtkhoa_app.entity.DangKyHocPhan;
 import com.qldtkhoa.qldtkhoa_app.entity.QuyetDinhHocVu;
 import com.qldtkhoa.qldtkhoa_app.entity.SinhVien;
@@ -131,6 +132,39 @@ public class QuyetDinhHocVuService {
                 .toList();
     }
 
+    public SinhVienPreviewDto previewStudent(String maSV) {
+        if (maSV == null || maSV.isBlank()) {
+            return SinhVienPreviewDto.notFound("");
+        }
+        String trimmed = maSV.trim();
+        Optional<SinhVien> svOpt = sinhVienRepository.findByIdWithDetails(trimmed);
+        if (svOpt.isEmpty()) {
+            return SinhVienPreviewDto.notFound(trimmed);
+        }
+        SinhVien sv = svOpt.get();
+        Optional<QuyetDinhHocVu> latestOpt = quyetDinhHocVuRepository
+                .findTopBySinhVien_MaSVOrderByNgayHieuLucDescMaQuyetDinhDesc(trimmed);
+        TrangThaiSinhVien projectedState = latestOpt
+                .map(qd -> targetStateOf(qd.getLoaiQuyetDinh()))
+                .orElse(sv.getTrangThaiHienTai());
+
+        List<SinhVienPreviewDto.OptionDto> allowedTypes = java.util.Arrays.stream(LoaiQuyetDinh.values())
+                .filter(type -> isTransitionAllowed(projectedState, type))
+                .map(type -> new SinhVienPreviewDto.OptionDto(type.name(), type.getLabel()))
+                .toList();
+
+        return new SinhVienPreviewDto(
+                true,
+                sv.getMaSV(),
+                sv.getHoTen(),
+                sv.getLopHanhChinh() != null ? sv.getLopHanhChinh().getMaLopHC() : "—",
+                projectedState != null ? projectedState.name() : null,
+                projectedState != null ? projectedState.getLabel() : "—",
+                latestOpt.map(qd -> qd.getNgayHieuLuc()).orElse(null),
+                allowedTypes
+        );
+    }
+
     @Transactional
     public void delete(String maQuyetDinh) {
         throw new BusinessRuleException("decision.error.immutable");
@@ -150,7 +184,18 @@ public class QuyetDinhHocVuService {
         if (currentState == TrangThaiSinhVien.THOI_HOC || currentState == TrangThaiSinhVien.DA_TOT_NGHIEP) {
             throw new BusinessRuleException("decision.error.terminalState", currentState.getLabel());
         }
-        boolean allowed = switch (decisionType) {
+        if (!isTransitionAllowed(currentState, decisionType)) {
+            throw new BusinessRuleException("decision.error.invalidTransition",
+                    decisionType.getLabel(), currentState != null ? currentState.getLabel() : "—");
+        }
+    }
+
+    private boolean isTransitionAllowed(TrangThaiSinhVien currentState, LoaiQuyetDinh decisionType) {
+        if (currentState == null || currentState == TrangThaiSinhVien.THOI_HOC
+                || currentState == TrangThaiSinhVien.DA_TOT_NGHIEP) {
+            return false;
+        }
+        return switch (decisionType) {
             case BAO_LUU, DINH_CHI, TOT_NGHIEP -> currentState == TrangThaiSinhVien.DANG_HOC;
             case THOI_HOC -> currentState == TrangThaiSinhVien.DANG_HOC
                     || currentState == TrangThaiSinhVien.BAO_LUU
@@ -158,10 +203,6 @@ public class QuyetDinhHocVuService {
             case TRO_LAI_HOC -> currentState == TrangThaiSinhVien.BAO_LUU
                     || currentState == TrangThaiSinhVien.DINH_CHI;
         };
-        if (!allowed) {
-            throw new BusinessRuleException("decision.error.invalidTransition",
-                    decisionType.getLabel(), currentState.getLabel());
-        }
     }
 
     /**

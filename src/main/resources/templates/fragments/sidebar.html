@@ -106,29 +106,6 @@
 
     </nav>
 
-    <!-- Footer Profile Info & Logout: Khi đã đăng nhập -->
-    <div sec:authorize="isAuthenticated()" class="pt-3 border-top border-secondary border-opacity-25 mt-auto">
-      <div class="d-flex align-items-center gap-2 mb-2 px-2">
-        <i class="bi bi-person-circle fs-5 text-white-50"></i>
-        <div class="overflow-hidden">
-          <div class="text-white small fw-bold text-truncate"
-               th:text="${#authentication != null and #authentication.principal instanceof T(com.qldtkhoa.qldtkhoa_app.security.AppUserPrincipal) ? #authentication.principal.displayName : #authentication?.name}">Họ tên</div>
-          <div class="text-white-50 extra-small" style="font-size: 0.75rem;"
-               th:text="${#authentication != null and #authentication.principal instanceof T(com.qldtkhoa.qldtkhoa_app.security.AppUserPrincipal) ? #authentication.principal.role : 'Vai trò'}">Vai trò</div>
-        </div>
-      </div>
-      <div class="d-flex gap-1 px-1">
-        <a class="btn btn-sm btn-outline-light w-50 py-1" style="font-size: 0.75rem;" th:href="@{/doi-mat-khau}">
-          <i class="bi bi-key"></i> Đổi MK
-        </a>
-        <form th:action="@{/logout}" method="post" class="w-50 m-0">
-          <button type="submit" class="btn btn-sm btn-outline-danger w-100 py-1" style="font-size: 0.75rem;">
-            <i class="bi bi-box-arrow-right"></i> Thoát
-          </button>
-        </form>
-      </div>
-    </div>
-
     <!-- Footer khi chưa đăng nhập (Khách / Anonymous) -->
     <div sec:authorize="!isAuthenticated()" class="pt-3 border-top border-secondary border-opacity-25 mt-auto px-2 pb-2">
       <a class="btn btn-sm btn-outline-light w-100 py-2 d-flex align-items-center justify-content-center gap-2" th:href="@{/login}">

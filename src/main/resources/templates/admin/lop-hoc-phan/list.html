@@ -31,23 +31,24 @@
     <form method="get" th:action="@{/admin/lop-hoc-phan}" class="p-3 border-bottom d-flex flex-wrap gap-2 align-items-center" role="search">
       <div class="input-group qd-search">
         <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+        <label for="q" class="visually-hidden">Tìm kiếm</label>
         <input id="q" name="q" type="search" class="form-control border-start-0 ps-0"
                th:value="${q}" placeholder="Tìm theo mã lớp, môn, GV...">
       </div>
 
-      <select name="maHK" class="form-select w-auto" onchange="this.form.submit()">
+      <select name="maHK" class="form-select w-auto" data-auto-submit>
         <option value="">-- Tất cả học kỳ --</option>
         <option th:each="hk : ${hocKys}" th:value="${hk.maHK}" th:text="${hk.tenHocKy + ' (' + hk.namHoc + ')'}"
                 th:selected="${hk.maHK == maHK}">Học kỳ 1</option>
       </select>
 
-      <select name="maMon" class="form-select w-auto" onchange="this.form.submit()">
+      <select name="maMon" class="form-select w-auto" data-auto-submit>
         <option value="">-- Tất cả môn học --</option>
         <option th:each="m : ${monHocs}" th:value="${m.maMon}" th:text="${m.tenMon + ' (' + m.maMon + ')'}"
                 th:selected="${m.maMon == maMon}">Lập trình</option>
       </select>
 
-      <select name="status" class="form-select w-auto" onchange="this.form.submit()">
+      <select name="status" class="form-select w-auto" data-auto-submit>
         <option value="">-- Tất cả trạng thái lớp --</option>
         <option th:each="st : ${statuses}" th:value="${st.name()}" th:text="${st.label}"
                 th:selected="${status != null and st.name() == status.name()}">Đang mở ĐK</option>
@@ -62,16 +63,17 @@
 
     <div class="table-responsive">
       <table class="table qd-table">
+        <caption class="visually-hidden">Quản lý Lớp học phần</caption>
         <thead>
           <tr>
-            <th scope="col" style="width: 140px;">Mã LHP</th>
+            <th scope="col" class="qd-col-140">Mã LHP</th>
             <th scope="col">Môn học</th>
-            <th scope="col" class="text-center" style="width: 90px;">Số TC</th>
+            <th scope="col" class="text-center qd-col-90">Số TC</th>
             <th scope="col">Giảng viên giảng dạy</th>
             <th scope="col">Học kỳ</th>
-            <th scope="col" class="text-center" style="width: 130px;">Sĩ số / Tối đa</th>
-            <th scope="col" class="text-center" style="width: 130px;">Trạng thái</th>
-            <th scope="col" class="text-end" style="width: 160px;">Thao tác</th>
+            <th scope="col" class="text-center qd-col-130">Sĩ số / Tối đa</th>
+            <th scope="col" class="text-center qd-col-130">Trạng thái</th>
+            <th scope="col" class="text-end qd-col-160">Thao tác</th>
           </tr>
         </thead>
         <tbody>
@@ -102,11 +104,14 @@
                 <span class="text-muted">/</span>
                 <span class="text-muted" th:text="${row.siSoToiDa}">50</span>
               </div>
-              <div class="progress mt-1" style="height: 4px;">
+              <div class="progress mt-1 qd-progress-xs">
                 <div class="progress-bar"
                      th:classappend="${row.siSoHienTai >= row.siSoToiDa ? 'bg-danger' : 'bg-primary'}"
                      role="progressbar"
-                     th:style="'width: ' + (${row.siSoToiDa > 0 ? (row.siSoHienTai * 100 / row.siSoToiDa) : 0}) + '%;'">
+                     aria-valuemin="0" aria-valuemax="100"
+                     th:attr="aria-valuenow=${row.siSoToiDa > 0 ? (row.siSoHienTai * 100 / row.siSoToiDa) : 0},
+                              aria-label=${'Tỷ lệ sĩ số lớp ' + row.maLHP},
+                              data-progress-width=${row.siSoToiDa > 0 ? (row.siSoHienTai * 100 / row.siSoToiDa) : 0}">
                 </div>
               </div>
             </td>
@@ -114,19 +119,19 @@
               <span th:replace="~{fragments/status-badge :: sectionStatus(${row.trangThaiLop})}"></span>
             </td>
             <td class="text-end text-nowrap">
-              <a class="btn btn-sm btn-outline-info me-1" th:href="@{/admin/lop-hoc-phan/{id}(id=${row.maLHP})}" title="Xem lịch & SV">
+              <a class="btn btn-sm btn-outline-info me-1" th:href="@{/admin/lop-hoc-phan/{id}(id=${row.maLHP})}" title="Xem lịch & SV" aria-label="Xem lịch & SV">
                 <i class="bi bi-calendar3"></i>
               </a>
-              <a class="btn btn-sm btn-outline-success me-1" th:href="@{/admin/lop-hoc-phan/{id}/diem(id=${row.maLHP})}" title="Bảng điểm lớp">
+              <a class="btn btn-sm btn-outline-success me-1" th:href="@{/admin/lop-hoc-phan/{id}/diem(id=${row.maLHP})}" title="Bảng điểm lớp" aria-label="Bảng điểm lớp">
                 <i class="bi bi-award"></i>
               </a>
               <span sec:authorize="hasAnyRole('ADMIN','PHONG_DAO_TAO')">
-                <a class="btn btn-sm btn-outline-primary me-1" th:href="@{/admin/lop-hoc-phan/{id}/edit(id=${row.maLHP})}" title="Chỉnh sửa">
+                <a class="btn btn-sm btn-outline-primary me-1" th:href="@{/admin/lop-hoc-phan/{id}/edit(id=${row.maLHP})}" title="Chỉnh sửa" aria-label="Chỉnh sửa">
                   <i class="bi bi-pencil"></i>
                 </a>
                 <form class="d-inline" method="post" th:action="@{/admin/lop-hoc-phan/{id}/delete(id=${row.maLHP})}"
                       th:data-confirm="|Xóa lớp học phần '${row.maLHP}'? Thao tác sẽ bị từ chối nếu đã có sinh viên đăng ký.|">
-                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa lớp">
+                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa lớp" aria-label="Xóa lớp">
                     <i class="bi bi-trash"></i>
                   </button>
                 </form>

@@ -1,7 +1,7 @@
 package com.qldtkhoa.qldtkhoa_app.controller.admin;
 
+import com.qldtkhoa.qldtkhoa_app.dto.HocKyOptionRow;
 import com.qldtkhoa.qldtkhoa_app.dto.LichGiangDayForm;
-import com.qldtkhoa.qldtkhoa_app.entity.HocKyNamHoc;
 import com.qldtkhoa.qldtkhoa_app.service.HocKyService;
 import com.qldtkhoa.qldtkhoa_app.service.LichGiangDayService;
 import com.qldtkhoa.qldtkhoa_app.service.LopHocPhanService;
@@ -41,13 +41,13 @@ class AdminXepLichControllerTest {
     @Test
     @DisplayName("index should populate model and return admin/xep-lich/index")
     void index_validParams_returnsIndexView() {
-        HocKyNamHoc hk = mock(HocKyNamHoc.class);
-        when(hocKyService.findAll()).thenReturn(List.of(hk));
+        HocKyOptionRow hk = new HocKyOptionRow("HK1_2025", "Học kỳ 1", 2025);
+        when(hocKyService.findAllOptions()).thenReturn(List.of(hk));
         when(lichGiangDayService.getDistinctRooms("HK1_2025")).thenReturn(List.of("301-G2"));
-        when(nhanSuService.findAllGiangVien()).thenReturn(List.of());
+        when(nhanSuService.findAllGiangVienOptions()).thenReturn(List.of());
         when(lichGiangDayService.getRoomTimetable("301-G2", "HK1_2025")).thenReturn(List.of());
-        when(lichGiangDayService.getActiveSections("HK1_2025")).thenReturn(List.of());
-        when(lichGiangDayService.getUnscheduledSections("HK1_2025")).thenReturn(List.of());
+        when(lichGiangDayService.getActiveSectionOptions("HK1_2025")).thenReturn(List.of());
+        when(lichGiangDayService.getUnscheduledSectionOptions("HK1_2025")).thenReturn(List.of());
 
         Model model = new ConcurrentModel();
         String view = controller.index("HK1_2025", "THEO_PHONG", "301-G2", null, model);

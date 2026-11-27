@@ -1,7 +1,9 @@
 package com.qldtkhoa.qldtkhoa_app.service;
 
+import com.qldtkhoa.qldtkhoa_app.dto.MonHocDetailView;
 import com.qldtkhoa.qldtkhoa_app.dto.MonHocForm;
 import com.qldtkhoa.qldtkhoa_app.dto.MonHocRow;
+import com.qldtkhoa.qldtkhoa_app.dto.MonTienQuyetRow;
 import com.qldtkhoa.qldtkhoa_app.entity.BoMon;
 import com.qldtkhoa.qldtkhoa_app.entity.DieuKienMonHoc;
 import com.qldtkhoa.qldtkhoa_app.entity.MonHoc;
@@ -54,6 +56,40 @@ public class MonHocService {
     public MonHoc getWithDetailsOrThrow(String maMon) {
         return monHocRepository.findByIdWithDetails(maMon)
                 .orElseThrow(() -> new ResourceNotFoundException("monhoc.notFound", maMon));
+    }
+
+    public MonHocDetailView getDetailView(String maMon) {
+        MonHoc mh = getWithDetailsOrThrow(maMon);
+        String tenBoMon = mh.getBoMon() != null ? mh.getBoMon().getTenBoMon() : null;
+        String tenKhoa = (mh.getBoMon() != null && mh.getBoMon().getKhoa() != null)
+                ? mh.getBoMon().getKhoa().getTenKhoa()
+                : null;
+        return new MonHocDetailView(
+                mh.getMaMon(),
+                mh.getTenMon(),
+                mh.getSoTinChi(),
+                mh.getTinChiLT(),
+                mh.getTinChiTH(),
+                mh.getTrongSoQT(),
+                mh.getTrongSoGK(),
+                mh.getTrongSoCK(),
+                mh.getTinhVaoGPA(),
+                tenBoMon,
+                tenKhoa
+        );
+    }
+
+    public List<MonTienQuyetRow> findPrerequisiteRows(String maMon) {
+        return findPrerequisites(maMon).stream()
+                .map(dk -> {
+                    MonHoc tq = dk.getMonTienQuyet();
+                    return new MonTienQuyetRow(
+                            tq.getMaMon(),
+                            tq.getTenMon(),
+                            tq.getSoTinChi()
+                    );
+                })
+                .toList();
     }
 
     public MonHocForm getForm(String maMon) {

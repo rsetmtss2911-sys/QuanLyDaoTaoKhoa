@@ -7,12 +7,12 @@
 <body>
 <main id="main" class="qd-main text-center py-5" tabindex="-1">
   <div class="mb-4">
-    <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-danger bg-opacity-10 text-danger p-4" style="width: 80px; height: 80px;">
+    <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-danger bg-opacity-10 text-danger p-4 qd-icon-circle-80">
       <i class="bi bi-intersect fs-1"></i>
     </div>
   </div>
   <h1 class="qd-h1 mb-3">409 - Xung đột toàn vẹn dữ liệu</h1>
-  <p class="text-muted mx-auto mb-4" style="max-width: 500px;"
+  <p class="text-muted mx-auto mb-4 qd-max-w-500"
      th:text="${errorMessage != null and !#strings.isEmpty(errorMessage)} ? ${errorMessage} : 'Thao tác không thể hoàn tất do vi phạm ràng buộc dữ liệu hoặc bản ghi đang được sử dụng ở phân hệ khác.'">
     Xung đột dữ liệu.
   </p>

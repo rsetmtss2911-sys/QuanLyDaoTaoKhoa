@@ -19,14 +19,19 @@
       <h1 class="qd-h1 mb-0">Thời khóa biểu Giảng dạy Cá nhân</h1>
     </div>
 
-    <!-- Chọn học kỳ -->
-    <form method="get" th:action="@{/giang-vien/thoi-khoa-bieu}" class="d-flex align-items-center gap-2">
-      <label for="maHK" class="fw-semibold text-dark small text-nowrap">Học kỳ:</label>
-      <select id="maHK" name="maHK" class="form-select w-auto" onchange="this.form.submit()">
-        <option th:each="hk : ${hocKys}" th:value="${hk.maHK}" th:text="${hk.tenHocKy + ' (' + hk.namHoc + ')'}"
-                th:selected="${hk.maHK == currentHk}">Học kỳ 1</option>
-      </select>
-    </form>
+    <!-- Chọn học kỳ & In TKB -->
+    <div class="d-flex align-items-center gap-2 qd-no-print">
+      <form method="get" th:action="@{/giang-vien/thoi-khoa-bieu}" class="d-flex align-items-center gap-2">
+        <label for="maHK" class="fw-semibold text-dark small text-nowrap">Học kỳ:</label>
+        <select id="maHK" name="maHK" class="form-select w-auto" data-auto-submit>
+          <option th:each="hk : ${hocKys}" th:value="${hk.maHK}" th:text="${hk.tenHocKy + ' (' + hk.namHoc + ')'}"
+                  th:selected="${hk.maHK == currentHk}">Học kỳ 1</option>
+        </select>
+      </form>
+      <button type="button" class="btn btn-outline-secondary" data-print>
+        <i class="bi bi-printer me-1"></i> In lịch dạy
+      </button>
+    </div>
   </div>
 
   <div class="qd-panel">

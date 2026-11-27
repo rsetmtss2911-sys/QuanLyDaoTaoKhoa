@@ -12,9 +12,8 @@
   <div class="card border-0 shadow-sm rounded-3 p-4 bg-white mb-4 position-relative overflow-hidden">
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
       <div class="d-flex align-items-center gap-3">
-        <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold fs-3"
-             style="width: 64px; height: 64px;">
-          <i class="bi bi-person-fill"></i>
+        <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold fs-3 qd-avatar-64">
+          <i class="bi bi-person-fill" aria-hidden="true"></i>
         </div>
         <div>
           <div class="d-flex align-items-center gap-2 mb-1">
@@ -36,8 +35,8 @@
           <label for="selectHocKy" class="form-label small fw-semibold text-muted mb-0 text-nowrap">
             <i class="bi bi-calendar-event me-1 text-primary"></i> Học kỳ:
           </label>
-          <select id="selectHocKy" class="form-select form-select-sm" style="min-width: 200px;"
-                  onchange="location.href='/sinh-vien/dashboard?maHK=' + encodeURIComponent(this.value)">
+          <select id="selectHocKy" class="form-select form-select-sm qd-select-min-200"
+                  data-navigate-url="/sinh-vien/dashboard?maHK=">
             <option th:each="hk : ${dashboard.hocKys}"
                     th:value="${hk.maHK}"
                     th:text="${hk.tenHocKy + ' (' + hk.namHoc + ')'}"
@@ -55,28 +54,30 @@
     </div>
   </div>
 
-  <!-- Thống kê tín chỉ & Điểm số (Stat Cards) -->
+  <!-- Thống kê tín chỉ & Điểm số (.qd-stat-tile) -->
   <div class="row g-3 mb-4">
     <!-- Thẻ Tín chỉ học kỳ này -->
     <div class="col-sm-6 col-xl-3">
-      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
+      <a class="qd-stat-tile h-100 d-block" th:href="@{/sinh-vien/dang-ky-hoc-phan(maHK=${dashboard.currentHk})}">
         <div class="d-flex align-items-center justify-content-between mb-2">
-          <span class="text-muted small fw-medium">Tín chỉ đăng ký kỳ này</span>
-          <div class="p-2 bg-primary bg-opacity-10 text-primary rounded-3">
-            <i class="bi bi-journal-check fs-5"></i>
+          <span class="qd-stat-label mt-0">Tín chỉ đăng ký kỳ này</span>
+          <div class="qd-stat-icon">
+            <i class="bi bi-journal-check" aria-hidden="true"></i>
           </div>
         </div>
         <div class="d-flex align-items-baseline gap-1 mb-1">
-          <span class="h3 fw-bold text-dark mb-0" th:text="${dashboard.registeredCreditsCurrentTerm + ' TC'}">18 TC</span>
+          <span class="qd-stat-number" th:text="${dashboard.registeredCreditsCurrentTerm + ' TC'}">18 TC</span>
           <span class="text-muted small" th:text="${'/ ' + dashboard.maxCreditsTerm + ' TC max'}">/ 25 TC max</span>
         </div>
-        <!-- Progress bar so với giới hạn -->
-        <div class="progress mt-2" style="height: 6px;">
+        <div class="progress mt-2 qd-progress-sm">
           <div class="progress-bar" role="progressbar"
-               th:classappend="${dashboard.registeredCreditsCurrentTerm < dashboard.minCreditsTerm ? 'bg-warning' : 'bg-success'}"
-               th:style="|width: ${(dashboard.registeredCreditsCurrentTerm * 100.0) / dashboard.maxCreditsTerm}%|"></div>
+               aria-valuemin="0" aria-valuemax="100"
+               th:attr="aria-valuenow=${dashboard.maxCreditsTerm > 0 ? (dashboard.registeredCreditsCurrentTerm * 100 / dashboard.maxCreditsTerm) : 0},
+                        aria-label='Tiến độ tín chỉ học kỳ',
+                        data-progress-width=${dashboard.maxCreditsTerm > 0 ? (dashboard.registeredCreditsCurrentTerm * 100 / dashboard.maxCreditsTerm) : 0}"
+               th:classappend="${dashboard.registeredCreditsCurrentTerm < dashboard.minCreditsTerm ? 'bg-warning' : 'bg-success'}"></div>
         </div>
-        <div class="text-muted extra-small mt-1" style="font-size: 0.75rem;">
+        <div class="qd-text-xs mt-1">
           <span th:if="${dashboard.registeredCreditsCurrentTerm < dashboard.minCreditsTerm}" class="text-warning fw-semibold">
             <i class="bi bi-exclamation-triangle-fill"></i> Dưới mức tối thiểu (<span th:text="${dashboard.minCreditsTerm}">14</span> TC)
           </span>
@@ -84,52 +85,52 @@
             <i class="bi bi-check-circle-fill"></i> Trong định mức cho phép
           </span>
         </div>
-      </div>
+      </a>
     </div>
 
     <!-- Thẻ Tín chỉ tích lũy -->
     <div class="col-sm-6 col-xl-3">
-      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
-        <div class="d-flex align-items-center justify-content-between mb-2">
-          <span class="text-muted small fw-medium">Tín chỉ tích lũy toàn khóa</span>
-          <div class="p-2 bg-success bg-opacity-10 text-success rounded-3">
-            <i class="bi bi-award-fill fs-5"></i>
-          </div>
+      <a class="qd-stat-tile h-100" th:href="@{/sinh-vien/tien-do-ctdt}">
+        <div>
+          <div class="qd-stat-label mt-0 mb-1">Tín chỉ tích lũy toàn khóa</div>
+          <div class="qd-stat-number" th:text="${dashboard.totalCumulativeCredits + ' TC'}">64 TC</div>
+          <div class="text-muted small mt-1">Xem tiến độ CTĐT</div>
         </div>
-        <div class="h3 fw-bold text-dark mb-1" th:text="${dashboard.totalCumulativeCredits + ' TC'}">64 TC</div>
-        <div class="text-muted small">Các môn đã đạt điểm ≥ 4.0</div>
-      </div>
+        <div class="qd-stat-icon">
+          <i class="bi bi-award-fill" aria-hidden="true"></i>
+        </div>
+      </a>
     </div>
 
     <!-- Thẻ Điểm CPA tích lũy -->
     <div class="col-sm-6 col-xl-3">
-      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
-        <div class="d-flex align-items-center justify-content-between mb-2">
-          <span class="text-muted small fw-medium">Điểm trung bình CPA (Hệ 4)</span>
-          <div class="p-2 bg-info bg-opacity-10 text-info rounded-3">
-            <i class="bi bi-graph-up-arrow fs-5"></i>
+      <a class="qd-stat-tile qd-stat-tile--info h-100" th:href="@{/sinh-vien/bang-diem}">
+        <div>
+          <div class="qd-stat-label mt-0 mb-1">Điểm trung bình CPA (Hệ 4)</div>
+          <div class="qd-stat-number text-primary"
+               th:text="${dashboard.cumulativeGpa4 != null ? #numbers.formatDecimal(dashboard.cumulativeGpa4, 1, 2) : '—'}">3.42</div>
+          <div class="text-muted small mt-1">
+            Xếp loại: <strong class="text-dark" th:text="${dashboard.academicStanding}">Khá</strong>
           </div>
         </div>
-        <div class="h3 fw-bold text-primary mb-1"
-             th:text="${dashboard.cumulativeGpa4 != null ? #numbers.formatDecimal(dashboard.cumulativeGpa4, 1, 2) : '—'}">3.42</div>
-        <div class="text-muted small">
-          Xếp loại: <strong class="text-dark" th:text="${dashboard.academicStanding}">Khá</strong>
+        <div class="qd-stat-icon">
+          <i class="bi bi-graph-up-arrow" aria-hidden="true"></i>
         </div>
-      </div>
+      </a>
     </div>
 
     <!-- Thẻ Môn học đang theo học -->
     <div class="col-sm-6 col-xl-3">
-      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
-        <div class="d-flex align-items-center justify-content-between mb-2">
-          <span class="text-muted small fw-medium">Số môn theo học kỳ này</span>
-          <div class="p-2 bg-warning bg-opacity-10 text-warning rounded-3">
-            <i class="bi bi-mortarboard-fill fs-5"></i>
-          </div>
+      <a class="qd-stat-tile qd-stat-tile--warning h-100" th:href="@{/sinh-vien/thoi-khoa-bieu(maHK=${dashboard.currentHk})}">
+        <div>
+          <div class="qd-stat-label mt-0 mb-1">Số môn theo học kỳ này</div>
+          <div class="qd-stat-number" th:text="${dashboard.currentRegistrations.size() + ' môn'}">6 môn</div>
+          <div class="text-muted small mt-1">Xem thời khóa biểu tuần</div>
         </div>
-        <div class="h3 fw-bold text-dark mb-1" th:text="${dashboard.currentRegistrations.size() + ' môn'}">6 môn</div>
-        <div class="text-muted small">Lớp học phần chính thức</div>
-      </div>
+        <div class="qd-stat-icon">
+          <i class="bi bi-mortarboard-fill" aria-hidden="true"></i>
+        </div>
+      </a>
     </div>
   </div>
 
@@ -184,13 +185,14 @@
 
         <div class="table-responsive">
           <table class="table qd-table mb-0 align-middle">
+        <caption class="visually-hidden">Tổng quan Học tập</caption>
             <thead>
               <tr>
-                <th scope="col" style="width: 120px;">Mã LHP</th>
+                <th scope="col" class="qd-col-120">Mã LHP</th>
                 <th scope="col">Tên môn học</th>
-                <th scope="col" class="text-center" style="width: 70px;">Số TC</th>
+                <th scope="col" class="text-center qd-col-70">Số TC</th>
                 <th scope="col">Giảng viên</th>
-                <th scope="col" class="text-center" style="width: 100px;">Trạng thái</th>
+                <th scope="col" class="text-center qd-col-100">Trạng thái</th>
               </tr>
             </thead>
             <tbody>
@@ -205,7 +207,7 @@
                 </td>
                 <td>
                   <div class="fw-semibold text-dark" th:text="${c.tenMon}">Lập trình hướng đối tượng</div>
-                  <div class="text-muted extra-small" style="font-size: 0.75rem;" th:text="${c.lichHoc}">T3 (1-3) B201</div>
+                  <div class="text-muted extra-small qd-text-xs" th:text="${c.lichHoc}">T3 (1-3) B201</div>
                 </td>
                 <td class="text-center fw-bold" th:text="${c.soTinChi}">3</td>
                 <td class="small text-muted" th:text="${c.tenGV}">TS. Nguyễn Văn A</td>

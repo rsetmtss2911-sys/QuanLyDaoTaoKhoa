@@ -18,12 +18,19 @@
       </nav>
       <h1 class="qd-h1 mb-0">Nhật ký Kiểm toán Hệ thống (Audit Log)</h1>
     </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-success"
+         th:href="@{/admin/nhat-ky/export-csv(q=${q}, doiTuong=${doiTuong}, hanhDong=${hanhDong})}">
+        <i class="bi bi-file-earmark-spreadsheet me-1"></i> Xuất CSV
+      </a>
+    </div>
   </div>
 
   <div class="qd-panel">
     <form method="get" th:action="@{/admin/nhat-ky}" class="p-3 border-bottom d-flex flex-wrap gap-2 align-items-center" role="search">
       <div class="input-group qd-search">
         <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+        <label for="q" class="visually-hidden">Tìm kiếm</label>
         <input id="q" name="q" type="search" class="form-control border-start-0 ps-0"
                th:value="${q}" placeholder="Tìm theo người thực hiện, mã bản ghi, lý do...">
       </div>
@@ -47,12 +54,13 @@
 
     <div class="table-responsive">
       <table class="table qd-table mb-0">
+        <caption class="visually-hidden">Nhật ký hệ thống</caption>
         <thead>
           <tr>
-            <th scope="col" style="width: 155px;">Thời gian</th>
-            <th scope="col" style="width: 190px;">Người thực hiện</th>
-            <th scope="col" style="width: 170px;">Hành động</th>
-            <th scope="col" style="width: 150px;">Đối tượng / Mã</th>
+            <th scope="col" class="qd-col-155">Thời gian</th>
+            <th scope="col" class="qd-col-190">Người thực hiện</th>
+            <th scope="col" class="qd-col-170">Hành động</th>
+            <th scope="col" class="qd-col-150">Đối tượng / Mã</th>
             <th scope="col">Giá trị cũ</th>
             <th scope="col">Giá trị mới</th>
             <th scope="col">Lý do</th>

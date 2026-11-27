@@ -47,12 +47,12 @@
       <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
         <div class="text-muted small mb-1">Lớp hành chính & Ngành</div>
         <div class="fw-semibold text-dark mb-0">
-          <span th:if="${sv.lopHanhChinh != null}">
-            <a th:href="@{/admin/lop-hanh-chinh/{id}(id=${sv.lopHanhChinh.maLopHC})}" class="text-decoration-none" th:text="${sv.lopHanhChinh.maLopHC}">CNTT2023A</a>
-            <span class="text-muted" th:if="${sv.lopHanhChinh.nganhHoc != null}"> · </span>
-            <span th:if="${sv.lopHanhChinh.nganhHoc != null}" th:text="${sv.lopHanhChinh.nganhHoc.tenNganh}">CNTT</span>
+          <span th:if="${sv.maLopHC != null}">
+            <a th:href="@{/admin/lop-hanh-chinh/{id}(id=${sv.maLopHC})}" class="text-decoration-none" th:text="${sv.maLopHC}">CNTT2023A</a>
+            <span class="text-muted" th:if="${sv.tenNganh != null}"> · </span>
+            <span th:if="${sv.tenNganh != null}" th:text="${sv.tenNganh}">CNTT</span>
           </span>
-          <span th:unless="${sv.lopHanhChinh != null}" class="text-muted">—</span>
+          <span th:unless="${sv.maLopHC != null}" class="text-muted">—</span>
         </div>
       </div>
     </div>
@@ -60,11 +60,11 @@
       <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
         <div class="text-muted small mb-1">Khóa tuyển sinh</div>
         <div class="fw-semibold text-dark mb-0">
-          <span th:if="${sv.lopHanhChinh != null and sv.lopHanhChinh.khoaNhapHoc != null}">
-            <span th:text="${sv.lopHanhChinh.khoaNhapHoc.maKhoaHoc}">K2023</span>
-            <span class="text-muted small" th:text="${'(Năm ' + sv.lopHanhChinh.khoaNhapHoc.namBatDau + ')'}">(Năm 2023)</span>
+          <span th:if="${sv.maKhoaHoc != null}">
+            <span th:text="${sv.maKhoaHoc}">K2023</span>
+            <span class="text-muted small" th:text="${'(Năm ' + sv.namBatDau + ')'}">(Năm 2023)</span>
           </span>
-          <span th:unless="${sv.lopHanhChinh != null and sv.lopHanhChinh.khoaNhapHoc != null}" class="text-muted">—</span>
+          <span th:unless="${sv.maKhoaHoc != null}" class="text-muted">—</span>
         </div>
       </div>
     </div>
@@ -72,8 +72,8 @@
       <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
         <div class="text-muted small mb-1">Cố vấn học tập (CVHT)</div>
         <div class="fw-semibold text-dark mb-0">
-          <span th:if="${sv.lopHanhChinh != null and sv.lopHanhChinh.coVan != null and sv.lopHanhChinh.coVan.nhanSu != null}" th:text="${sv.lopHanhChinh.coVan.nhanSu.hoTen}">TS. Nguyễn Văn A</span>
-          <span th:unless="${sv.lopHanhChinh != null and sv.lopHanhChinh.coVan != null and sv.lopHanhChinh.coVan.nhanSu != null}" class="badge bg-warning bg-opacity-10 text-warning">Chưa phân công</span>
+          <span th:if="${sv.tenCoVan != null}" th:text="${sv.tenCoVan}">TS. Nguyễn Văn A</span>
+          <span th:unless="${sv.tenCoVan != null}" class="badge bg-warning bg-opacity-10 text-warning">Chưa phân công</span>
         </div>
       </div>
     </div>
@@ -126,13 +126,13 @@
 
 
             <dt class="col-sm-3 text-muted">Email tài khoản</dt>
-            <dd class="col-sm-9 text-muted" th:text="${sv.taiKhoan != null ? sv.taiKhoan.email : '—'}">mai.tt@vnu.edu.vn</dd>
+            <dd class="col-sm-9 text-muted" th:text="${sv.email != null ? sv.email : '—'}">mai.tt@vnu.edu.vn</dd>
 
             <dt class="col-sm-3 text-muted">Trạng thái tài khoản</dt>
             <dd class="col-sm-9">
-              <span th:if="${sv.taiKhoan != null and sv.taiKhoan.trangThaiKichHoat}" class="badge bg-success bg-opacity-10 text-success">Kích hoạt</span>
-              <span th:if="${sv.taiKhoan != null and !sv.taiKhoan.trangThaiKichHoat}" class="badge bg-secondary bg-opacity-10 text-secondary">Đã khóa</span>
-              <span th:if="${sv.taiKhoan == null}" class="text-muted">—</span>
+              <span th:if="${Boolean.TRUE.equals(sv.taiKhoanKichHoat)}" class="badge bg-success bg-opacity-10 text-success">Kích hoạt</span>
+              <span th:if="${Boolean.FALSE.equals(sv.taiKhoanKichHoat)}" class="badge bg-secondary bg-opacity-10 text-secondary">Đã khóa</span>
+              <span th:if="${sv.taiKhoanKichHoat == null}" class="text-muted">—</span>
             </dd>
           </dl>
         </div>
@@ -179,18 +179,19 @@
 
           <div class="table-responsive">
             <table class="table qd-table mb-0 align-middle">
+        <caption class="visually-hidden">Hồ sơ sinh viên</caption>
               <thead>
                 <tr>
-                  <th scope="col" style="width: 120px;">Mã môn</th>
+                  <th scope="col" class="qd-col-120">Mã môn</th>
                   <th scope="col">Tên môn học</th>
-                  <th scope="col" class="text-center" style="width: 70px;">TC</th>
-                  <th scope="col" class="text-center" style="width: 90px;">Điểm QT</th>
-                  <th scope="col" class="text-center" style="width: 90px;">Điểm GK</th>
-                  <th scope="col" class="text-center" style="width: 90px;">Điểm CK</th>
-                  <th scope="col" class="text-center" style="width: 100px;">Tổng (10)</th>
-                  <th scope="col" class="text-center" style="width: 80px;">Hệ 4</th>
-                  <th scope="col" class="text-center" style="width: 80px;">Điểm chữ</th>
-                  <th scope="col" class="text-center" style="width: 100px;">Kết quả</th>
+                  <th scope="col" class="text-center qd-col-70">TC</th>
+                  <th scope="col" class="text-center qd-col-90">Điểm QT</th>
+                  <th scope="col" class="text-center qd-col-90">Điểm GK</th>
+                  <th scope="col" class="text-center qd-col-90">Điểm CK</th>
+                  <th scope="col" class="text-center qd-col-100">Tổng (10)</th>
+                  <th scope="col" class="text-center qd-col-80">Hệ 4</th>
+                  <th scope="col" class="text-center qd-col-80">Điểm chữ</th>
+                  <th scope="col" class="text-center qd-col-100">Kết quả</th>
                 </tr>
               </thead>
               <tbody>
@@ -232,14 +233,15 @@
         </div>
         <div class="table-responsive">
           <table class="table qd-table mb-0">
+        <caption class="visually-hidden">Hồ sơ sinh viên</caption>
             <thead>
               <tr>
-                <th>Mã LHP</th>
-                <th>Môn học</th>
-                <th class="text-center">Số tín chỉ</th>
-                <th>Học kỳ</th>
-                <th>Thời gian ĐK</th>
-                <th class="text-center">Trạng thái ĐK</th>
+                <th scope="col">Mã LHP</th>
+                <th scope="col">Môn học</th>
+                <th scope="col" class="text-center">Số tín chỉ</th>
+                <th scope="col">Học kỳ</th>
+                <th scope="col">Thời gian ĐK</th>
+                <th scope="col" class="text-center">Trạng thái ĐK</th>
               </tr>
             </thead>
             <tbody>
@@ -279,12 +281,13 @@
         </div>
         <div class="table-responsive">
           <table class="table qd-table mb-0">
+        <caption class="visually-hidden">Hồ sơ sinh viên</caption>
             <thead>
               <tr>
-                <th>Số quyết định</th>
-                <th>Loại quyết định</th>
-                <th>Ngày hiệu lực</th>
-                <th>Lý do</th>
+                <th scope="col">Số quyết định</th>
+                <th scope="col">Loại quyết định</th>
+                <th scope="col">Ngày hiệu lực</th>
+                <th scope="col">Lý do</th>
               </tr>
             </thead>
             <tbody>

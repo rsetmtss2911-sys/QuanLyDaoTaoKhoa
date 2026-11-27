@@ -20,11 +20,14 @@
         </ol>
       </nav>
       <div class="d-flex align-items-center gap-3">
-        <h1 class="qd-h1 mb-0" th:text="${lop.monHoc.tenMon + ' (' + lop.maLHP + ')'}">Lập trình hướng đối tượng</h1>
+        <h1 class="qd-h1 mb-0" th:text="${lop.tenMon + ' (' + lop.maLHP + ')'}">Lập trình hướng đối tượng</h1>
         <span th:replace="~{fragments/status-badge :: sectionStatus(${lop.trangThaiLop})}"></span>
       </div>
     </div>
     <div class="d-flex gap-2">
+      <a class="btn btn-outline-success" th:href="@{/admin/lop-hoc-phan/{id}/diem/export-csv(id=${lop.maLHP})}">
+        <i class="bi bi-file-earmark-spreadsheet me-1"></i> Xuất CSV
+      </a>
       <a class="btn btn-outline-secondary" th:href="@{/admin/lop-hoc-phan/{id}(id=${lop.maLHP})}">
         <i class="bi bi-arrow-left me-1"></i> Chi tiết LHP
       </a>
@@ -53,24 +56,25 @@
           th:with="canEdit=${#authorization.expression('hasRole(''PHONG_DAO_TAO'')') and (lop.trangThaiLop.name() == 'DA_CHOT_DANH_SACH' or lop.trangThaiLop.name() == 'DA_KHOA_DIEM')}">
       <div class="table-responsive">
         <table id="gradeGridTable" class="table qd-table mb-0 align-middle"
-               th:data-wqt="${lop.monHoc.trongSoQT}"
-               th:data-wgk="${lop.monHoc.trongSoGK}"
-               th:data-wck="${lop.monHoc.trongSoCK}">
+               th:data-wqt="${lop.trongSoQT}"
+               th:data-wgk="${lop.trongSoGK}"
+               th:data-wck="${lop.trongSoCK}">
+        <caption class="visually-hidden">Quản lý bảng điểm Lớp học phần</caption>
           <thead>
             <tr>
-              <th scope="col" style="width: 50px;" class="text-center">STT</th>
-              <th scope="col" style="width: 120px;">Mã SV</th>
+              <th scope="col"  class="text-center qd-col-50">STT</th>
+              <th scope="col" class="qd-col-120">Mã SV</th>
               <th scope="col">Họ và tên</th>
-              <th scope="col" style="width: 110px;">Lớp HC</th>
-              <th scope="col" style="width: 80px;" class="text-center">Cấm thi</th>
-              <th scope="col" style="width: 160px;">Lý do cấm thi</th>
-              <th scope="col" style="width: 105px;" class="text-center bg-light">Điểm QT</th>
-              <th scope="col" style="width: 105px;" class="text-center bg-light">Điểm GK</th>
-              <th scope="col" style="width: 105px;" class="text-center bg-light">Điểm CK</th>
-              <th scope="col" style="width: 90px;" class="text-center">Tổng (10)</th>
-              <th scope="col" style="width: 75px;" class="text-center">Hệ 4</th>
-              <th scope="col" style="width: 75px;" class="text-center">Chữ</th>
-              <th scope="col" style="width: 95px;" class="text-center">Kết quả</th>
+              <th scope="col" class="qd-col-110">Lớp HC</th>
+              <th scope="col"  class="text-center qd-col-80">Cấm thi</th>
+              <th scope="col" class="qd-col-160">Lý do cấm thi</th>
+              <th scope="col"  class="text-center bg-light qd-col-105">Điểm QT</th>
+              <th scope="col"  class="text-center bg-light qd-col-105">Điểm GK</th>
+              <th scope="col"  class="text-center bg-light qd-col-105">Điểm CK</th>
+              <th scope="col"  class="text-center qd-col-90">Tổng (10)</th>
+              <th scope="col"  class="text-center qd-col-75">Hệ 4</th>
+              <th scope="col"  class="text-center qd-col-75">Chữ</th>
+              <th scope="col"  class="text-center qd-col-95">Kết quả</th>
             </tr>
           </thead>
           <tbody>

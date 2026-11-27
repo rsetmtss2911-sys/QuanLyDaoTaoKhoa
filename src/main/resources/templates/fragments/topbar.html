@@ -19,18 +19,15 @@
     <!-- Hiển thị khi đã đăng nhập -->
     <th:block sec:authorize="isAuthenticated()">
       <div class="text-end d-none d-sm-block">
-        <div class="fw-bold small"
-             th:text="${#authentication != null and #authentication.principal instanceof T(com.qldtkhoa.qldtkhoa_app.security.AppUserPrincipal) ? #authentication.principal.displayName : #authentication?.name}">Họ và tên</div>
-        <div class="text-muted" style="font-size: 0.75rem;"
-             th:text="${#authentication != null and #authentication.principal instanceof T(com.qldtkhoa.qldtkhoa_app.security.AppUserPrincipal) ? #authentication.principal.username : #authentication?.name}">email@qldt.edu.vn</div>
+        <div class="fw-bold small" th:text="${currentUserDisplayName ?: #authentication?.name}">Họ và tên</div>
+        <div class="text-muted qd-text-xs" th:text="${currentUserEmail ?: #authentication?.name}">email@qldt.edu.vn</div>
       </div>
 
       <div class="dropdown">
         <button class="btn btn-outline-secondary btn-sm dropdown-toggle d-flex align-items-center gap-1"
                 type="button" data-bs-toggle="dropdown" aria-expanded="false">
-          <i class="bi bi-person-circle"></i>
-          <span class="d-none d-md-inline"
-                th:text="${#authentication != null and #authentication.principal instanceof T(com.qldtkhoa.qldtkhoa_app.security.AppUserPrincipal) ? #authentication.principal.role : 'Vai trò'}">Vai trò</span>
+          <i class="bi bi-person-circle" aria-hidden="true"></i>
+          <span class="d-none d-md-inline" th:text="${currentUserRole ?: 'Vai trò'}">Vai trò</span>
         </button>
         <ul class="dropdown-menu dropdown-menu-end shadow-sm">
           <li>

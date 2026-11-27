@@ -21,6 +21,14 @@ public class StatusBadge {
         return icon(obj.toString());
     }
 
+    public String label(Object obj) {
+        if (obj == null) return "—";
+        if (obj instanceof com.qldtkhoa.qldtkhoa_app.entity.converter.DbLabeled labeled) {
+            return labeled.getLabel();
+        }
+        return obj.toString();
+    }
+
     public String variant(String label) {
         if (label == null || label.isBlank()) {
             return "secondary";

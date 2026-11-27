@@ -1,14 +1,21 @@
 package com.qldtkhoa.qldtkhoa_app.service;
 
+import com.qldtkhoa.qldtkhoa_app.dto.CoVanClassRosterView;
+import com.qldtkhoa.qldtkhoa_app.dto.CoVanStudentRow;
+import com.qldtkhoa.qldtkhoa_app.dto.HocLucSummary;
+import com.qldtkhoa.qldtkhoa_app.dto.LopHanhChinhDetailView;
 import com.qldtkhoa.qldtkhoa_app.dto.LopHanhChinhForm;
 import com.qldtkhoa.qldtkhoa_app.dto.LopHanhChinhRow;
+import com.qldtkhoa.qldtkhoa_app.dto.SinhVienRow;
 import com.qldtkhoa.qldtkhoa_app.entity.GiangVien;
 import com.qldtkhoa.qldtkhoa_app.entity.KhoaNhapHoc;
 import com.qldtkhoa.qldtkhoa_app.entity.LopHanhChinh;
 import com.qldtkhoa.qldtkhoa_app.entity.NganhHoc;
+import com.qldtkhoa.qldtkhoa_app.entity.view.BangDiemSinhVienView;
 import com.qldtkhoa.qldtkhoa_app.exception.BusinessRuleException;
 import com.qldtkhoa.qldtkhoa_app.exception.DuplicateResourceException;
 import com.qldtkhoa.qldtkhoa_app.exception.ResourceNotFoundException;
+import com.qldtkhoa.qldtkhoa_app.repository.BangDiemSinhVienViewRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.GiangVienRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.KhoaNhapHocRepository;
 import com.qldtkhoa.qldtkhoa_app.repository.LopHanhChinhRepository;
@@ -18,12 +25,14 @@ import com.qldtkhoa.qldtkhoa_app.util.LikeUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +44,9 @@ public class LopHanhChinhService {
     private final NganhHocRepository nganhHocRepository;
     private final GiangVienRepository giangVienRepository;
     private final SinhVienRepository sinhVienRepository;
+    private final SinhVienService sinhVienService;
+    private final BangDiemSinhVienViewRepository bangDiemViewRepository;
+    private final HocLucService hocLucService;
 
     public Page<LopHanhChinhRow> search(String q, String maNganh, String maKhoaHoc, Pageable pageable) {
         Page<LopHanhChinh> page = lopHanhChinhRepository.search(LikeUtils.escape(q), maNganh, maKhoaHoc, pageable);
@@ -62,6 +74,60 @@ public class LopHanhChinhService {
     public LopHanhChinh getWithDetailsOrThrow(String maLopHC) {
         return lopHanhChinhRepository.findByIdWithDetails(maLopHC)
                 .orElseThrow(() -> new ResourceNotFoundException("lophc.notFound", maLopHC));
+    }
+
+    public LopHanhChinhDetailView getDetailView(String maLopHC) {
+        return toDetailView(getWithDetailsOrThrow(maLopHC));
+    }
+
+    public CoVanClassRosterView getAdvisedClassRoster(String maLopHC, String advisorMaNS, boolean onlyAtRisk) {
+        LopHanhChinh lhc = getWithDetailsOrThrow(maLopHC);
+        if (lhc.getCoVan() == null || !lhc.getCoVan().getMaNS().equalsIgnoreCase(advisorMaNS)) {
+            throw new AccessDeniedException("Bạn không phải là Cố vấn học tập của lớp hành chính này!");
+        }
+        List<SinhVienRow> students = sinhVienService.findByLopHanhChinh(maLopHC);
+        List<String> maSVs = students.stream().map(sv -> sv.maSV()).toList();
+        Map<String, List<BangDiemSinhVienView>> gradesBySv = maSVs.isEmpty()
+                ? Map.of()
+                : bangDiemViewRepository.findById_MaSVInOrderByNamHocDescMaHKAscTenMonAsc(maSVs).stream()
+                        .collect(Collectors.groupingBy(v -> v.getMaSV()));
+
+        List<CoVanStudentRow> allStudentRows = students.stream()
+                .map(sv -> {
+                    HocLucSummary summary = hocLucService.evaluateSummary(gradesBySv.getOrDefault(sv.maSV(), List.of()));
+                    return new CoVanStudentRow(
+                            sv.maSV(), sv.hoTen(), sv.gioiTinh(), sv.ngaySinh(), sv.email(),
+                            sv.trangThaiHienTai(),
+                            summary.cpa4(), summary.xepLoai(), summary.tongTCTichLuy(),
+                            summary.soMonTruot(), summary.coCamThi(),
+                            summary.canhBaoHocVu(), summary.lyDoCanhBao()
+                    );
+                })
+                .toList();
+
+        long atRiskCount = allStudentRows.stream().filter(r -> r.isAtRisk()).count();
+        List<CoVanStudentRow> displayedRows = onlyAtRisk
+                ? allStudentRows.stream().filter(r -> r.isAtRisk()).toList()
+                : allStudentRows;
+
+        return new CoVanClassRosterView(toDetailView(lhc), students, displayedRows, atRiskCount, allStudentRows.size());
+    }
+
+    private LopHanhChinhDetailView toDetailView(LopHanhChinh lhc) {
+        String maKhoaHoc = lhc.getKhoaNhapHoc() != null ? lhc.getKhoaNhapHoc().getMaKhoaHoc() : null;
+        String tenNganh = lhc.getNganhHoc() != null ? lhc.getNganhHoc().getTenNganh() : null;
+        String maCoVan = lhc.getCoVan() != null ? lhc.getCoVan().getMaNS() : null;
+        String tenCoVan = (lhc.getCoVan() != null && lhc.getCoVan().getNhanSu() != null)
+                ? lhc.getCoVan().getNhanSu().getHoTen()
+                : null;
+        return new LopHanhChinhDetailView(
+                lhc.getMaLopHC(),
+                lhc.getTenLopHC(),
+                maKhoaHoc,
+                tenNganh,
+                maCoVan,
+                tenCoVan
+        );
     }
 
     public LopHanhChinhForm getForm(String maLopHC) {

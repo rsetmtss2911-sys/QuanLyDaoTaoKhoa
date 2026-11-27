@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{})}">
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::#pageScripts})}">
 <head>
   <title th:text="${isEdit ? 'Chỉnh sửa nhân sự · QLĐT Khoa' : 'Thêm nhân sự mới · QLĐT Khoa'}">Nhân sự · QLĐT Khoa</title>
 </head>
@@ -152,28 +152,9 @@
       </div>
     </div>
   </div>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const vaiTroSelect = document.getElementById('maVaiTro');
-      const gvFields = document.getElementById('giangVienFields');
-
-      function toggleGvFields() {
-        if (!vaiTroSelect || !gvFields) return;
-        const val = vaiTroSelect.value;
-        if (val === 'GIANG_VIEN') {
-          gvFields.style.display = 'block';
-        } else {
-          gvFields.style.display = 'none';
-        }
-      }
-
-      if (vaiTroSelect) {
-        vaiTroSelect.addEventListener('change', toggleGvFields);
-        toggleGvFields();
-      }
-    });
-  </script>
 </main>
+<th:block id="pageScripts">
+  <script th:src="@{/js/nhan-su-form.js}"></script>
+</th:block>
 </body>
 </html>

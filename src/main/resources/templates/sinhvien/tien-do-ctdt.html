@@ -32,10 +32,10 @@
           Tích lũy được <strong class="text-primary" th:text="${completedCredits}">45</strong> trên tổng số
           <strong class="text-dark" th:text="${totalCurriculumCredits}">135</strong> tín chỉ quy định của CTĐT.
         </p>
-        <div class="progress" style="height: 12px;">
+        <div class="progress qd-progress-lg">
           <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated" role="progressbar"
-               th:style="'width: ' + ${progressPercent} + '%;'"
-               th:attr="aria-valuenow=${progressPercent},aria-valuemin=0,aria-valuemax=100"
+               aria-label="Tiến độ hoàn thành toàn khóa CTĐT"
+               th:attr="aria-valuenow=${progressPercent},aria-valuemin=0,aria-valuemax=100,data-progress-width=${progressPercent}"
                th:text="${progressPercent + '%'}">33%</div>
         </div>
       </div>
@@ -54,10 +54,9 @@
           <span class="fw-bold text-dark" th:text="${bp.khoiKienThuc.label}">Cơ sở ngành</span>
           <span class="badge bg-primary bg-opacity-10 text-primary fw-bold" th:text="${bp.progressPercent + '%'}">50%</span>
         </div>
-        <div class="progress mb-2" style="height: 8px;">
+        <div class="progress mb-2 qd-progress-md">
           <div class="progress-bar bg-success" role="progressbar"
-               th:style="'width: ' + ${bp.progressPercent} + '%;'"
-               th:attr="aria-valuenow=${bp.progressPercent},aria-valuemin=0,aria-valuemax=100"></div>
+               th:attr="aria-label=${'Tiến độ khối ' + bp.khoiKienThuc.label},aria-valuenow=${bp.progressPercent},aria-valuemin=0,aria-valuemax=100,data-progress-width=${bp.progressPercent}"></div>
         </div>
         <div class="small text-muted d-flex justify-content-between">
           <span>Bắt buộc: <strong th:text="${bp.earnedMandatoryCredits + '/' + bp.requiredMandatoryCredits}">12/15</strong> TC</span>
@@ -79,15 +78,16 @@
 
     <div th:unless="${curriculum == null or curriculum.isEmpty()}" class="table-responsive">
       <table class="table qd-table mb-0 align-middle">
+        <caption class="visually-hidden">Tiến độ CTĐT</caption>
         <thead>
           <tr>
-            <th scope="col" style="width: 80px;" class="text-center">HK chuẩn</th>
-            <th scope="col" style="width: 130px;">Mã môn</th>
+            <th scope="col"  class="text-center qd-col-80">HK chuẩn</th>
+            <th scope="col" class="qd-col-130">Mã môn</th>
             <th scope="col">Tên môn học</th>
-            <th scope="col" class="text-center" style="width: 80px;">Số TC</th>
+            <th scope="col" class="text-center qd-col-80">Số TC</th>
             <th scope="col">Khối kiến thức</th>
-            <th scope="col" class="text-center" style="width: 120px;">Loại học phần</th>
-            <th scope="col" class="text-center" style="width: 165px;">Tình trạng</th>
+            <th scope="col" class="text-center qd-col-120">Loại học phần</th>
+            <th scope="col" class="text-center qd-col-165">Tình trạng</th>
           </tr>
         </thead>
         <tbody>

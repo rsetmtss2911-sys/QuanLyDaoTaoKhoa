@@ -1,7 +1,0 @@
-# Sao chép file này thành config/application-local.properties để chạy kết nối SQL Server trên máy local.
-# File config/application-local.properties được .gitignore bỏ qua và KHÔNG đóng gói vào .jar.
-db.host=localhost
-db.port=1433
-db.name=App_QLDTKhoa
-db.username=Admin
-db.password=CHANGE_ME

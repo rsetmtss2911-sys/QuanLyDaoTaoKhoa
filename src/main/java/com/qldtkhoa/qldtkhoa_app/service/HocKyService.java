@@ -1,6 +1,7 @@
 package com.qldtkhoa.qldtkhoa_app.service;
 
 import com.qldtkhoa.qldtkhoa_app.dto.HocKyForm;
+import com.qldtkhoa.qldtkhoa_app.dto.HocKyOptionRow;
 import com.qldtkhoa.qldtkhoa_app.dto.HocKyRow;
 import com.qldtkhoa.qldtkhoa_app.entity.HocKyNamHoc;
 import com.qldtkhoa.qldtkhoa_app.exception.BusinessRuleException;
@@ -43,6 +44,10 @@ public class HocKyService {
         return hocKyNamHocRepository.findAllByOrderByNamHocDescMaHKAsc();
     }
 
+    public List<HocKyOptionRow> findAllOptions() {
+        return findAll().stream().map(this::toOptionRow).toList();
+    }
+
     public HocKyNamHoc getCurrentTerm() {
         LocalDate today = clock != null ? LocalDate.now(clock) : LocalDate.now();
         List<HocKyNamHoc> covering = hocKyNamHocRepository.findCoveringTerms(today);
@@ -54,6 +59,15 @@ public class HocKyService {
             return started.get(0);
         }
         return hocKyNamHocRepository.findTopByOrderByNamHocDescMaHKDesc().orElse(null);
+    }
+
+    public HocKyOptionRow getCurrentTermOption() {
+        HocKyNamHoc current = getCurrentTerm();
+        return current != null ? toOptionRow(current) : null;
+    }
+
+    private HocKyOptionRow toOptionRow(HocKyNamHoc hk) {
+        return new HocKyOptionRow(hk.getMaHK(), hk.getTenHK(), hk.getNamHoc());
     }
 
     public HocKyNamHoc getOrThrow(String maHK) {

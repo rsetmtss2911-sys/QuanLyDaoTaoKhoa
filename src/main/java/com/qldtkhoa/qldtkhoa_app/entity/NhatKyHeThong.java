@@ -42,9 +42,11 @@ public class NhatKyHeThong {
     @Column(name = "MaBanGhi", length = 100, nullable = false)
     private String maBanGhi;
 
+    @JdbcTypeCode(SqlTypes.NVARCHAR)
     @Column(name = "GiaTriCu", length = 10000)
     private String giaTriCu;
 
+    @JdbcTypeCode(SqlTypes.NVARCHAR)
     @Column(name = "GiaTriMoi", length = 10000)
     private String giaTriMoi;
 

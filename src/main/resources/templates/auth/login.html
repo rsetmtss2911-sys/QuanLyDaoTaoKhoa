@@ -15,48 +15,8 @@
   <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/font/bootstrap-icons.min.css}">
   <link rel="stylesheet" th:href="@{/css/design-tokens.css}">
   <link rel="stylesheet" th:href="@{/css/app.css}">
-
-  <style>
-    body {
-      background: radial-gradient(circle at 10% 20%, #EAF4F3 0%, #F5F7F9 90%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1.5rem;
-    }
-    .login-card {
-      width: 100%;
-      max-width: 440px;
-      border: 1px solid var(--qd-border);
-      border-radius: var(--qd-radius-lg);
-      background: var(--qd-white);
-      box-shadow: 0 12px 32px rgba(20, 32, 43, 0.08);
-      overflow: hidden;
-    }
-    .login-header {
-      background: linear-gradient(135deg, var(--qd-brand-900), var(--qd-brand-700));
-      padding: 2.25rem 2rem 2rem;
-      text-align: center;
-      color: var(--qd-white);
-    }
-    .login-logo {
-      width: 52px;
-      height: 52px;
-      margin: 0 auto 1rem;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.75rem;
-      color: var(--qd-brand-100);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-    }
-  </style>
 </head>
-<body>
+<body class="qd-login-page">
 
 <div class="login-card">
   <div class="login-header">
@@ -103,29 +63,84 @@
       </button>
     </form>
 
-    <!-- Tài khoản mẫu để kiểm thử (chỉ hiển thị ở profile dev/local) -->
+    <!-- Tài khoản mẫu để kiểm thử (chỉ hiển thị ở môi trường dev/local hoặc khi bật app.ui.show-demo-credentials) -->
     <div class="mt-4 pt-3 border-top" th:if="${showDemoCredentials}">
       <div class="d-flex justify-content-between align-items-center mb-2">
-        <span class="small fw-bold text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.05em;">
-          Tài khoản kiểm thử (Mật khẩu: 123456)
+        <span class="small fw-bold text-muted text-uppercase qd-demo-label">
+          Tài khoản kiểm thử theo vai trò (Môi trường Local)
         </span>
       </div>
-      <div class="bg-light p-2 rounded small font-monospace" style="font-size: 0.75rem;">
-        <div class="d-flex justify-content-between py-1 border-bottom border-secondary border-opacity-10">
-          <span class="fw-bold text-dark font-sans-serif">Admin:</span>
-          <span class="text-primary text-decoration-none" role="button" onclick="navigator.clipboard.writeText('admin@truong.edu.vn')" title="Click để sao chép">admin@truong.edu.vn</span>
+      <div class="bg-light p-2 rounded small qd-text-xs d-flex flex-column gap-2">
+        <div class="d-flex justify-content-between align-items-center pb-2 border-bottom border-secondary border-opacity-10">
+          <div>
+            <div class="fw-bold text-dark">Admin</div>
+            <div class="font-monospace">
+              Email:
+              <span class="text-primary" role="button" tabindex="0" data-copy="admin@truong.edu.vn" title="Click để sao chép email">admin@truong.edu.vn</span>
+            </div>
+            <div class="font-monospace text-muted">
+              Mật khẩu:
+              <span class="text-dark fw-semibold" role="button" tabindex="0" data-copy="123456" title="Click để sao chép mật khẩu">123456</span>
+            </div>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-primary text-nowrap"
+                  data-fill-email="admin@truong.edu.vn" data-fill-password="123456">
+            Điền nhanh
+          </button>
         </div>
-        <div class="d-flex justify-content-between py-1 border-bottom border-secondary border-opacity-10">
-          <span class="fw-bold text-dark font-sans-serif">Phòng ĐT:</span>
-          <span class="text-primary text-decoration-none" role="button" onclick="navigator.clipboard.writeText('pdt@truong.edu.vn')" title="Click để sao chép">pdt@truong.edu.vn</span>
+
+        <div class="d-flex justify-content-between align-items-center pb-2 border-bottom border-secondary border-opacity-10">
+          <div>
+            <div class="fw-bold text-dark">Phòng Đào tạo</div>
+            <div class="font-monospace">
+              Email:
+              <span class="text-primary" role="button" tabindex="0" data-copy="pdt@truong.edu.vn" title="Click để sao chép email">pdt@truong.edu.vn</span>
+            </div>
+            <div class="font-monospace text-muted">
+              Mật khẩu:
+              <span class="text-dark fw-semibold" role="button" tabindex="0" data-copy="123456" title="Click để sao chép mật khẩu">123456</span>
+            </div>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-primary text-nowrap"
+                  data-fill-email="pdt@truong.edu.vn" data-fill-password="123456">
+            Điền nhanh
+          </button>
         </div>
-        <div class="d-flex justify-content-between py-1 border-bottom border-secondary border-opacity-10">
-          <span class="fw-bold text-dark font-sans-serif">Giảng viên:</span>
-          <span class="text-primary text-decoration-none" role="button" onclick="navigator.clipboard.writeText('thuy.tt@truong.edu.vn')" title="Click để sao chép">thuy.tt@truong.edu.vn</span>
+
+        <div class="d-flex justify-content-between align-items-center pb-2 border-bottom border-secondary border-opacity-10">
+          <div>
+            <div class="fw-bold text-dark">Giảng viên</div>
+            <div class="font-monospace">
+              Email:
+              <span class="text-primary" role="button" tabindex="0" data-copy="thuy.tt@truong.edu.vn" title="Click để sao chép email">thuy.tt@truong.edu.vn</span>
+            </div>
+            <div class="font-monospace text-muted">
+              Mật khẩu:
+              <span class="text-dark fw-semibold" role="button" tabindex="0" data-copy="123456" title="Click để sao chép mật khẩu">123456</span>
+            </div>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-primary text-nowrap"
+                  data-fill-email="thuy.tt@truong.edu.vn" data-fill-password="123456">
+            Điền nhanh
+          </button>
         </div>
-        <div class="d-flex justify-content-between py-1">
-          <span class="fw-bold text-dark font-sans-serif">Sinh viên:</span>
-          <span class="text-primary text-decoration-none" role="button" onclick="navigator.clipboard.writeText('vy.lt@student.edu.vn')" title="Click để sao chép">vy.lt@student.edu.vn</span>
+
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="fw-bold text-dark">Sinh viên</div>
+            <div class="font-monospace">
+              Email:
+              <span class="text-primary" role="button" tabindex="0" data-copy="vy.lt@student.edu.vn" title="Click để sao chép email">vy.lt@student.edu.vn</span>
+            </div>
+            <div class="font-monospace text-muted">
+              Mật khẩu:
+              <span class="text-dark fw-semibold" role="button" tabindex="0" data-copy="123456" title="Click để sao chép mật khẩu">123456</span>
+            </div>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-primary text-nowrap"
+                  data-fill-email="vy.lt@student.edu.vn" data-fill-password="123456">
+            Điền nhanh
+          </button>
         </div>
       </div>
     </div>

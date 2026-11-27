@@ -30,8 +30,8 @@
       <label for="selectHocKy" class="form-label small fw-semibold text-muted mb-0 text-nowrap">
         <i class="bi bi-calendar-event me-1 text-primary"></i> Học kỳ:
       </label>
-      <select id="selectHocKy" class="form-select form-select-sm" style="min-width: 220px;"
-              onchange="location.href='/giang-vien/dashboard?maHK=' + encodeURIComponent(this.value)">
+      <select id="selectHocKy" class="form-select form-select-sm qd-select-min-220"
+              data-navigate-url="/giang-vien/dashboard?maHK=">
         <option th:each="hk : ${dashboard.hocKys}"
                 th:value="${hk.maHK}"
                 th:text="${hk.tenHocKy + ' (' + hk.namHoc + ')'}"
@@ -42,58 +42,58 @@
     </div>
   </div>
 
-  <!-- Stat Cards -->
+  <!-- Stat Cards (.qd-stat-tile) -->
   <div class="row g-3 mb-4">
     <div class="col-sm-6 col-xl-3">
-      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
-        <div class="d-flex align-items-center justify-content-between mb-2">
-          <span class="text-muted small fw-medium">Lớp học phần phụ trách</span>
-          <div class="p-2 bg-primary bg-opacity-10 text-primary rounded-3">
-            <i class="bi bi-journal-bookmark-fill fs-5"></i>
-          </div>
+      <a class="qd-stat-tile h-100" th:href="@{/giang-vien/lop-hoc-phan(maHK=${dashboard.currentHk})}">
+        <div>
+          <div class="qd-stat-label mt-0 mb-1">Lớp học phần phụ trách</div>
+          <div class="qd-stat-number" th:text="${dashboard.totalAssignedSections}">4</div>
+          <div class="text-muted small mt-1">Nhập điểm &amp; theo dõi lớp</div>
         </div>
-        <div class="h3 fw-bold text-dark mb-1" th:text="${dashboard.totalAssignedSections}">4</div>
-        <div class="text-muted small">Trong học kỳ hiện tại</div>
-      </div>
+        <div class="qd-stat-icon">
+          <i class="bi bi-journal-bookmark-fill" aria-hidden="true"></i>
+        </div>
+      </a>
     </div>
 
     <div class="col-sm-6 col-xl-3">
-      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
-        <div class="d-flex align-items-center justify-content-between mb-2">
-          <span class="text-muted small fw-medium">Tổng sinh viên giảng dạy</span>
-          <div class="p-2 bg-success bg-opacity-10 text-success rounded-3">
-            <i class="bi bi-people-fill fs-5"></i>
-          </div>
+      <a class="qd-stat-tile qd-stat-tile--info h-100" th:href="@{/giang-vien/lop-hoc-phan(maHK=${dashboard.currentHk})}">
+        <div>
+          <div class="qd-stat-label mt-0 mb-1">Tổng sinh viên giảng dạy</div>
+          <div class="qd-stat-number" th:text="${dashboard.totalStudentsTeaching}">180</div>
+          <div class="text-muted small mt-1">Ghi danh chính thức</div>
         </div>
-        <div class="h3 fw-bold text-dark mb-1" th:text="${dashboard.totalStudentsTeaching}">180</div>
-        <div class="text-muted small">Ghi danh chính thức</div>
-      </div>
+        <div class="qd-stat-icon">
+          <i class="bi bi-people-fill" aria-hidden="true"></i>
+        </div>
+      </a>
     </div>
 
     <div class="col-sm-6 col-xl-3">
-      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
-        <div class="d-flex align-items-center justify-content-between mb-2">
-          <span class="text-muted small fw-medium">Thời lượng giảng dạy</span>
-          <div class="p-2 bg-warning bg-opacity-10 text-warning rounded-3">
-            <i class="bi bi-clock-history fs-5"></i>
-          </div>
+      <a class="qd-stat-tile qd-stat-tile--warning h-100" th:href="@{/giang-vien/lich-giang-day(maHK=${dashboard.currentHk})}">
+        <div>
+          <div class="qd-stat-label mt-0 mb-1">Thời lượng giảng dạy</div>
+          <div class="qd-stat-number" th:text="${dashboard.totalWeeklyTeachingHours + ' tiết'}">12 tiết</div>
+          <div class="text-muted small mt-1">Xem lịch giảng dạy tuần</div>
         </div>
-        <div class="h3 fw-bold text-dark mb-1" th:text="${dashboard.totalWeeklyTeachingHours + ' tiết'}">12 tiết</div>
-        <div class="text-muted small">Tổng số tiết học / tuần</div>
-      </div>
+        <div class="qd-stat-icon">
+          <i class="bi bi-clock-history" aria-hidden="true"></i>
+        </div>
+      </a>
     </div>
 
     <div class="col-sm-6 col-xl-3">
-      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
-        <div class="d-flex align-items-center justify-content-between mb-2">
-          <span class="text-muted small fw-medium">Lớp Cố vấn học tập</span>
-          <div class="p-2 bg-info bg-opacity-10 text-info rounded-3">
-            <i class="bi bi-person-hearts fs-5"></i>
-          </div>
+      <a class="qd-stat-tile h-100" th:href="@{/giang-vien/co-van/lop-hanh-chinh}">
+        <div>
+          <div class="qd-stat-label mt-0 mb-1">Lớp Cố vấn học tập</div>
+          <div class="qd-stat-number" th:text="${dashboard.totalAdvisedClasses}">1</div>
+          <div class="text-muted small mt-1">Theo dõi lớp &amp; SV nguy cơ</div>
         </div>
-        <div class="h3 fw-bold text-dark mb-1" th:text="${dashboard.totalAdvisedClasses}">1</div>
-        <div class="text-muted small">Lớp hành chính phụ trách</div>
-      </div>
+        <div class="qd-stat-icon">
+          <i class="bi bi-person-hearts" aria-hidden="true"></i>
+        </div>
+      </a>
     </div>
   </div>
 
@@ -130,13 +130,14 @@
 
         <div class="table-responsive">
           <table class="table qd-table mb-0 align-middle">
+        <caption class="visually-hidden">Bàn làm việc Giảng viên</caption>
             <thead>
               <tr>
-                <th scope="col" style="width: 120px;">Mã LHP</th>
+                <th scope="col" class="qd-col-120">Mã LHP</th>
                 <th scope="col">Môn học</th>
-                <th scope="col" class="text-center" style="width: 110px;">Sĩ số</th>
-                <th scope="col" class="text-center" style="width: 130px;">Trạng thái</th>
-                <th scope="col" class="text-end" style="width: 120px;">Hành động</th>
+                <th scope="col" class="text-center qd-col-110">Sĩ số</th>
+                <th scope="col" class="text-center qd-col-130">Trạng thái</th>
+                <th scope="col" class="text-end qd-col-120">Hành động</th>
               </tr>
             </thead>
             <tbody>

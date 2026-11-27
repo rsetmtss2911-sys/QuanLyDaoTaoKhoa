@@ -33,6 +33,7 @@
     <form method="get" th:action="@{/admin/khoa}" class="p-3 border-bottom d-flex flex-wrap gap-2 align-items-center" role="search">
       <div class="input-group qd-search">
         <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+        <label for="q" class="visually-hidden">Tìm kiếm</label>
         <input id="q" name="q" type="search" class="form-control border-start-0 ps-0"
                th:value="${q}" placeholder="Tìm theo mã hoặc tên khoa...">
       </div>
@@ -45,14 +46,15 @@
     <!-- Data Table -->
     <div class="table-responsive">
       <table class="table qd-table">
+        <caption class="visually-hidden">Quản lý Khoa</caption>
         <thead>
           <tr>
-            <th scope="col" style="width: 140px;">Mã khoa</th>
+            <th scope="col" class="qd-col-140">Mã khoa</th>
             <th scope="col">Tên khoa đào tạo</th>
-            <th scope="col" class="qd-num" style="width: 140px;">Năm TL</th>
-            <th scope="col" class="text-center" style="width: 120px;">Bộ môn</th>
-            <th scope="col" class="text-center" style="width: 120px;">Ngành học</th>
-            <th scope="col" class="text-end" style="width: 180px;">Thao tác</th>
+            <th scope="col" class="qd-num qd-col-140">Năm TL</th>
+            <th scope="col" class="text-center qd-col-120">Bộ môn</th>
+            <th scope="col" class="text-center qd-col-120">Ngành học</th>
+            <th scope="col" class="text-end qd-col-180">Thao tác</th>
           </tr>
         </thead>
         <tbody>
@@ -78,16 +80,16 @@
               <span class="badge bg-success bg-opacity-10 text-success px-2" th:text="${row.soNganh}">3</span>
             </td>
             <td class="text-end text-nowrap">
-              <a class="btn btn-sm btn-outline-secondary me-1" th:href="@{/admin/khoa/{id}(id=${row.maKhoa})}" title="Xem chi tiết">
+              <a class="btn btn-sm btn-outline-secondary me-1" th:href="@{/admin/khoa/{id}(id=${row.maKhoa})}" title="Xem chi tiết" aria-label="Xem chi tiết">
                 <i class="bi bi-eye"></i>
               </a>
               <span sec:authorize="hasRole('ADMIN')">
-                <a class="btn btn-sm btn-outline-primary me-1" th:href="@{/admin/khoa/{id}/edit(id=${row.maKhoa})}" title="Chỉnh sửa">
+                <a class="btn btn-sm btn-outline-primary me-1" th:href="@{/admin/khoa/{id}/edit(id=${row.maKhoa})}" title="Chỉnh sửa" aria-label="Chỉnh sửa">
                   <i class="bi bi-pencil"></i>
                 </a>
                 <form class="d-inline" method="post" th:action="@{/admin/khoa/{id}/delete(id=${row.maKhoa})}"
                       th:data-confirm="|Bạn có chắc chắn muốn xóa khoa '${row.tenKhoa}'? Hành động này không thể hoàn tác.|">
-                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa khoa">
+                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa khoa" aria-label="Xóa khoa">
                     <i class="bi bi-trash"></i>
                   </button>
                 </form>

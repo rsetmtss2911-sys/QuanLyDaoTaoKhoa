@@ -1,6 +1,7 @@
 package com.qldtkhoa.qldtkhoa_app.controller.admin;
 
 import com.qldtkhoa.qldtkhoa_app.dto.QuyetDinhForm;
+import com.qldtkhoa.qldtkhoa_app.dto.SinhVienPreviewDto;
 import com.qldtkhoa.qldtkhoa_app.entity.enums.LoaiQuyetDinh;
 import com.qldtkhoa.qldtkhoa_app.exception.BusinessRuleException;
 import com.qldtkhoa.qldtkhoa_app.exception.DuplicateResourceException;
@@ -90,5 +91,11 @@ public class QuyetDinhHocVuAdminController {
         int count = quyetDinhSyncService.syncDueDecisions();
         redirect.addFlashAttribute("flash", FlashMessage.success("decision.sync.success", count));
         return "redirect:/admin/quyet-dinh";
+    }
+
+    @GetMapping("/preview-student")
+    @ResponseBody
+    public SinhVienPreviewDto previewStudent(@RequestParam(defaultValue = "") String maSV) {
+        return quyetDinhHocVuService.previewStudent(maSV);
     }
 }

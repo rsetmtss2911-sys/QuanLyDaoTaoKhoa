@@ -3,8 +3,9 @@ package com.qldtkhoa.qldtkhoa_app.controller.giangvien;
 import com.qldtkhoa.qldtkhoa_app.dto.BangDiemLopForm;
 import com.qldtkhoa.qldtkhoa_app.dto.DiemEntryForm;
 import com.qldtkhoa.qldtkhoa_app.dto.DiemRow;
-import com.qldtkhoa.qldtkhoa_app.entity.LopHocPhan;
+import com.qldtkhoa.qldtkhoa_app.dto.LopHocPhanDetailView;
 import com.qldtkhoa.qldtkhoa_app.entity.enums.TrangThaiDangKy;
+import com.qldtkhoa.qldtkhoa_app.entity.enums.TrangThaiLop;
 import com.qldtkhoa.qldtkhoa_app.exception.BusinessRuleException;
 import com.qldtkhoa.qldtkhoa_app.security.AppUserPrincipal;
 import com.qldtkhoa.qldtkhoa_app.service.DiemService;
@@ -42,6 +43,13 @@ class GiangVienLopHocPhanControllerTest {
     @InjectMocks
     private GiangVienLopHocPhanController controller;
 
+    private LopHocPhanDetailView sampleLopDetail() {
+        return new LopHocPhanDetailView(
+                "LHP001", "INT2204", "Lập trình OOP", 3, 2, 1,
+                0.2, 0.3, 0.5, "HK1_2025", "Học kỳ 1", 2025,
+                "GV001", "TS. A", 50, TrangThaiLop.DA_CHOT_DANH_SACH);
+    }
+
     @Test
     @DisplayName("saveGrades: Khi có lỗi validation điểm số, render lại view bảng điểm và giữ nguyên dữ liệu đã nhập")
     void saveGrades_hasValidationErrors_returnsGradeViewPreservingInputs() {
@@ -58,7 +66,7 @@ class GiangVienLopHocPhanControllerTest {
         RedirectAttributes redirect = mock(RedirectAttributes.class);
         Model model = new ConcurrentModel();
 
-        when(lopHocPhanService.getWithDetailsOrThrow("LHP001")).thenReturn(mock(LopHocPhan.class));
+        when(lopHocPhanService.getDetailView("LHP001")).thenReturn(sampleLopDetail());
         when(diemService.getGradeSheet("LHP001")).thenReturn(List.of(
                 new DiemRow("SV001", "Nguyễn Văn A", "K66", TrangThaiDangKy.HOP_LE, 7.0, null, null, null, null, null, false)
         ));
@@ -88,7 +96,7 @@ class GiangVienLopHocPhanControllerTest {
 
         doThrow(new BusinessRuleException("grade.classNotLocked"))
                 .when(diemService).saveGradeSheet("LHP001", form, "GV001", false);
-        when(lopHocPhanService.getWithDetailsOrThrow("LHP001")).thenReturn(mock(LopHocPhan.class));
+        when(lopHocPhanService.getDetailView("LHP001")).thenReturn(sampleLopDetail());
         when(diemService.getGradeSheet("LHP001")).thenReturn(List.of());
 
         String view = controller.saveGrades("LHP001", form, bindingResult, principal, model, redirect);
@@ -112,7 +120,7 @@ class GiangVienLopHocPhanControllerTest {
         RedirectAttributes redirect = mock(RedirectAttributes.class);
         Model model = new ConcurrentModel();
 
-        when(lopHocPhanService.getWithDetailsOrThrow("LHP001")).thenReturn(mock(LopHocPhan.class));
+        when(lopHocPhanService.getDetailView("LHP001")).thenReturn(sampleLopDetail());
         when(diemService.getGradeSheet("LHP001")).thenReturn(List.of(
                 new DiemRow("SV001", "Nguyễn Văn A", "K66", TrangThaiDangKy.HOP_LE, 7.0, null, null, null, null, null, false)
         ));
